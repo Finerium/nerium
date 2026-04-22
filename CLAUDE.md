@@ -104,7 +104,7 @@ Non-negotiable rules. Violation = halt and ferry to V3.
 2. **No emoji anywhere.** README, docs, agent prompts, code comments, commit messages, everywhere.
 3. **No scope narrow suggestion.** Full 5-pillar scope is locked. Operate from the axiom that all 5 pillars are buildable as prototype in 5 days. Do not re-litigate.
 4. **No silent-assume on ambiguous cross-cutting decisions.** If architecture, contract, naming, tier routing, or scope ambiguity appears and is not explicitly covered in NarasiGhaisan.md or formal NERIUM documentation, halt and ferry to V3.
-5. **No Vercel push yet.** Deploy platform is deferred. Ghaisan flagged "kemungkinan gaakan di vercel, ntar gw kasih tau aja". Wait for explicit direction.
+5. **No Vercel push yet.** Deploy platform deferred to Day 4-5 polish phase. Direction self-hosted VPS/dedicated server likely (not Vercel). Wait for Ghaisan explicit final lock.
 6. **No per-file Hephaestus ferry.** Hephaestus runs single session batching all prompt files until 97% context. Halt only at context threshold, never per-file. MedWatch lesson V5 Section 10.9.
 7. **No Gemini, Higgsfield, or non-Anthropic model for shipped execution.** Multi-vendor flexibility is a user-facing feature in the NERIUM Builder UI, not a hackathon execution choice. Shipped build runs on Opus 4.7 plus Sonnet 4.6 only. Image and asset generation uses CC0 packs (Kenney.nl, OpenGameArt) plus Opus-generated SVG or Canvas procedural. No Nano Banana.
 
