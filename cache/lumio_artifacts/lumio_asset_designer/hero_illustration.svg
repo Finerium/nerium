@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 320" role="img" aria-label="Open book with highlighted passages connecting into a small concept graph">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="oklch(0.99 0.008 90)"/>
+      <stop offset="1" stop-color="oklch(0.96 0.022 78)"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.6">
+      <stop offset="0" stop-color="oklch(0.72 0.17 55 / 0.25)"/>
+      <stop offset="1" stop-color="oklch(0.72 0.17 55 / 0)"/>
+    </radialGradient>
+  </defs>
+  <rect width="420" height="320" fill="url(#paper)" rx="18"/>
+  <ellipse cx="210" cy="260" rx="180" ry="24" fill="oklch(0.22 0.03 265 / 0.08)"/>
+  <!-- Open book -->
+  <g transform="translate(70 120)">
+    <path d="M0 0 Q140 -28 280 0 V110 Q140 82 0 110 Z" fill="oklch(0.98 0.01 90)" stroke="oklch(0.88 0.01 265)" stroke-width="1.2"/>
+    <path d="M140 -14 V96" stroke="oklch(0.88 0.01 265)" stroke-width="1.2"/>
+    <g fill="oklch(0.7 0.02 260)">
+      <rect x="16" y="12" width="108" height="3" rx="1.5"/>
+      <rect x="16" y="22" width="96" height="3" rx="1.5"/>
+      <rect x="16" y="32" width="104" height="3" rx="1.5"/>
+      <rect x="16" y="54" width="88" height="3" rx="1.5"/>
+      <rect x="16" y="64" width="110" height="3" rx="1.5"/>
+      <rect x="156" y="12" width="108" height="3" rx="1.5"/>
+      <rect x="156" y="22" width="100" height="3" rx="1.5"/>
+      <rect x="156" y="44" width="92" height="3" rx="1.5"/>
+      <rect x="156" y="54" width="108" height="3" rx="1.5"/>
+      <rect x="156" y="64" width="80" height="3" rx="1.5"/>
+    </g>
+    <!-- Highlighted passages -->
+    <rect x="14" y="42" width="104" height="8" fill="oklch(0.72 0.17 55 / 0.35)" rx="2"/>
+    <rect x="154" y="30" width="96" height="8" fill="oklch(0.46 0.18 280 / 0.25)" rx="2"/>
+  </g>
+  <!-- Concept graph -->
+  <g transform="translate(60 40)" fill="none" stroke="oklch(0.46 0.18 280 / 0.5)" stroke-width="1.6">
+    <circle cx="30" cy="30" r="16" fill="oklch(0.92 0.03 280)" stroke="oklch(0.46 0.18 280)"/>
+    <circle cx="180" cy="10" r="12" fill="oklch(0.96 0.022 78)" stroke="oklch(0.72 0.17 55)"/>
+    <circle cx="300" cy="40" r="14" fill="oklch(0.92 0.03 280)" stroke="oklch(0.46 0.18 280)"/>
+    <path d="M46 30 L168 12" />
+    <path d="M46 30 L284 40" />
+    <path d="M192 12 L284 40" />
+  </g>
+  <g font-family="Inter, sans-serif" font-size="10" fill="oklch(0.38 0.025 265)">
+    <text x="74" y="76">depth</text>
+    <text x="228" y="20">attention</text>
+    <text x="340" y="80">ritual</text>
+  </g>
+  <!-- Sparkle glow -->
+  <circle cx="340" cy="140" r="60" fill="url(#glow)"/>
+</svg>

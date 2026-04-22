@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Join Lumio, the smart reading companion that turns every article into lasting understanding." />
+  <title>Join Lumio, five minutes to a better reading habit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: oklch(0.22 0.03 265);
+      --ink-soft: oklch(0.38 0.025 265);
+      --paper: oklch(0.985 0.008 90);
+      --paper-warm: oklch(0.96 0.022 78);
+      --accent: oklch(0.72 0.17 55);
+      --accent-deep: oklch(0.52 0.18 58);
+      --indigo: oklch(0.46 0.18 280);
+      --indigo-soft: oklch(0.92 0.03 280);
+      --sage: oklch(0.74 0.06 160);
+      --line: oklch(0.88 0.01 265);
+      --danger: oklch(0.58 0.18 27);
+    }
+    html, body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-display { font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif; }
+    .ink { color: var(--ink); }
+    .ink-soft { color: var(--ink-soft); }
+    .bg-paper { background: var(--paper); }
+    .bg-paper-warm { background: var(--paper-warm); }
+    .bg-indigo-soft { background: var(--indigo-soft); }
+    .text-accent { color: var(--accent-deep); }
+    .text-indigo-ink { color: var(--indigo); }
+    .border-line { border-color: var(--line); }
+    .paper-texture {
+      background-color: var(--paper);
+      background-image:
+        radial-gradient(circle at 15% 20%, oklch(0.72 0.17 55 / 0.07), transparent 45%),
+        radial-gradient(circle at 85% 80%, oklch(0.46 0.18 280 / 0.08), transparent 50%);
+    }
+    .hairline { box-shadow: inset 0 -1px 0 oklch(0.88 0.01 265); }
+    .floating-card {
+      box-shadow:
+        0 1px 0 oklch(1 0 0 / 0.6) inset,
+        0 30px 80px -30px oklch(0.22 0.03 265 / 0.22),
+        0 2px 8px -2px oklch(0.22 0.03 265 / 0.08);
+    }
+    .cta-btn { background: var(--ink); color: var(--paper); transition: transform 120ms ease, box-shadow 200ms ease; }
+    .cta-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px -8px oklch(0.22 0.03 265 / 0.45); }
+    .cta-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .ghost-btn:hover { background: color-mix(in oklch, var(--paper-warm) 80%, white); }
+    .field {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.75rem 0.9rem;
+      font-size: 0.95rem;
+      width: 100%;
+      transition: border-color 120ms ease, box-shadow 120ms ease;
+    }
+    .field:focus {
+      outline: none;
+      border-color: var(--ink);
+      box-shadow: 0 0 0 3px oklch(0.22 0.03 265 / 0.12);
+    }
+    .field[aria-invalid="true"] { border-color: var(--danger); box-shadow: 0 0 0 3px oklch(0.58 0.18 27 / 0.15); }
+    .seg-btn {
+      border: 1px solid var(--line);
+      padding: 1rem;
+      border-radius: 12px;
+      display: flex; gap: 0.9rem; align-items: flex-start;
+      cursor: pointer;
+      transition: border-color 120ms ease, background 120ms ease;
+      background: white;
+    }
+    .seg-btn input { accent-color: var(--ink); margin-top: 2px; }
+    .seg-btn[data-selected="true"] {
+      border-color: var(--ink);
+      background: color-mix(in oklch, var(--paper-warm) 60%, white);
+      box-shadow: 0 0 0 1px var(--ink);
+    }
+    .dot-grid {
+      background-image: radial-gradient(circle, oklch(0.78 0.02 265 / 0.35) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+    .marker-highlight {
+      background: linear-gradient(120deg, oklch(0.72 0.17 55 / 0.3) 0%, oklch(0.72 0.17 55 / 0.12) 100%);
+      padding: 0 0.15em;
+      border-radius: 2px;
+    }
+    .step-dot {
+      width: 26px; height: 26px; border-radius: 999px;
+      border: 1px solid var(--line);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 12px; color: var(--ink-soft);
+      background: white;
+    }
+    .step-dot[data-active="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+    .step-dot[data-done="true"] { background: color-mix(in oklch, var(--accent) 25%, white); color: var(--accent-deep); border-color: var(--accent); }
+    .bar { height: 4px; border-radius: 999px; background: var(--line); position: relative; overflow: hidden; }
+    .bar span { position: absolute; inset: 0; background: var(--ink); transform-origin: left; transform: scaleX(0); transition: transform 400ms ease; }
+    .check { color: var(--accent-deep); display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; }
+    .check svg { flex-shrink: 0; }
+    .hide { display: none !important; }
+    @media (prefers-reduced-motion: no-preference) {
+      .step-pane { animation: slideIn 280ms ease both; }
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen paper-texture">
+  <header class="sticky top-0 z-30 backdrop-blur bg-paper/80 hairline">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-2" aria-label="Lumio home">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <path d="M6 4h11a5 5 0 0 1 5 5v15H11a5 5 0 0 1-5-5V4Z" fill="oklch(0.22 0.03 265)"/>
+          <path d="M9 8h9v9H9z" fill="oklch(0.72 0.17 55)"/>
+          <circle cx="18.5" cy="18.5" r="3.5" fill="oklch(0.46 0.18 280)"/>
+        </svg>
+        <span class="font-display text-xl font-semibold tracking-tight">Lumio</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-6 text-sm ink-soft">
+        <a href="index.html#features" class="hover:text-[color:var(--ink)]">Features</a>
+        <a href="index.html#pricing" class="hover:text-[color:var(--ink)]">Pricing</a>
+        <a href="#" class="hover:text-[color:var(--ink)]">Sign in</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-12 gap-10 items-start">
+    <section class="md:col-span-7">
+      <div class="mb-7">
+        <p class="text-xs uppercase tracking-wider text-accent font-semibold">Create your workspace</p>
+        <h1 class="font-display text-4xl md:text-5xl font-semibold mt-2 tracking-tight">Five minutes to a quieter reading habit.</h1>
+        <p class="mt-3 ink-soft">No credit card until you choose a paid plan. You can leave with your data at any time.</p>
+      </div>
+
+      <div class="mb-8">
+        <ol class="flex items-center gap-3 text-sm ink-soft" aria-label="Progress">
+          <li class="flex items-center gap-2"><span class="step-dot" id="dot-1" data-active="true">1</span> Account</li>
+          <li class="w-6 h-px bg-[color:var(--line)]"></li>
+          <li class="flex items-center gap-2"><span class="step-dot" id="dot-2">2</span> Reading profile</li>
+          <li class="w-6 h-px bg-[color:var(--line)]"></li>
+          <li class="flex items-center gap-2"><span class="step-dot" id="dot-3">3</span> Pick a plan</li>
+        </ol>
+        <div class="bar mt-4" aria-hidden="true"><span id="progress-bar"></span></div>
+      </div>
+
+      <form id="signup-form" class="floating-card rounded-2xl border border-line bg-paper p-7" novalidate>
+        <div id="step-1" class="step-pane">
+          <h2 class="font-display text-2xl font-semibold">Start with the basics.</h2>
+          <p class="mt-1 ink-soft text-sm">You can change all of this later from Settings.</p>
+          <div class="mt-6 grid gap-4">
+            <div class="grid sm:grid-cols-2 gap-4">
+              <label class="block">
+                <span class="text-sm font-medium">Full name</span>
+                <input type="text" name="name" class="field mt-1.5" placeholder="Maya Delacroix" required autocomplete="name" />
+                <p class="mt-1 text-xs text-[color:var(--danger)] hide" data-error="name">Please tell us what to call you.</p>
+              </label>
+              <label class="block">
+                <span class="text-sm font-medium">Work email</span>
+                <input type="email" name="email" class="field mt-1.5" placeholder="you@studio.com" required autocomplete="email" />
+                <p class="mt-1 text-xs text-[color:var(--danger)] hide" data-error="email">That email doesn't look quite right.</p>
+              </label>
+            </div>
+            <label class="block">
+              <span class="text-sm font-medium">Create a password</span>
+              <input type="password" name="password" class="field mt-1.5" placeholder="at least 10 characters, one number" required minlength="10" autocomplete="new-password" />
+              <p class="mt-1 text-xs ink-soft" id="pw-strength">Strength, unspecified</p>
+              <p class="mt-1 text-xs text-[color:var(--danger)] hide" data-error="password">Use at least 10 characters and a number.</p>
+            </label>
+            <label class="flex items-start gap-3 mt-1 text-sm">
+              <input type="checkbox" name="agree" required class="mt-1 accent-[color:var(--ink)]" />
+              <span class="ink-soft">I agree to the <a href="#" class="underline">terms</a> and the <a href="#" class="underline">privacy notice</a>. My reading is mine, and it stays that way.</span>
+            </label>
+          </div>
+          <div class="mt-7 flex items-center justify-between">
+            <a href="index.html" class="text-sm ink-soft ghost-btn px-3 py-2 rounded-lg">Back to site</a>
+            <button type="button" class="cta-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm" data-next="2">
+              Next, your reading profile
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8m0 0L7.5 3.5M11 7l-3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="step-2" class="step-pane hide">
+          <h2 class="font-display text-2xl font-semibold">How do you read now?</h2>
+          <p class="mt-1 ink-soft text-sm">Two quick answers. Lumio uses these to tune summaries and the spaced recall tempo.</p>
+
+          <fieldset class="mt-6">
+            <legend class="text-sm font-medium">What do you read most?</legend>
+            <div class="mt-3 grid sm:grid-cols-3 gap-3">
+              <label class="seg-btn" data-selected="true">
+                <input type="radio" name="reads" value="articles" checked />
+                <span>
+                  <span class="block font-medium">Long reads and essays</span>
+                  <span class="block text-xs ink-soft mt-0.5">Aeon, Atlantic, Substack</span>
+                </span>
+              </label>
+              <label class="seg-btn">
+                <input type="radio" name="reads" value="papers" />
+                <span>
+                  <span class="block font-medium">Research papers</span>
+                  <span class="block text-xs ink-soft mt-0.5">arXiv, SSRN, PDFs</span>
+                </span>
+              </label>
+              <label class="seg-btn">
+                <input type="radio" name="reads" value="books" />
+                <span>
+                  <span class="block font-medium">Books</span>
+                  <span class="block text-xs ink-soft mt-0.5">Kindle highlights, ePub</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="mt-6">
+            <legend class="text-sm font-medium">How many hours per week can you read, honestly?</legend>
+            <div class="mt-3 grid sm:grid-cols-4 gap-3">
+              <label class="seg-btn"><input type="radio" name="hours" value="1" /><span class="font-medium">Under 2</span></label>
+              <label class="seg-btn" data-selected="true"><input type="radio" name="hours" value="4" checked /><span class="font-medium">2 to 5</span></label>
+              <label class="seg-btn"><input type="radio" name="hours" value="8" /><span class="font-medium">5 to 10</span></label>
+              <label class="seg-btn"><input type="radio" name="hours" value="12" /><span class="font-medium">10 plus</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="mt-6">
+            <legend class="text-sm font-medium">Your main reason for trying Lumio?</legend>
+            <div class="mt-3 grid sm:grid-cols-2 gap-3">
+              <label class="seg-btn"><input type="radio" name="why" value="remember" /><span class="font-medium">Remember what I read</span></label>
+              <label class="seg-btn"><input type="radio" name="why" value="connect" /><span class="font-medium">Connect ideas across sources</span></label>
+              <label class="seg-btn"><input type="radio" name="why" value="focus" /><span class="font-medium">Read with more focus</span></label>
+              <label class="seg-btn"><input type="radio" name="why" value="team" /><span class="font-medium">Share reading with a team</span></label>
+            </div>
+          </fieldset>
+
+          <div class="mt-7 flex items-center justify-between">
+            <button type="button" class="text-sm ink-soft ghost-btn px-3 py-2 rounded-lg" data-back="1">Back</button>
+            <button type="button" class="cta-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm" data-next="3">
+              Almost done, pick a plan
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8m0 0L7.5 3.5M11 7l-3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="step-3" class="step-pane hide">
+          <h2 class="font-display text-2xl font-semibold">Pick a plan, change it any time.</h2>
+          <p class="mt-1 ink-soft text-sm">Deep Reader comes with a 14 day trial, no card needed until you finish onboarding.</p>
+
+          <div class="mt-6 grid gap-4">
+            <label class="seg-btn" data-selected="false">
+              <input type="radio" name="plan" value="reader" />
+              <span class="flex-1 flex flex-wrap items-center justify-between gap-2">
+                <span>
+                  <span class="block font-medium">Reader, $0 / month</span>
+                  <span class="block text-xs ink-soft mt-0.5">25 saves per month, 2 recall cards a day</span>
+                </span>
+                <span class="text-xs ink-soft">Free forever</span>
+              </span>
+            </label>
+            <label class="seg-btn" data-selected="true">
+              <input type="radio" name="plan" value="deep" checked />
+              <span class="flex-1 flex flex-wrap items-center justify-between gap-2">
+                <span>
+                  <span class="block font-medium">Deep Reader, $8 / month</span>
+                  <span class="block text-xs ink-soft mt-0.5">Unlimited saves, Atlas, all recall modes, weekly letter</span>
+                </span>
+                <span class="text-xs text-accent font-medium">14 day trial</span>
+              </span>
+            </label>
+            <label class="seg-btn">
+              <input type="radio" name="plan" value="studio" />
+              <span class="flex-1 flex flex-wrap items-center justify-between gap-2">
+                <span>
+                  <span class="block font-medium">Studio, $24 / seat / month</span>
+                  <span class="block text-xs ink-soft mt-0.5">Shared Atlases, SSO, admin, weekly team digest</span>
+                </span>
+                <span class="text-xs ink-soft">Billed yearly available</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="mt-6 rounded-xl border border-line bg-paper-warm p-4 text-sm">
+            <p class="font-medium">Where Lumio sends email</p>
+            <ul class="mt-2 grid sm:grid-cols-2 gap-2 ink-soft">
+              <li class="check"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7.5 5.5 10 11 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Weekly reading letter on Sunday</li>
+              <li class="check"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7.5 5.5 10 11 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Never more than one email a week</li>
+              <li class="check"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7.5 5.5 10 11 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Opt out in one click, no dark patterns</li>
+              <li class="check"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7.5 5.5 10 11 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Zero marketing emails by default</li>
+            </ul>
+          </div>
+
+          <div class="mt-7 flex items-center justify-between">
+            <button type="button" class="text-sm ink-soft ghost-btn px-3 py-2 rounded-lg" data-back="2">Back</button>
+            <button type="submit" class="cta-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm" id="submit-btn">
+              Create my workspace
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8m0 0L7.5 3.5M11 7l-3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="step-done" class="step-pane hide text-center">
+          <div class="mx-auto w-14 h-14 rounded-full bg-indigo-soft text-indigo-ink inline-flex items-center justify-center">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M6 13.5 11 18.5 20 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h2 class="font-display text-3xl font-semibold mt-5">Your workspace is ready.</h2>
+          <p class="mt-2 ink-soft">We mailed you a verification link. It usually lands in under a minute. While you wait, here is what happens next.</p>
+          <ul class="mt-6 max-w-md mx-auto space-y-3 text-sm text-left">
+            <li class="flex items-start gap-3"><span class="step-dot" data-done="true">1</span><span>Install the Lumio browser extension, it's how saves work in one tap.</span></li>
+            <li class="flex items-start gap-3"><span class="step-dot" data-done="true">2</span><span>Forward any newsletter to save@lumio.app to try the auto summary.</span></li>
+            <li class="flex items-start gap-3"><span class="step-dot" data-done="true">3</span><span>Tomorrow morning, your first two recall cards will be waiting.</span></li>
+          </ul>
+          <a href="index.html" class="mt-8 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl cta-btn font-medium text-sm">Back to the site</a>
+        </div>
+      </form>
+
+      <p class="mt-4 text-xs ink-soft text-center">
+        This page is a bounded demo artifact. It does not transmit the form. NERIUM Builder replayed this signup from cache.
+      </p>
+    </section>
+
+    <aside class="md:col-span-5 md:sticky md:top-24 self-start space-y-5">
+      <div class="floating-card rounded-2xl border border-line bg-paper p-6">
+        <p class="text-xs uppercase tracking-wider ink-soft">What your week looks like with Lumio</p>
+        <div class="mt-4 space-y-3 text-sm">
+          <div class="flex items-center justify-between pb-3 hairline">
+            <span class="font-medium">Monday morning</span>
+            <span class="ink-soft">Two recall cards, 4 min</span>
+          </div>
+          <div class="flex items-center justify-between pb-3 hairline">
+            <span class="font-medium">Wednesday evening</span>
+            <span class="ink-soft">Three articles summarized</span>
+          </div>
+          <div class="flex items-center justify-between pb-3 hairline">
+            <span class="font-medium">Saturday afternoon</span>
+            <span class="ink-soft">One long read, deep focus mode</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="font-medium">Sunday, 08:00</span>
+            <span class="ink-soft">Weekly letter in your inbox</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="floating-card rounded-2xl border border-line bg-indigo-soft p-6 relative overflow-hidden">
+        <div class="absolute inset-0 dot-grid opacity-40" aria-hidden="true"></div>
+        <div class="relative">
+          <p class="text-xs uppercase tracking-wider text-indigo-ink font-semibold">What one reader said</p>
+          <blockquote class="mt-3 font-display text-xl leading-snug">
+            "I signed up on a whim and the second weekly letter made me <span class="marker-highlight">cry, in a small good way</span>. It handed me back a thought I had in May."
+          </blockquote>
+          <figcaption class="mt-4 text-sm ink-soft">
+            Mikko Hakkarainen, Deep Reader since January
+          </figcaption>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-line bg-paper p-6 text-sm">
+        <p class="font-medium">Lumio is calm by design.</p>
+        <ul class="mt-3 space-y-2 ink-soft">
+          <li class="flex items-start gap-2"><span class="text-accent">&#9679;</span> No streak guilt, skipping days is fine.</li>
+          <li class="flex items-start gap-2"><span class="text-accent">&#9679;</span> No gamification that pretends to be growth.</li>
+          <li class="flex items-start gap-2"><span class="text-accent">&#9679;</span> Quiet recall, not loud notifications.</li>
+          <li class="flex items-start gap-2"><span class="text-accent">&#9679;</span> Your data exports on day one, not day ninety.</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="border-t border-line bg-paper">
+    <div class="max-w-6xl mx-auto px-6 py-6 flex flex-wrap gap-4 justify-between items-center text-xs ink-soft">
+      <p>Bounded demo build, shipped by NERIUM Builder. No actual account created.</p>
+      <p>&copy; 2026 Lumio. MIT licensed demo.</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+      const form = document.getElementById('signup-form');
+      const dots = {
+        1: document.getElementById('dot-1'),
+        2: document.getElementById('dot-2'),
+        3: document.getElementById('dot-3'),
+      };
+      const panes = {
+        1: document.getElementById('step-1'),
+        2: document.getElementById('step-2'),
+        3: document.getElementById('step-3'),
+        done: document.getElementById('step-done'),
+      };
+      const bar = document.getElementById('progress-bar');
+
+      function setActive(step) {
+        Object.entries(dots).forEach(function (entry) {
+          const key = entry[0];
+          const el = entry[1];
+          if (!el) return;
+          el.removeAttribute('data-active');
+          el.removeAttribute('data-done');
+          const k = Number(key);
+          if (k < step) el.setAttribute('data-done', 'true');
+          if (k === step) el.setAttribute('data-active', 'true');
+        });
+        Object.entries(panes).forEach(function (entry) {
+          entry[1].classList.add('hide');
+        });
+        const current = step === 'done' ? panes.done : panes[step];
+        if (current) current.classList.remove('hide');
+        const progress = step === 'done' ? 1 : (step - 1) / 2;
+        bar.style.transform = 'scaleX(' + progress + ')';
+      }
+
+      function validateStep1() {
+        let ok = true;
+        const name = form.elements['name'];
+        const email = form.elements['email'];
+        const password = form.elements['password'];
+        const agree = form.elements['agree'];
+        const show = function (field, valid) {
+          field.setAttribute('aria-invalid', valid ? 'false' : 'true');
+          const err = form.querySelector('[data-error="' + field.name + '"]');
+          if (err) err.classList.toggle('hide', valid);
+        };
+        show(name, name.value.trim().length >= 2);
+        if (name.value.trim().length < 2) ok = false;
+        const emailOk = /.+@.+\..+/.test(email.value);
+        show(email, emailOk);
+        if (!emailOk) ok = false;
+        const pwOk = password.value.length >= 10 && /\d/.test(password.value);
+        show(password, pwOk);
+        if (!pwOk) ok = false;
+        if (!agree.checked) ok = false;
+        return ok;
+      }
+
+      form.querySelectorAll('[data-next]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const target = Number(btn.getAttribute('data-next'));
+          if (target === 2 && !validateStep1()) return;
+          setActive(target);
+        });
+      });
+      form.querySelectorAll('[data-back]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          setActive(Number(btn.getAttribute('data-back')));
+        });
+      });
+
+      form.querySelectorAll('.seg-btn').forEach(function (label) {
+        label.addEventListener('click', function () {
+          const input = label.querySelector('input');
+          if (!input) return;
+          const name = input.name;
+          form.querySelectorAll('.seg-btn').forEach(function (other) {
+            const otherInput = other.querySelector('input');
+            if (otherInput && otherInput.name === name) other.setAttribute('data-selected', 'false');
+          });
+          label.setAttribute('data-selected', 'true');
+        });
+      });
+
+      const pw = form.elements['password'];
+      const pwOut = document.getElementById('pw-strength');
+      pw.addEventListener('input', function () {
+        const val = pw.value;
+        let score = 0;
+        if (val.length >= 10) score += 1;
+        if (/[A-Z]/.test(val)) score += 1;
+        if (/\d/.test(val)) score += 1;
+        if (/[^A-Za-z0-9]/.test(val)) score += 1;
+        const label = ['Strength, unspecified', 'Strength, a bit light', 'Strength, fair', 'Strength, good', 'Strength, strong'][score] || 'Strength, strong';
+        pwOut.textContent = label;
+      });
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        setActive('done');
+      });
+
+      setActive(1);
+    })();
+  </script>
+</body>
+</html>

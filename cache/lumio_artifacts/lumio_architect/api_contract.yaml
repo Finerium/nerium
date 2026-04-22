@@ -1,0 +1,223 @@
+openapi: 3.0.3
+info:
+  title: Lumio API
+  version: 0.1.0-demo
+  description: >
+    REST surface for the Lumio smart reading companion. This is the scaled-down
+    demo contract that matches the cached Builder bake. Not all endpoints are
+    implemented in the demo bake, signup and summary endpoints are stubs.
+servers:
+  - url: https://api.lumio.demo/v1
+    description: Demo target, not live
+paths:
+  /users:
+    post:
+      summary: Create a workspace account
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: Workspace created, verification email sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '422':
+          description: Validation failure
+  /reads:
+    post:
+      summary: Save an article from url or raw text
+      operationId: createRead
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReadRequest'
+      responses:
+        '201':
+          description: Read created, summary pending
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Read'
+    get:
+      summary: List saved reads for current user
+      operationId: listReads
+      parameters:
+        - in: query
+          name: cursor
+          schema:
+            type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 30
+            maximum: 100
+      responses:
+        '200':
+          description: Paginated list of reads
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Read'
+                  next_cursor:
+                    type: string
+                    nullable: true
+  /reads/{read_id}/summary:
+    post:
+      summary: Request a summary in the specified mode
+      operationId: summarizeRead
+      parameters:
+        - in: path
+          name: read_id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mode]
+              properties:
+                mode:
+                  type: string
+                  enum: [brief, essay, paper]
+      responses:
+        '200':
+          description: Summary generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Summary'
+  /recall/today:
+    get:
+      summary: Get up to three recall cards scheduled for today
+      operationId: getTodayRecall
+      responses:
+        '200':
+          description: Ordered recall card list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecallCard'
+components:
+  schemas:
+    CreateUserRequest:
+      type: object
+      required: [name, email, password, plan]
+      properties:
+        name:
+          type: string
+          minLength: 2
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 10
+        plan:
+          type: string
+          enum: [reader, deep, studio]
+        reading_profile:
+          $ref: '#/components/schemas/ReadingProfile'
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        plan:
+          type: string
+          enum: [reader, deep, studio]
+        created_at:
+          type: string
+          format: date-time
+    ReadingProfile:
+      type: object
+      properties:
+        primary_source:
+          type: string
+          enum: [articles, papers, books]
+        weekly_hours:
+          type: integer
+        main_reason:
+          type: string
+          enum: [remember, connect, focus, team]
+    CreateReadRequest:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        raw_text:
+          type: string
+      oneOf:
+        - required: [url]
+        - required: [raw_text]
+    Read:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        source:
+          type: string
+        word_count:
+          type: integer
+        saved_at:
+          type: string
+          format: date-time
+        has_summary:
+          type: boolean
+    Summary:
+      type: object
+      properties:
+        id:
+          type: string
+        read_id:
+          type: string
+        mode:
+          type: string
+          enum: [brief, essay, paper]
+        body_markdown:
+          type: string
+        produced_by:
+          type: string
+          enum: [claude-opus-4-7, claude-sonnet-4-6]
+        produced_at:
+          type: string
+          format: date-time
+    RecallCard:
+      type: object
+      properties:
+        id:
+          type: string
+        read_id:
+          type: string
+        prompt:
+          type: string
+        expected_answer_markdown:
+          type: string
+        scheduled_for:
+          type: string
+          format: date

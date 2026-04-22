@@ -1,0 +1,1337 @@
+{
+  "trace_id": "lumio_run_2026_04_24",
+  "recorded_at": "2026-04-24T03:00:00Z",
+  "total_duration_ms": 2558000,
+  "total_cost_usd": 17.5,
+  "specialist_count": 11,
+  "bake_mode": "opus_session_synthesis",
+  "bake_mode_note": "Synthesized in a single Dionysus Opus 4.7 session on Day 1 per docs/dionysus.decisions.md ADR-002. The trace stands in for a live 11-specialist Builder run. LumioReplay surfaces a visible cached-bake label per hackathon honest-claim rule.",
+  "steps": [
+    {
+      "step_index": 0,
+      "specialist_id": "lumio_strategist",
+      "role": "strategist",
+      "vendor_lane": "anthropic_direct",
+      "input_preview": "Draft the Lumio product brief and user personas. Lumio is a smart reading companion. Bounded demo, 10 specialists, tight scope.",
+      "output": {
+        "specialist_id": "lumio_strategist",
+        "pipeline_run_id": "lumio_run_2026_04_24",
+        "step_index": 0,
+        "status": "success",
+        "artifacts": [
+          {
+            "path": "cache/lumio_artifacts/lumio_strategist/product_brief.md",
+            "content": "# Lumio Product Brief\n\n**Author:** lumio_strategist (step 0)\n**Produced:** 2026-04-24T03:02:14Z\n**Status:** final, handoff to architect (step 1) and copywriter (step 5)\n\n## 1. The problem Lumio is fixing\n\nPeople who read seriously for work or curiosity are living through a quiet erosion. They save more and retain less. The average knowledge worker consumes roughly 3.2 hours of long-form content per week (articles, papers, newsletters, book chapters) and, by self-report, can actively recall less than 18 percent of it two weeks later. Existing \"save for later\" tools compound the problem, they are cemeteries for good intentions.\n\nLumio is a smart reading companion. It turns three existing habits (saving, highlighting, revisiting) into one gentle loop that actually makes what you read stick, without changing where you read or asking for flashcard discipline.\n\n## 2. One-line product definition\n\nLumio is an AI-powered reading companion that captures, summarizes, and quietly threads together everything you read, surfacing short spaced-recall prompts so the best ideas stay within reach.\n\n## 3. Strategic positioning\n\n- **Against Instapaper and Pocket:** save-for-later with a memory, not a burial ground.\n- **Against Readwise:** no highlights-as-spreadsheet energy, no configuration gauntlet, no price gap.\n- **Against Obsidian and Notion:** zero graph-building chore, the graph emerges from reading itself.\n- **Against ChatGPT conversation:** persistent, quiet, and tuned to your reading rhythm rather than one-shot Q and A.\n\n## 4. Jobs-to-be-done\n\n1. \"When I read something great, help me remember the part that mattered, not the whole article.\"\n2. \"When I think of a half-remembered idea, help me find where I read it, with two taps.\"\n3. \"When my week ends, help me feel my reading actually went somewhere, without guilt tripping me about what I skipped.\"\n\n## 5. Core features in scope for the demo bake\n\n- Save article from web, email forward, or PDF upload.\n- Auto-summary with preserved quotations, three modes (Brief, Essay, Paper).\n- Reading Atlas, concept graph built silently from highlights.\n- Spaced recall, 2 to 3 short prompts per morning, skippable without penalty.\n- Focus session, distraction-free reader overlay with pace tracking.\n- Weekly reading letter, Sunday 08:00 local.\n\n## 6. Out of scope for demo bake, documented for roadmap\n\n- Team features (shared Atlases, collaborative reading circles) ship as Studio plan, surfaced in signup only.\n- Mobile app, web-first for demo, mobile responsive only.\n- Real payment integration, pricing surfaces are display-only.\n- Actual LLM inference on form submit, signup is demo-path-only per NERIUM hackathon constraint.\n\n## 7. Success metrics Lumio is optimizing for\n\n- Weekly active reading minutes (not DAU, not MAU).\n- Seven-day recall retention rate on highlighted concepts.\n- Articles saved that get opened at least once.\n- Sunday letter open rate as soft signal for calm engagement.\n\n## 8. Tone and voice\n\nConfident, literate, quiet. The product talks to a reader, not a user. It assumes intelligence, it never patronizes, it refuses streak guilt and dark patterns on principle.\n\n## 9. Handoff\n\n- Architect (step 1): system_overview, component_tree, api_contract.\n- Copywriter (step 5): headline_variants, feature_descriptions, pricing_labels.\n- Asset designer (step 6): logo, hero illustration, favicon, in warm indigo plus amber palette.\n\n## 10. Bake-mode disclosure\n\nThis brief was synthesized in the Dionysus P3b single-session Opus bake as part of NERIUM Builder's cached demo run. It stands in for the live strategist specialist output defined in `app/builder/executor/pipeline_topology.lumio.json` step 0.\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_strategist/user_personas.md",
+            "content": "# Lumio User Personas\n\n**Author:** lumio_strategist (step 0)\n**Produced:** 2026-04-24T03:04:47Z\n\nThree concise personas, chosen to pressure-test feature priorities and copy register. Not a market research artifact, a design thinking one.\n\n## Persona 1, Maya, the returning deep reader\n\n- 32, strategy lead at a creative agency, Jakarta.\n- Reads 6 to 10 essays a week plus one long-form book a month. Used to love reading, fell off during pandemic, now rebuilding the habit.\n- Saves articles on four different apps, never opens any of them.\n- Wants: \"A way to stop collecting articles like a squirrel and start remembering them like a person.\"\n- Frictions Lumio must remove: multi-app fragmentation, summary fatigue, tag discipline.\n- Plan fit: Deep Reader.\n\n## Persona 2, Dami, the PhD candidate drowning in papers\n\n- 28, third-year PhD in cognitive science, Lagos.\n- Reads 20 plus papers a week, 80 percent skimmed, 15 percent deep-read, 5 percent re-read and cited.\n- Loses track of which paper said which thing. Writes literature reviews from memory plus panicked grep.\n- Wants: \"A second brain that knows which author said what, without me maintaining it.\"\n- Frictions Lumio must remove: the citation-discoverability gap, the \"I read this somewhere\" problem.\n- Plan fit: Deep Reader, convertible to Studio when advisor group grows.\n\n## Persona 3, Mikko, the product lead with ten minutes\n\n- 41, product lead at a Helsinki SaaS, two young kids at home.\n- Reads newsletters and Substacks on phone between meetings, no time for dedicated reading.\n- Doesn't want a streak, doesn't want a dashboard, wants the important thing to stay close when he needs it.\n- Wants: \"Something that quietly hands me back the idea I forgot, when the moment comes.\"\n- Frictions Lumio must remove: ritual overhead, tool loyalty obligation, notification noise.\n- Plan fit: Reader for first 6 weeks, converts to Deep Reader once recall starts paying off.\n\n## What these personas agree on\n\n- No streak guilt.\n- No tagging labor.\n- Highlight once, never organize.\n- Quiet is a feature, not an omission.\n\n## What they disagree on\n\n- Depth of the Atlas (Dami wants deep, Mikko wants surface).\n- Frequency of recall (Maya daily morning, Dami on demand, Mikko weekly).\n- Export format (Dami BibTeX, Maya plain text, Mikko ignores export entirely).\n\nThese disagreements drive settings defaults and progressive disclosure, not separate product tiers.\n"
+          }
+        ],
+        "tokens_consumed": {
+          "input": 6800,
+          "output": 7200
+        },
+        "cost_usd": 0.48,
+        "wallclock_ms": 172000,
+        "vendor_lane_used": "anthropic_direct"
+      },
+      "duration_ms": 172000,
+      "started_at": "2026-04-24T03:00:00Z",
+      "ended_at": "2026-04-24T03:02:52Z"
+    },
+    {
+      "step_index": 1,
+      "specialist_id": "lumio_architect",
+      "role": "architect",
+      "vendor_lane": "anthropic_direct",
+      "input_preview": "Consume the strategist brief and propose a scaled-down Lumio architecture. Next.js 15 plus FastAPI plus SQLite. No microservices.",
+      "output": {
+        "specialist_id": "lumio_architect",
+        "pipeline_run_id": "lumio_run_2026_04_24",
+        "step_index": 1,
+        "status": "success",
+        "artifacts": [
+          {
+            "path": "cache/lumio_artifacts/lumio_architect/system_overview.md",
+            "content": "# Lumio System Overview\n\n**Author:** lumio_architect (step 1)\n**Produced:** 2026-04-24T03:08:31Z\n**Inputs:** `builds/lumio/strategy/product_brief.md`\n\n## 1. Architecture at one glance\n\nLumio is a thin Next.js 15 App Router frontend against a FastAPI Python backend that speaks to SQLite for persistence and the Anthropic Claude API for language inference. No microservices, no queue, no cache layer for the demo bake. A later scale tier adds Redis for session state and Postgres for multi-tenant, both are out of scope here.\n\n```\n user browser\n     |\n     v\n Next.js 15 (Vercel-ready, self-hosted acceptable)\n     |  fetch  (JSON, cookies for session)\n     v\n FastAPI (uvicorn) on :8000\n     |------> SQLite (single-file, wal mode)\n     |------> Anthropic Messages API (Opus 4.7, Sonnet 4.6 for summarization)\n     '------> R2 or S3 (article body storage, opaque blobs)\n```\n\n## 2. Core services\n\n- `users` service, account lifecycle, sessions, token issuance.\n- `reads` service, saved article ingestion, normalization, storage.\n- `summary` service, wraps Anthropic Messages API with retry, zero-retention, mode toggles.\n- `atlas` service, concept extraction from highlights plus nearest-neighbor linking.\n- `recall` service, spaced-repetition scheduler, card selection per user.\n- `letter` service, weekly digest assembly plus email send.\n\nEach service is a FastAPI router. Shared deps live in `app/deps.py`.\n\n## 3. Data flow for the hero use case\n\nA user forwards a newsletter email.\n\n1. `/ingest/email` parses mime, extracts HTML, strips boilerplate.\n2. Normalized article persisted as `reads` row plus body blob.\n3. `summary` service fires on write-commit, queues at Sonnet 4.6 for Brief mode. Upgrades to Opus 4.7 only if user explicitly requests Essay mode.\n4. User opens the article in the Lumio reader, highlights inline.\n5. Each highlight emits a `highlight.created` domain event, `atlas` subscribes and updates the concept graph.\n6. Overnight job picks 2 to 3 highlights for tomorrow's recall card set per user tempo.\n7. Sunday 08:00 local, `letter` service assembles digest and hands to transactional email.\n\n## 4. Latency budgets\n\n- Save an article: p95 under 600 ms from tap to toast.\n- Render reader: p95 under 400 ms first contentful paint on mobile 4G.\n- Generate Brief summary: p95 under 8 s, streamed progressively.\n- Serve a recall card: p95 under 250 ms.\n\n## 5. Security posture for the demo\n\n- Zero data retention with Anthropic, per Section 6 product brief commitment.\n- All highlights stored encrypted at rest in SQLite field-level via libsodium.\n- Password hashing with argon2id, default params, no custom pepper.\n- Session cookie httpOnly, secure, strict sameSite, 30 day rolling renewal.\n\n## 6. What ships in this cached demo bake\n\n- Landing page (index.html).\n- Signup flow (signup.html) with client-side validation and a mock submit.\n- No backend actually provisioned, the demo bake intentionally stops at the deploy plan per Section 19 NarasiGhaisan Vercel-uncertain lock.\n\n## 7. What the live build would add next\n\n- Real backend provision on a small self-hosted VPS (Hetzner CX22, 2 vCPU 4 GB).\n- Caddy in front, Let's Encrypt automated.\n- Observability with OpenTelemetry plus a Loki log sink.\n\nThis system overview is deliberately conservative. Lumio is a demo, not a moonshot. The Builder scaled-down demo shows the shape, not the scale.\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_architect/component_tree.md",
+            "content": "# Lumio Component Tree\n\n**Author:** lumio_architect (step 1)\n**Produced:** 2026-04-24T03:09:22Z\n\nSingle-page tree, indexed so the UI builder and copywriter can reference components by ID.\n\n```\n<RootLayout>                                            id: root\n |--<Header>                                             id: header\n |   |--<BrandLogo />                                    id: logo\n |   |--<Nav />                                          id: nav (features, how, pricing, faq)\n |   '--<AuthActions />                                  id: auth-actions (Sign in, Start free)\n |\n |--<HeroSection>                                        id: hero\n |   |--<Pill>new feature tag</Pill>                     id: hero-pill\n |   |--<HeadlineDisplay />                              id: headline\n |   |--<SubheadCopy />                                  id: subhead\n |   |--<CallToActionRow>                                id: hero-cta\n |   |   |--<PrimaryCta>Start free</PrimaryCta>\n |   |   '--<SecondaryCta>See a 90 second tour</SecondaryCta>\n |   |--<HeroStatRow>                                    id: hero-stats\n |   |   |--<Metric value=\"84/mo\" label=\"articles saved\" />\n |   |   |--<Metric value=\"3.4x\" label=\"recall lift\" />\n |   |   '--<Metric value=\"5h/wk\" label=\"time saved\" />\n |   '--<HeroCardStack>                                  id: hero-card-stack\n |       |--<ReadingSessionCard />                       id: hero-session-card\n |       |--<RecallTodayCard />                          id: hero-recall-card\n |       '--<AtlasSuggestionCard />                      id: hero-atlas-card\n |\n |--<SocialProofStrip />                                 id: social-proof\n |\n |--<FeatureGrid>                                        id: features (2x2)\n |   |--<FeatureCard id=\"summary\" />\n |   |--<FeatureCard id=\"atlas\" />\n |   |--<FeatureCard id=\"recall\" />\n |   '--<FeatureCard id=\"focus\" />\n |\n |--<HowItWorks>                                         id: how (3 numbered steps)\n |\n |--<PricingGrid>                                        id: pricing\n |   |--<PricingCard tier=\"reader\" />\n |   |--<PricingCard tier=\"deep\" featured />\n |   '--<PricingCard tier=\"studio\" />\n |\n |--<Testimonials>                                       id: testimonials\n |   |--<Quote author=\"Ines Ariyanti\" />\n |   |--<Quote author=\"Dami Okonkwo\" />\n |   '--<Quote author=\"Mikko Hakkarainen\" />\n |\n |--<FaqAccordion>                                       id: faq (4 items)\n |\n |--<FinalCta />                                         id: final-cta\n '--<Footer />                                           id: footer\n\n<SignupLayout>                                           id: signup-root\n |--<Header variant=\"minimal\" />\n |--<SignupWizard>                                       id: signup-wizard\n |   |--<StepIndicator current=\"1\" total=\"3\" />\n |   |--<StepPane name=\"account\" />                      id: signup-step-1\n |   |--<StepPane name=\"reading_profile\" />              id: signup-step-2\n |   |--<StepPane name=\"plan_selection\" />               id: signup-step-3\n |   '--<StepPane name=\"done\" />                         id: signup-step-done\n '--<SignupAside>                                        id: signup-aside\n     |--<WeekCard />\n     |--<QuoteCard />\n     '--<CalmByDesignCard />\n```\n\n## Data contracts between components\n\n- `HeroCardStack` consumes `ReadingSession` objects from props, not fetches on its own.\n- `PricingCard` consumes a `PricingTier` shape defined in `api_contract.yaml`.\n- `SignupWizard` holds all form state locally, submits a synthetic payload per bake-mode scope.\n- `FaqAccordion` uses native `<details>` for progressive enhancement plus zero-JS fallback.\n\n## Handoff notes\n\n- UI builder (step 3) implements these IDs as TSX components in `builds/lumio/frontend/components/`.\n- Copywriter (step 5) targets IDs `hero-pill`, `headline`, `subhead`, `pricing-labels`, `faq-items`.\n- Asset designer (step 6) provides `logo`, `hero-illustration`, `favicon`, referenced by `BrandLogo` and `HeroCardStack`.\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_architect/api_contract.yaml",
+            "content": "openapi: 3.0.3\ninfo:\n  title: Lumio API\n  version: 0.1.0-demo\n  description: >\n    REST surface for the Lumio smart reading companion. This is the scaled-down\n    demo contract that matches the cached Builder bake. Not all endpoints are\n    implemented in the demo bake, signup and summary endpoints are stubs.\nservers:\n  - url: https://api.lumio.demo/v1\n    description: Demo target, not live\npaths:\n  /users:\n    post:\n      summary: Create a workspace account\n      operationId: createUser\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              $ref: '#/components/schemas/CreateUserRequest'\n      responses:\n        '201':\n          description: Workspace created, verification email sent\n          content:\n            application/json:\n              schema:\n                $ref: '#/components/schemas/User'\n        '422':\n          description: Validation failure\n  /reads:\n    post:\n      summary: Save an article from url or raw text\n      operationId: createRead\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              $ref: '#/components/schemas/CreateReadRequest'\n      responses:\n        '201':\n          description: Read created, summary pending\n          content:\n            application/json:\n              schema:\n                $ref: '#/components/schemas/Read'\n    get:\n      summary: List saved reads for current user\n      operationId: listReads\n      parameters:\n        - in: query\n          name: cursor\n          schema:\n            type: string\n        - in: query\n          name: limit\n          schema:\n            type: integer\n            default: 30\n            maximum: 100\n      responses:\n        '200':\n          description: Paginated list of reads\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  items:\n                    type: array\n                    items:\n                      $ref: '#/components/schemas/Read'\n                  next_cursor:\n                    type: string\n                    nullable: true\n  /reads/{read_id}/summary:\n    post:\n      summary: Request a summary in the specified mode\n      operationId: summarizeRead\n      parameters:\n        - in: path\n          name: read_id\n          required: true\n          schema:\n            type: string\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [mode]\n              properties:\n                mode:\n                  type: string\n                  enum: [brief, essay, paper]\n      responses:\n        '200':\n          description: Summary generated\n          content:\n            application/json:\n              schema:\n                $ref: '#/components/schemas/Summary'\n  /recall/today:\n    get:\n      summary: Get up to three recall cards scheduled for today\n      operationId: getTodayRecall\n      responses:\n        '200':\n          description: Ordered recall card list\n          content:\n            application/json:\n              schema:\n                type: array\n                items:\n                  $ref: '#/components/schemas/RecallCard'\ncomponents:\n  schemas:\n    CreateUserRequest:\n      type: object\n      required: [name, email, password, plan]\n      properties:\n        name:\n          type: string\n          minLength: 2\n        email:\n          type: string\n          format: email\n        password:\n          type: string\n          minLength: 10\n        plan:\n          type: string\n          enum: [reader, deep, studio]\n        reading_profile:\n          $ref: '#/components/schemas/ReadingProfile'\n    User:\n      type: object\n      properties:\n        id:\n          type: string\n        name:\n          type: string\n        email:\n          type: string\n        plan:\n          type: string\n          enum: [reader, deep, studio]\n        created_at:\n          type: string\n          format: date-time\n    ReadingProfile:\n      type: object\n      properties:\n        primary_source:\n          type: string\n          enum: [articles, papers, books]\n        weekly_hours:\n          type: integer\n        main_reason:\n          type: string\n          enum: [remember, connect, focus, team]\n    CreateReadRequest:\n      type: object\n      properties:\n        url:\n          type: string\n          format: uri\n        raw_text:\n          type: string\n      oneOf:\n        - required: [url]\n        - required: [raw_text]\n    Read:\n      type: object\n      properties:\n        id:\n          type: string\n        title:\n          type: string\n        source:\n          type: string\n        word_count:\n          type: integer\n        saved_at:\n          type: string\n          format: date-time\n        has_summary:\n          type: boolean\n    Summary:\n      type: object\n      properties:\n        id:\n          type: string\n        read_id:\n          type: string\n        mode:\n          type: string\n          enum: [brief, essay, paper]\n        body_markdown:\n          type: string\n        produced_by:\n          type: string\n          enum: [claude-opus-4-7, claude-sonnet-4-6]\n        produced_at:\n          type: string\n          format: date-time\n    RecallCard:\n      type: object\n      properties:\n        id:\n          type: string\n        read_id:\n          type: string\n        prompt:\n          type: string\n        expected_answer_markdown:\n          type: string\n        scheduled_for:\n          type: string\n          format: date\n"
+          }
+        ],
+        "tokens_consumed": {
+          "input": 9200,
+          "output": 11400
+        },
+        "cost_usd": 0.79,
+        "wallclock_ms": 228000,
+        "vendor_lane_used": "anthropic_direct"
+      },
+      "duration_ms": 228000,
+      "started_at": "2026-04-24T03:02:52Z",
+      "ended_at": "2026-04-24T03:06:40Z"
+    },
+    {
+      "step_index": 2,
+      "specialist_id": "lumio_db_schema",
+      "role": "db_schema_builder",
+      "vendor_lane": "anthropic_direct",
+      "input_preview": "Author the SQLite schema from the api_contract.yaml. WAL mode, foreign keys on, indexes on (user_id, created_at).",
+      "output": {
+        "specialist_id": "lumio_db_schema",
+        "pipeline_run_id": "lumio_run_2026_04_24",
+        "step_index": 2,
+        "status": "success",
+        "artifacts": [
+          {
+            "path": "cache/lumio_artifacts/lumio_db_schema/schema.sql",
+            "content": "-- Lumio SQLite schema, demo bake v0.1.0\n-- Author: lumio_db_schema (step 2)\n-- Produced: 2026-04-24T03:12:40Z\n-- Engine: sqlite3 with WAL mode\n\nPRAGMA journal_mode = WAL;\nPRAGMA foreign_keys = ON;\n\nCREATE TABLE users (\n    id              TEXT PRIMARY KEY,\n    email           TEXT NOT NULL UNIQUE,\n    password_hash   TEXT NOT NULL,\n    name            TEXT NOT NULL,\n    plan            TEXT NOT NULL CHECK (plan IN ('reader','deep','studio')),\n    reading_profile TEXT,          -- JSON blob, ReadingProfile shape\n    created_at      TEXT NOT NULL DEFAULT (datetime('now')),\n    verified_at     TEXT,\n    deleted_at      TEXT\n);\n\nCREATE INDEX idx_users_plan ON users(plan);\n\nCREATE TABLE reads (\n    id           TEXT PRIMARY KEY,\n    user_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    title        TEXT NOT NULL,\n    source       TEXT NOT NULL,\n    url          TEXT,\n    word_count   INTEGER NOT NULL DEFAULT 0,\n    body_blob_id TEXT,\n    saved_at     TEXT NOT NULL DEFAULT (datetime('now'))\n);\n\nCREATE INDEX idx_reads_user_saved ON reads(user_id, saved_at DESC);\n\nCREATE TABLE summaries (\n    id           TEXT PRIMARY KEY,\n    read_id      TEXT NOT NULL REFERENCES reads(id) ON DELETE CASCADE,\n    mode         TEXT NOT NULL CHECK (mode IN ('brief','essay','paper')),\n    body         TEXT NOT NULL,\n    produced_by  TEXT NOT NULL,\n    produced_at  TEXT NOT NULL DEFAULT (datetime('now'))\n);\n\nCREATE UNIQUE INDEX uniq_summary_per_mode ON summaries(read_id, mode);\n\nCREATE TABLE highlights (\n    id             TEXT PRIMARY KEY,\n    read_id        TEXT NOT NULL REFERENCES reads(id) ON DELETE CASCADE,\n    user_id        TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    quote          TEXT NOT NULL,\n    offset_start   INTEGER NOT NULL,\n    offset_end     INTEGER NOT NULL,\n    created_at     TEXT NOT NULL DEFAULT (datetime('now'))\n);\n\nCREATE INDEX idx_highlights_user ON highlights(user_id, created_at DESC);\n\nCREATE TABLE concepts (\n    id          TEXT PRIMARY KEY,\n    user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    label       TEXT NOT NULL,\n    embedding   BLOB NOT NULL,\n    created_at  TEXT NOT NULL DEFAULT (datetime('now'))\n);\n\nCREATE INDEX idx_concepts_user ON concepts(user_id);\n\nCREATE TABLE concept_links (\n    highlight_id TEXT NOT NULL REFERENCES highlights(id) ON DELETE CASCADE,\n    concept_id   TEXT NOT NULL REFERENCES concepts(id) ON DELETE CASCADE,\n    weight       REAL NOT NULL DEFAULT 1.0,\n    PRIMARY KEY (highlight_id, concept_id)\n);\n\nCREATE TABLE recall_cards (\n    id             TEXT PRIMARY KEY,\n    user_id        TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    highlight_id   TEXT NOT NULL REFERENCES highlights(id) ON DELETE CASCADE,\n    prompt         TEXT NOT NULL,\n    expected_ans   TEXT NOT NULL,\n    interval_days  INTEGER NOT NULL DEFAULT 1,\n    next_due_at    TEXT NOT NULL,\n    last_rated     INTEGER,        -- 0 skip, 1 again, 2 good, 3 easy\n    created_at     TEXT NOT NULL DEFAULT (datetime('now'))\n);\n\nCREATE INDEX idx_recall_due ON recall_cards(user_id, next_due_at);\n\nCREATE TABLE reading_sessions (\n    id            TEXT PRIMARY KEY,\n    user_id       TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    read_id       TEXT REFERENCES reads(id) ON DELETE SET NULL,\n    started_at    TEXT NOT NULL,\n    ended_at      TEXT,\n    wpm           REAL,\n    focus_mode    INTEGER NOT NULL DEFAULT 0\n);\n\nCREATE INDEX idx_sessions_user ON reading_sessions(user_id, started_at DESC);\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_db_schema/migrations/0001_init.sql",
+            "content": "-- 0001_init.sql\n-- Author: lumio_db_schema (step 2)\n-- Produced: 2026-04-24T03:13:05Z\n-- Applies the full initial schema in a single migration.\n\nBEGIN;\n\n-- Run schema.sql wholesale. The real migration runner inlines the content so\n-- this migration is idempotent under the runner's checksum check.\n-- See schema.sql as the source of truth, this file exists for the migration\n-- history table row plus forward compatibility.\n\nINSERT INTO schema_migrations (version, applied_at)\nVALUES ('0001_init', datetime('now'));\n\nCOMMIT;\n"
+          }
+        ],
+        "tokens_consumed": {
+          "input": 4200,
+          "output": 4800
+        },
+        "cost_usd": 0.08,
+        "wallclock_ms": 112000,
+        "vendor_lane_used": "anthropic_direct"
+      },
+      "duration_ms": 112000,
+      "started_at": "2026-04-24T03:06:40Z",
+      "ended_at": "2026-04-24T03:08:32Z"
+    },
+    {
+      "step_index": 3,
+      "specialist_id": "lumio_ui_builder",
+      "role": "ui_builder",
+      "vendor_lane": "anthropic_direct",
+      "input_preview": "Implement the Lumio landing page components following component_tree.md. Next.js App Router, Tailwind v4 OKLCH tokens.",
+      "output": {
+        "specialist_id": "lumio_ui_builder",
+        "pipeline_run_id": "lumio_run_2026_04_24",
+        "step_index": 3,
+        "status": "success",
+        "artifacts": [
+          {
+            "path": "cache/lumio_artifacts/lumio_ui_builder/page.tsx",
+            "content": "import { Hero } from '@/components/hero';\nimport { FeatureGrid } from '@/components/feature_grid';\nimport { Pricing } from '@/components/pricing';\nimport { HowItWorks } from '@/components/how_it_works';\nimport { Faq } from '@/components/faq';\nimport { FinalCta } from '@/components/final_cta';\nimport { SocialProof } from '@/components/social_proof';\nimport { Testimonials } from '@/components/testimonials';\n\nexport const metadata = {\n  title: 'Lumio, smart reading companion for busy minds',\n  description:\n    'Lumio turns everything you read into lasting understanding. Capture highlights, auto-summarize, spaced recall built in.',\n};\n\nexport default function HomePage() {\n  return (\n    <main>\n      <Hero />\n      <SocialProof />\n      <FeatureGrid />\n      <HowItWorks />\n      <Pricing />\n      <Testimonials />\n      <Faq />\n      <FinalCta />\n    </main>\n  );\n}\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_ui_builder/layout.tsx",
+            "content": "import type { Metadata } from 'next';\nimport { Fraunces, Inter } from 'next/font/google';\nimport { Header } from '@/components/header';\nimport { Footer } from '@/components/footer';\nimport './globals.css';\n\nconst display = Fraunces({ subsets: ['latin'], display: 'swap', variable: '--font-display' });\nconst body = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-body' });\n\nexport const metadata: Metadata = {\n  metadataBase: new URL('https://lumio.app'),\n  title: { default: 'Lumio', template: '%s, Lumio' },\n  description: 'Smart reading companion for busy minds.',\n};\n\nexport default function RootLayout({ children }: { children: React.ReactNode }) {\n  return (\n    <html lang=\"en\" className={`${display.variable} ${body.variable}`}>\n      <body className=\"min-h-screen bg-paper text-ink antialiased\">\n        <Header />\n        {children}\n        <Footer />\n      </body>\n    </html>\n  );\n}\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_ui_builder/hero.tsx",
+            "content": "import Link from 'next/link';\nimport { Metric } from '@/components/metric';\n\nexport function Hero() {\n  return (\n    <section className=\"relative overflow-hidden\">\n      <div className=\"absolute inset-0 dot-grid gradient-mask opacity-60\" aria-hidden=\"true\" />\n      <div className=\"relative max-w-6xl mx-auto px-6 pt-16 pb-24 grid md:grid-cols-12 gap-10 items-center\">\n        <div className=\"md:col-span-7\">\n          <div className=\"inline-flex items-center gap-2 pill px-3 py-1.5 rounded-full text-xs ink-soft mb-6\">\n            <span className=\"w-1.5 h-1.5 rounded-full bg-accent\" />\n            New, Reading Atlas crosses sources automatically\n          </div>\n          <h1 className=\"font-display text-5xl md:text-6xl leading-[1.05] tracking-tight font-semibold\">\n            Read smarter.<br />\n            <span className=\"glyph-underline\">Remember longer.</span>\n          </h1>\n          <p className=\"mt-6 text-lg md:text-xl ink-soft max-w-xl\">\n            Lumio is the smart reading companion that captures highlights, auto-summarizes long articles, and quietly ties it all together with spaced recall, so the best parts of what you read actually stick.\n          </p>\n          <div className=\"mt-8 flex flex-wrap items-center gap-3\">\n            <Link href=\"/signup\" className=\"cta-btn inline-flex items-center gap-2 px-5 py-3 rounded-xl font-medium\">\n              Start free, no card\n            </Link>\n            <Link href=\"#how\" className=\"inline-flex items-center gap-2 px-5 py-3 rounded-xl ghost-btn ink-soft text-sm font-medium border border-line\">\n              See a 90 second tour\n            </Link>\n          </div>\n          <dl className=\"mt-10 grid grid-cols-3 gap-6 max-w-lg\">\n            <Metric value=\"84\" suffix=\"/mo\" label=\"Avg articles saved\" />\n            <Metric value=\"3.4x\" label=\"Recall lift\" />\n            <Metric value=\"5h\" suffix=\"/wk\" label=\"Time saved\" />\n          </dl>\n        </div>\n        <div className=\"md:col-span-5\">\n          {/* HeroCardStack is declared in component_tree.md id hero-card-stack. */}\n          {/* Copy and visuals match cache/lumio_final/index.html hero stack. */}\n        </div>\n      </div>\n    </section>\n  );\n}\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_ui_builder/feature_grid.tsx",
+            "content": "import { FeatureCard } from '@/components/feature_card';\n\nconst features = [\n  {\n    id: 'summary',\n    icon: 'bookmark',\n    title: 'Auto summaries that respect the text.',\n    body:\n      'Paste a link or forward an email, Lumio returns a three-paragraph summary keyed to the author’s own phrasing, with the passages worth re-reading kept intact.',\n    bullets: [\n      'Long reads, PDFs, newsletters, Substacks',\n      'Preserves quotations, no paraphrase drift',\n      'Tone aware, Essay vs Paper vs Brief modes',\n    ],\n  },\n  {\n    id: 'atlas',\n    icon: 'graph',\n    title: 'Reading Atlas, ideas that know each other.',\n    body:\n      'Every highlight joins a quiet graph of concepts. When a new article touches an old one, Lumio surfaces the link in context, no tagging chore required.',\n    bullets: [\n      'Cross-source concept linking',\n      'Side-by-side quote comparison',\n      'Export to Obsidian, Notion, or plain Markdown',\n    ],\n  },\n  {\n    id: 'recall',\n    icon: 'calendar',\n    title: 'Spaced recall, without the flashcard guilt.',\n    body:\n      'Lumio picks two or three short prompts a day from what you actually underlined. No cards to make, no backlog to tame, just five quiet minutes that keep ideas alive.',\n    bullets: [\n      'Adaptive interval, Ebbinghaus plus your pace',\n      'Morning commute mode, audio only',\n      'Skip without penalty, Lumio learns your tempo',\n    ],\n  },\n  {\n    id: 'focus',\n    icon: 'stack',\n    title: 'Focus sessions that don’t moralize.',\n    body:\n      'Start a session, Lumio hides the noise, tracks your reading pace, and hands back a gentle recap. Stats if you want them, silence if you don’t.',\n    bullets: [\n      'Per-source pace, not just words per minute',\n      'Distraction-free web reader overlay',\n      'Weekly reading letter, sent to your inbox',\n    ],\n  },\n];\n\nexport function FeatureGrid() {\n  return (\n    <section id=\"features\" className=\"max-w-6xl mx-auto px-6 py-24\">\n      <div className=\"max-w-2xl\">\n        <p className=\"text-xs uppercase tracking-wider text-accent font-semibold\">Features</p>\n        <h2 className=\"font-display text-4xl md:text-5xl font-semibold mt-3 tracking-tight\">\n          Built for the way you actually read.\n        </h2>\n        <p className=\"mt-4 ink-soft text-lg\">\n          No more highlights that die in a scrapbook. Lumio quietly turns every reading session into a growing atlas of ideas you can lean on.\n        </p>\n      </div>\n      <div className=\"mt-14 grid md:grid-cols-2 gap-6\">\n        {features.map((feature) => (\n          <FeatureCard key={feature.id} {...feature} />\n        ))}\n      </div>\n    </section>\n  );\n}\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_ui_builder/pricing.tsx",
+            "content": "import Link from 'next/link';\nimport { PricingCard } from '@/components/pricing_card';\n\nconst tiers = [\n  {\n    id: 'reader',\n    name: 'Reader',\n    sub: 'For the curious habit.',\n    price: '$0',\n    period: '/month',\n    ctaLabel: 'Start free',\n    ctaHref: '/signup?plan=reader',\n    bullets: [\n      '25 saved articles per month',\n      'Auto summary, Brief mode',\n      'Daily recall, 2 cards',\n      'Export to Markdown',\n    ],\n  },\n  {\n    id: 'deep',\n    name: 'Deep Reader',\n    sub: 'For the regular reader who wants it to stick.',\n    price: '$8',\n    period: '/month',\n    featured: true,\n    ctaLabel: 'Start 14 day trial',\n    ctaHref: '/signup?plan=deep',\n    bullets: [\n      'Unlimited saves and summaries',\n      'Reading Atlas, cross-source links',\n      'Spaced recall, all modes',\n      'Weekly reading letter',\n      'Obsidian and Notion sync',\n    ],\n  },\n  {\n    id: 'studio',\n    name: 'Studio',\n    sub: 'For teams that read together.',\n    price: '$24',\n    period: '/seat / month',\n    ctaLabel: 'Start a Studio',\n    ctaHref: '/signup?plan=studio',\n    bullets: [\n      'Everything in Deep Reader',\n      'Shared Atlases and reading circles',\n      'SSO, audit log, admin roles',\n      'Weekly digest for the whole team',\n    ],\n  },\n];\n\nexport function Pricing() {\n  return (\n    <section id=\"pricing\" className=\"max-w-6xl mx-auto px-6 py-24\">\n      <div className=\"max-w-2xl\">\n        <p className=\"text-xs uppercase tracking-wider text-accent font-semibold\">Pricing</p>\n        <h2 className=\"font-display text-4xl md:text-5xl font-semibold mt-3 tracking-tight\">\n          Start free. Upgrade when it earns its keep.\n        </h2>\n        <p className=\"mt-4 ink-soft text-lg\">\n          No seat minimums, no onboarding call, cancel from the settings page in a single click.\n        </p>\n      </div>\n      <div className=\"mt-12 grid md:grid-cols-3 gap-6\">\n        {tiers.map((tier) => (\n          <PricingCard key={tier.id} {...tier} />\n        ))}\n      </div>\n    </section>\n  );\n}\n"
+          }
+        ],
+        "tokens_consumed": {
+          "input": 14200,
+          "output": 22000
+        },
+        "cost_usd": 1.86,
+        "wallclock_ms": 348000,
+        "vendor_lane_used": "anthropic_direct"
+      },
+      "duration_ms": 348000,
+      "started_at": "2026-04-24T03:08:32Z",
+      "ended_at": "2026-04-24T03:14:20Z"
+    },
+    {
+      "step_index": 4,
+      "specialist_id": "lumio_api_builder",
+      "role": "api_builder",
+      "vendor_lane": "anthropic_direct",
+      "input_preview": "Implement the FastAPI entrypoint plus users and reads routers per api_contract.yaml. Stub bodies, demo bake scope.",
+      "output": {
+        "specialist_id": "lumio_api_builder",
+        "pipeline_run_id": "lumio_run_2026_04_24",
+        "step_index": 4,
+        "status": "success",
+        "artifacts": [
+          {
+            "path": "cache/lumio_artifacts/lumio_api_builder/main.py",
+            "content": "\"\"\"\nLumio FastAPI entrypoint.\n\nAuthor: lumio_api_builder (step 4)\nProduced: 2026-04-24T03:17:02Z\n\nScope: demo bake. This module wires routers and health endpoints. It does not\nimplement auth middleware or real Anthropic SDK calls, those are planned for\nthe post-hackathon live bake.\n\"\"\"\nfrom __future__ import annotations\n\nfrom fastapi import FastAPI\nfrom fastapi.middleware.cors import CORSMiddleware\n\nfrom .routes import read_sessions, users\n\napp = FastAPI(\n    title=\"Lumio API\",\n    version=\"0.1.0-demo\",\n    description=\"Smart reading companion API, bounded demo build.\",\n)\n\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"http://localhost:3000\", \"https://lumio.demo\"],\n    allow_credentials=True,\n    allow_methods=[\"GET\", \"POST\", \"PATCH\", \"DELETE\"],\n    allow_headers=[\"Authorization\", \"Content-Type\"],\n)\n\napp.include_router(users.router, prefix=\"/v1/users\", tags=[\"users\"])\napp.include_router(read_sessions.router, prefix=\"/v1/reads\", tags=[\"reads\"])\n\n\n@app.get(\"/health\")\nasync def health() -> dict[str, str]:\n    return {\"status\": \"ok\", \"build\": \"lumio-demo-0.1.0\"}\n\n\n@app.get(\"/ready\")\nasync def ready() -> dict[str, str]:\n    # Demo bake does not actually ping the database. Live build would exercise\n    # SELECT 1 against SQLite and a zero-byte Anthropic health ping.\n    return {\"status\": \"ready\"}\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_api_builder/routes/users.py",
+            "content": "\"\"\"\nPOST /v1/users, workspace creation.\nStub implementation for the Dionysus demo bake.\n\"\"\"\nfrom __future__ import annotations\n\nfrom datetime import datetime, timezone\nfrom typing import Literal\nfrom uuid import uuid4\n\nfrom fastapi import APIRouter, HTTPException, status\nfrom pydantic import BaseModel, EmailStr, Field\n\nrouter = APIRouter()\n\n\nclass ReadingProfile(BaseModel):\n    primary_source: Literal[\"articles\", \"papers\", \"books\"] = \"articles\"\n    weekly_hours: int = Field(ge=0, le=60, default=4)\n    main_reason: Literal[\"remember\", \"connect\", \"focus\", \"team\"] = \"remember\"\n\n\nclass CreateUserRequest(BaseModel):\n    name: str = Field(min_length=2, max_length=120)\n    email: EmailStr\n    password: str = Field(min_length=10, max_length=128)\n    plan: Literal[\"reader\", \"deep\", \"studio\"] = \"reader\"\n    reading_profile: ReadingProfile | None = None\n\n\nclass User(BaseModel):\n    id: str\n    name: str\n    email: EmailStr\n    plan: Literal[\"reader\", \"deep\", \"studio\"]\n    created_at: datetime\n\n\n@router.post(\"\", status_code=status.HTTP_201_CREATED, response_model=User)\nasync def create_user(body: CreateUserRequest) -> User:\n    if not any(ch.isdigit() for ch in body.password):\n        raise HTTPException(\n            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,\n            detail=\"Password must contain at least one digit.\",\n        )\n    # Demo bake returns a synthesized user with a deterministic-looking id.\n    # Live build would hash the password and persist via SQLAlchemy.\n    return User(\n        id=f\"usr_{uuid4().hex[:12]}\",\n        name=body.name,\n        email=body.email,\n        plan=body.plan,\n        created_at=datetime.now(timezone.utc),\n    )\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_api_builder/routes/read_sessions.py",
+            "content": "\"\"\"\nGET /v1/reads and POST /v1/reads, saved articles and session lifecycle.\nStub implementation for the Dionysus demo bake.\n\"\"\"\nfrom __future__ import annotations\n\nfrom datetime import datetime, timezone\nfrom typing import Annotated\nfrom uuid import uuid4\n\nfrom fastapi import APIRouter, Query\nfrom pydantic import BaseModel, HttpUrl\n\nrouter = APIRouter()\n\n\nclass CreateReadRequest(BaseModel):\n    url: HttpUrl | None = None\n    raw_text: str | None = None\n\n\nclass Read(BaseModel):\n    id: str\n    title: str\n    source: str\n    word_count: int\n    saved_at: datetime\n    has_summary: bool = False\n\n\nclass ReadsList(BaseModel):\n    items: list[Read]\n    next_cursor: str | None = None\n\n\n@router.post(\"\", response_model=Read)\nasync def create_read(body: CreateReadRequest) -> Read:\n    title = \"The Quiet Return of Long Attention\"\n    source = \"Aeon\" if body.url else \"Pasted text\"\n    word_count = 4300 if body.url else len((body.raw_text or \"\").split())\n    return Read(\n        id=f\"rd_{uuid4().hex[:12]}\",\n        title=title,\n        source=source,\n        word_count=word_count,\n        saved_at=datetime.now(timezone.utc),\n    )\n\n\n@router.get(\"\", response_model=ReadsList)\nasync def list_reads(\n    cursor: Annotated[str | None, Query()] = None,\n    limit: Annotated[int, Query(ge=1, le=100)] = 30,\n) -> ReadsList:\n    # Demo fixture, three synthesized reads. Live build queries the reads table\n    # with keyset pagination on saved_at desc.\n    items = [\n        Read(\n            id=\"rd_demo_001\",\n            title=\"The Quiet Return of Long Attention\",\n            source=\"Aeon\",\n            word_count=4300,\n            saved_at=datetime.now(timezone.utc),\n            has_summary=True,\n        ),\n        Read(\n            id=\"rd_demo_002\",\n            title=\"On the Dignity of Slow Reading\",\n            source=\"Noema\",\n            word_count=2750,\n            saved_at=datetime.now(timezone.utc),\n            has_summary=True,\n        ),\n        Read(\n            id=\"rd_demo_003\",\n            title=\"Memory Palaces for the Internet Era\",\n            source=\"The Atlantic\",\n            word_count=3520,\n            saved_at=datetime.now(timezone.utc),\n            has_summary=False,\n        ),\n    ]\n    return ReadsList(items=items[:limit], next_cursor=None)\n"
+          }
+        ],
+        "tokens_consumed": {
+          "input": 8600,
+          "output": 10400
+        },
+        "cost_usd": 0.19,
+        "wallclock_ms": 286000,
+        "vendor_lane_used": "anthropic_direct"
+      },
+      "duration_ms": 286000,
+      "started_at": "2026-04-24T03:14:20Z",
+      "ended_at": "2026-04-24T03:19:06Z"
+    },
+    {
+      "step_index": 5,
+      "specialist_id": "lumio_copywriter",
+      "role": "copywriter",
+      "vendor_lane": "anthropic_direct",
+      "input_preview": "Write headline variants, feature descriptions, pricing labels for Lumio. No em dash, no emoji, literate tone, three-beat cadence.",
+      "output": {
+        "specialist_id": "lumio_copywriter",
+        "pipeline_run_id": "lumio_run_2026_04_24",
+        "step_index": 5,
+        "status": "success",
+        "artifacts": [
+          {
+            "path": "cache/lumio_artifacts/lumio_copywriter/headline_variants.md",
+            "content": "# Lumio Headline Variants\n\n**Author:** lumio_copywriter (step 5)\n**Produced:** 2026-04-24T03:14:10Z\n**Chosen variant:** V2, used on landing hero and final CTA.\n\n## V1, functional\n\n> Capture, summarize, and remember everything you read.\n\nEvaluation: accurate, uninspired. The word \"capture\" evokes kidnapping, not reading.\n\n## V2, chosen\n\n> **Read smarter. Remember longer.**\n\nEvaluation: keeps the promise on two beats, the second beat underlined in accent amber. Short enough to carry the page, concrete enough to earn trust.\n\n## V3, poetic\n\n> Your reading, alive again.\n\nEvaluation: strong but ambiguous for cold traffic, parks on \"alive\" which raises the question it should answer.\n\n## V4, direct\n\n> The only reading tool that actually remembers for you.\n\nEvaluation: overpromises, the competitor grid is crowded, \"only\" will not survive fact-check.\n\n## V5, playful\n\n> Like a librarian in your pocket, but quieter.\n\nEvaluation: memorable, a bit cute for Deep Reader segment. Reserve for social snippets.\n\n## Subhead chosen\n\n> Lumio is the smart reading companion that captures highlights, auto-summarizes long articles, and quietly ties it all together with spaced recall, so the best parts of what you read actually stick.\n\nEvaluation: three clauses, three features, one promise. Rhythm holds at 47 words. Satisfies the \"one sentence tells the whole product\" Heuristic H-3 from the copywriter playbook.\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_copywriter/feature_descriptions.md",
+            "content": "# Lumio Feature Descriptions\n\n**Author:** lumio_copywriter (step 5)\n**Produced:** 2026-04-24T03:15:42Z\n\nAll four feature cards use the same three-move pattern, title beat, body beat, three support bullets. Tone is literate-but-calm, no product-marketing gloss.\n\n## Feature 1, Auto summaries\n\n**Title:** Auto summaries that respect the text.\n\n**Body:** Paste a link or forward an email, Lumio returns a three-paragraph summary keyed to the author's own phrasing, with the passages worth re-reading kept intact.\n\n**Bullets:**\n- Long reads, PDFs, newsletters, Substacks\n- Preserves quotations, no paraphrase drift\n- Tone aware, Essay vs Paper vs Brief modes\n\n## Feature 2, Reading Atlas\n\n**Title:** Reading Atlas, ideas that know each other.\n\n**Body:** Every highlight joins a quiet graph of concepts. When a new article touches an old one, Lumio surfaces the link in context, no tagging chore required.\n\n**Bullets:**\n- Cross-source concept linking\n- Side-by-side quote comparison\n- Export to Obsidian, Notion, or plain Markdown\n\n## Feature 3, Spaced recall\n\n**Title:** Spaced recall, without the flashcard guilt.\n\n**Body:** Lumio picks two or three short prompts a day from what you actually underlined. No cards to make, no backlog to tame, just five quiet minutes that keep ideas alive.\n\n**Bullets:**\n- Adaptive interval, Ebbinghaus plus your pace\n- Morning commute mode, audio only\n- Skip without penalty, Lumio learns your tempo\n\n## Feature 4, Focus sessions\n\n**Title:** Focus sessions that don't moralize.\n\n**Body:** Start a session, Lumio hides the noise, tracks your reading pace, and hands back a gentle recap. Stats if you want them, silence if you don't.\n\n**Bullets:**\n- Per-source pace, not just words per minute\n- Distraction-free web reader overlay\n- Weekly reading letter, sent to your inbox\n\n## Voice rules honored across all four\n\n- No em dash (project-wide rule).\n- No exclamation mark.\n- No \"powered by AI\" phrasing on any surface.\n- Every feature promise is a verb the user can do tomorrow.\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_copywriter/pricing_labels.md",
+            "content": "# Lumio Pricing Labels\n\n**Author:** lumio_copywriter (step 5)\n**Produced:** 2026-04-24T03:16:21Z\n\nThree tiers, three short sublines. The pricing page title earns the click, the sublines prevent tier shopping.\n\n## Tier labels\n\n| Tier | Name | Subline | Price |\n|---|---|---|---|\n| Free | Reader | For the curious habit. | $0 / month |\n| Paid | Deep Reader | For the regular reader who wants it to stick. | $8 / month |\n| Team | Studio | For teams that read together. | $24 / seat / month |\n\n## Section title\n\n**H2:** Start free. Upgrade when it earns its keep.\n\n**Subhead:** No seat minimums, no onboarding call, cancel from the settings page in a single click.\n\n## CTA labels\n\n- Reader tier: \"Start free\"\n- Deep Reader tier: \"Start 14 day trial\"\n- Studio tier: \"Start a Studio\"\n\n## Reasoning\n\n- \"Start free\" avoids \"sign up\", which feels heavier.\n- \"Start 14 day trial\" is the only surface where we show a number, it belongs on the paid path.\n- \"Start a Studio\" is the only surface where we use an indefinite article, because Studio is a workspace, not an account.\n"
+          }
+        ],
+        "tokens_consumed": {
+          "input": 3800,
+          "output": 4600
+        },
+        "cost_usd": 0.08,
+        "wallclock_ms": 142000,
+        "vendor_lane_used": "anthropic_direct"
+      },
+      "duration_ms": 142000,
+      "started_at": "2026-04-24T03:19:06Z",
+      "ended_at": "2026-04-24T03:21:28Z"
+    },
+    {
+      "step_index": 6,
+      "specialist_id": "lumio_asset_designer",
+      "role": "asset_designer",
+      "vendor_lane": "anthropic_direct",
+      "input_preview": "Produce a wordmark logo, hero illustration, and favicon for Lumio. Warm indigo plus amber palette. Book plus concept graph motif.",
+      "output": {
+        "specialist_id": "lumio_asset_designer",
+        "pipeline_run_id": "lumio_run_2026_04_24",
+        "step_index": 6,
+        "status": "success",
+        "artifacts": [
+          {
+            "path": "cache/lumio_artifacts/lumio_asset_designer/logo.svg",
+            "content": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 40\" role=\"img\" aria-label=\"Lumio\">\n  <defs>\n    <linearGradient id=\"ink\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\">\n      <stop offset=\"0\" stop-color=\"oklch(0.22 0.03 265)\"/>\n      <stop offset=\"1\" stop-color=\"oklch(0.28 0.04 280)\"/>\n    </linearGradient>\n  </defs>\n  <g transform=\"translate(4 4)\">\n    <path d=\"M2 0h14a6 6 0 0 1 6 6v22H8a6 6 0 0 1-6-6V0Z\" fill=\"url(#ink)\"/>\n    <rect x=\"6\" y=\"5\" width=\"12\" height=\"12\" fill=\"oklch(0.72 0.17 55)\"/>\n    <circle cx=\"19\" cy=\"21\" r=\"4.2\" fill=\"oklch(0.46 0.18 280)\"/>\n  </g>\n  <text x=\"36\" y=\"26\" font-family=\"Fraunces, Georgia, serif\" font-size=\"20\" font-weight=\"700\" fill=\"oklch(0.22 0.03 265)\" letter-spacing=\"0.5\">Lumio</text>\n</svg>\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_asset_designer/hero_illustration.svg",
+            "content": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 420 320\" role=\"img\" aria-label=\"Open book with highlighted passages connecting into a small concept graph\">\n  <defs>\n    <linearGradient id=\"paper\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\">\n      <stop offset=\"0\" stop-color=\"oklch(0.99 0.008 90)\"/>\n      <stop offset=\"1\" stop-color=\"oklch(0.96 0.022 78)\"/>\n    </linearGradient>\n    <radialGradient id=\"glow\" cx=\"0.5\" cy=\"0.5\" r=\"0.6\">\n      <stop offset=\"0\" stop-color=\"oklch(0.72 0.17 55 / 0.25)\"/>\n      <stop offset=\"1\" stop-color=\"oklch(0.72 0.17 55 / 0)\"/>\n    </radialGradient>\n  </defs>\n  <rect width=\"420\" height=\"320\" fill=\"url(#paper)\" rx=\"18\"/>\n  <ellipse cx=\"210\" cy=\"260\" rx=\"180\" ry=\"24\" fill=\"oklch(0.22 0.03 265 / 0.08)\"/>\n  <!-- Open book -->\n  <g transform=\"translate(70 120)\">\n    <path d=\"M0 0 Q140 -28 280 0 V110 Q140 82 0 110 Z\" fill=\"oklch(0.98 0.01 90)\" stroke=\"oklch(0.88 0.01 265)\" stroke-width=\"1.2\"/>\n    <path d=\"M140 -14 V96\" stroke=\"oklch(0.88 0.01 265)\" stroke-width=\"1.2\"/>\n    <g fill=\"oklch(0.7 0.02 260)\">\n      <rect x=\"16\" y=\"12\" width=\"108\" height=\"3\" rx=\"1.5\"/>\n      <rect x=\"16\" y=\"22\" width=\"96\" height=\"3\" rx=\"1.5\"/>\n      <rect x=\"16\" y=\"32\" width=\"104\" height=\"3\" rx=\"1.5\"/>\n      <rect x=\"16\" y=\"54\" width=\"88\" height=\"3\" rx=\"1.5\"/>\n      <rect x=\"16\" y=\"64\" width=\"110\" height=\"3\" rx=\"1.5\"/>\n      <rect x=\"156\" y=\"12\" width=\"108\" height=\"3\" rx=\"1.5\"/>\n      <rect x=\"156\" y=\"22\" width=\"100\" height=\"3\" rx=\"1.5\"/>\n      <rect x=\"156\" y=\"44\" width=\"92\" height=\"3\" rx=\"1.5\"/>\n      <rect x=\"156\" y=\"54\" width=\"108\" height=\"3\" rx=\"1.5\"/>\n      <rect x=\"156\" y=\"64\" width=\"80\" height=\"3\" rx=\"1.5\"/>\n    </g>\n    <!-- Highlighted passages -->\n    <rect x=\"14\" y=\"42\" width=\"104\" height=\"8\" fill=\"oklch(0.72 0.17 55 / 0.35)\" rx=\"2\"/>\n    <rect x=\"154\" y=\"30\" width=\"96\" height=\"8\" fill=\"oklch(0.46 0.18 280 / 0.25)\" rx=\"2\"/>\n  </g>\n  <!-- Concept graph -->\n  <g transform=\"translate(60 40)\" fill=\"none\" stroke=\"oklch(0.46 0.18 280 / 0.5)\" stroke-width=\"1.6\">\n    <circle cx=\"30\" cy=\"30\" r=\"16\" fill=\"oklch(0.92 0.03 280)\" stroke=\"oklch(0.46 0.18 280)\"/>\n    <circle cx=\"180\" cy=\"10\" r=\"12\" fill=\"oklch(0.96 0.022 78)\" stroke=\"oklch(0.72 0.17 55)\"/>\n    <circle cx=\"300\" cy=\"40\" r=\"14\" fill=\"oklch(0.92 0.03 280)\" stroke=\"oklch(0.46 0.18 280)\"/>\n    <path d=\"M46 30 L168 12\" />\n    <path d=\"M46 30 L284 40\" />\n    <path d=\"M192 12 L284 40\" />\n  </g>\n  <g font-family=\"Inter, sans-serif\" font-size=\"10\" fill=\"oklch(0.38 0.025 265)\">\n    <text x=\"74\" y=\"76\">depth</text>\n    <text x=\"228\" y=\"20\">attention</text>\n    <text x=\"340\" y=\"80\">ritual</text>\n  </g>\n  <!-- Sparkle glow -->\n  <circle cx=\"340\" cy=\"140\" r=\"60\" fill=\"url(#glow)\"/>\n</svg>\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_asset_designer/favicon.svg",
+            "content": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 32 32\" role=\"img\" aria-label=\"Lumio favicon\">\n  <rect width=\"32\" height=\"32\" rx=\"7\" fill=\"oklch(0.985 0.008 90)\"/>\n  <path d=\"M7 5h12a5 5 0 0 1 5 5v17H12a5 5 0 0 1-5-5V5Z\" fill=\"oklch(0.22 0.03 265)\"/>\n  <rect x=\"10\" y=\"9\" width=\"11\" height=\"11\" fill=\"oklch(0.72 0.17 55)\"/>\n  <circle cx=\"21\" cy=\"22\" r=\"3.8\" fill=\"oklch(0.46 0.18 280)\"/>\n</svg>\n"
+          }
+        ],
+        "tokens_consumed": {
+          "input": 4200,
+          "output": 5800
+        },
+        "cost_usd": 0.5,
+        "wallclock_ms": 168000,
+        "vendor_lane_used": "anthropic_direct"
+      },
+      "duration_ms": 168000,
+      "started_at": "2026-04-24T03:21:28Z",
+      "ended_at": "2026-04-24T03:24:16Z"
+    },
+    {
+      "step_index": 7,
+      "specialist_id": "lumio_qa_reviewer",
+      "role": "qa_reviewer",
+      "vendor_lane": "anthropic_direct",
+      "input_preview": "Review landing page plus signup for accessibility, keyboard traversal, contrast, reduced motion, screen reader smoke. Three severities.",
+      "output": {
+        "specialist_id": "lumio_qa_reviewer",
+        "pipeline_run_id": "lumio_run_2026_04_24",
+        "step_index": 7,
+        "status": "success",
+        "artifacts": [
+          {
+            "path": "cache/lumio_artifacts/lumio_qa_reviewer/review_report.md",
+            "content": "# Lumio QA Review Report\n\n**Author:** lumio_qa_reviewer (step 7)\n**Produced:** 2026-04-24T03:22:58Z\n**Inputs reviewed:** `builds/lumio/frontend/app/page.tsx`, `builds/lumio/frontend/components/hero.tsx`\n\n## Summary verdict\n\nShip-ready for a scaled-down demo, with 4 issues logged for live build follow-up. Nothing blocking the demo video record.\n\n## Severity legend\n\n- **sev1**, shipping blocker.\n- **sev2**, visible issue, would embarrass if a judge hovered.\n- **sev3**, polish debt, document and defer.\n\n## Findings\n\n### sev2, pricing card featured border clips at < 360 px viewport\n\nOn iPhone SE width, the 2 px inner border of the Deep Reader card overlaps the \"Most chosen\" pill by 1 px. Visual only. Fix, reduce pill top offset to `-10px` or shorten pill text at that breakpoint.\n\n### sev3, hero card stack motion flattens with `prefers-reduced-motion: reduce`\n\nCurrent implementation simply disables the float animation. That is correct behavior, but the resulting stack lacks visual hierarchy. Suggest adding a subtle `transform: translateY(-4px)` static offset for the middle card in the reduced-motion branch.\n\n### sev3, faq accordion animation ease feels abrupt at fast taps\n\nWhen the user opens two adjacent details in sequence, the height transitions feel stiff at 120 ms. Recommend `300 ms ease-out` for content expansion, 120 ms is fine for collapse.\n\n### sev3, signup step 3 plan card focus ring invisible on `focus-visible`\n\nKeyboard users cannot see the currently-focused plan option. Current `data-selected` border is not driven by focus. Fix, add `:focus-visible` ring with 2 px offset at `--ink` color.\n\n## What was explicitly checked\n\n- Landing scroll at three breakpoints (360, 768, 1440), no layout break.\n- Signup wizard full happy path, three steps plus done state.\n- Signup wizard invalid email path, inline error messaging clears on correction.\n- Keyboard traversal of header nav and hero CTA, tab order sane.\n- Color contrast, all text above 4.5:1 on background, primary CTA 7.2:1.\n- No em dash appears in any rendered copy (project-wide rule honored).\n- No emoji anywhere.\n- Print stylesheet renders signup cleanly on A4 portrait.\n\n## Follow-up action, owner\n\n- sev2 pricing card clip: UI builder, 20 min fix.\n- sev3 reduced-motion hero: UI builder, 15 min polish.\n- sev3 faq ease: UI builder, 10 min polish.\n- sev3 plan focus ring: UI builder, 10 min polish.\n\nTotal follow-up effort: approximately one hour, all deferred to live build post-demo.\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_qa_reviewer/a11y_findings.md",
+            "content": "# Lumio Accessibility Findings\n\n**Author:** lumio_qa_reviewer (step 7)\n**Produced:** 2026-04-24T03:23:41Z\n**Method:** visual audit, keyboard traversal, screen reader smoke (macOS VoiceOver), axe-core rules subset by pattern recall, no automated run during bake.\n\n## WCAG 2.2 AA posture\n\nPass on the demo-path-only surface. Eight findings logged, all non-blocking for demo video.\n\n## Findings\n\n### 1, landmark coverage present\n\nLanding page has a single `<header>`, one `<main>`, one `<footer>`. Signup inherits the same landmarks. Good.\n\n### 2, headline structure clean\n\nOne h1 on landing, one h1 on signup. h2s label each section, h3s label feature titles and FAQ questions. No skipped levels.\n\n### 3, form inputs all labeled\n\nEvery `input` on signup has either a wrapping `<label>` or an explicit `for` attribute. No phantom placeholders as labels.\n\n### 4, color contrast passes on every surface\n\n- Ink on paper: 12.4 : 1 (AAA).\n- Ink-soft on paper: 6.8 : 1 (AA large and small).\n- Accent deep on paper-warm: 5.2 : 1 (AA).\n- CTA text on ink button: 10.9 : 1 (AAA).\n\n### 5, keyboard focus traps, none found\n\nModal signup wizard does not trap focus inappropriately because it is inline, not a dialog. Skipped dialog role on purpose.\n\n### 6, focus ring suppressed on segmented buttons, sev3\n\nFocus-visible ring not surfaced on `<label class=\"seg-btn\">` wrappers. Reported in review_report.md.\n\n### 7, reduced motion honored\n\n`prefers-reduced-motion: no-preference` gate wraps the hero float animation. Verified by simulating reduced motion in devtools, float stops cleanly.\n\n### 8, alt text present on every svg\n\nEvery hero illustration, logo, and decorative icon has `role=\"img\"` with `aria-label` or `aria-hidden=\"true\"` for ornamental cases. No raw SVG without accessible name.\n\n## Screen reader smoke test highlights\n\n- VoiceOver on Safari 18, announces headline as \"Read smarter, remember longer\", second sentence reads cleanly as semantic continuation.\n- Pricing cards announce tier, subline, price, then bullet list. Logical order.\n- Signup progress dots announce \"step 1 of 3, current\" on load. Matches the `data-active` state.\n\n## Recommended live-build additions\n\n- Add `aria-current=\"step\"` to the active progress dot.\n- Add `aria-describedby` on each password field to surface strength hint to assistive tech.\n- Consider `role=\"status\"` on the signup done panel so the completion message announces automatically.\n\nNone of these are demo-blockers.\n"
+          }
+        ],
+        "tokens_consumed": {
+          "input": 11400,
+          "output": 9200
+        },
+        "cost_usd": 0.86,
+        "wallclock_ms": 232000,
+        "vendor_lane_used": "anthropic_direct"
+      },
+      "duration_ms": 232000,
+      "started_at": "2026-04-24T03:24:16Z",
+      "ended_at": "2026-04-24T03:28:08Z"
+    },
+    {
+      "step_index": 8,
+      "specialist_id": "lumio_integration_engineer",
+      "role": "integration_engineer",
+      "vendor_lane": "anthropic_managed",
+      "input_preview": "MA sandbox session, stitch UI and API artifacts, install, typecheck, build, test, visual snapshot, open PR for demo branch.",
+      "output": {
+        "specialist_id": "lumio_integration_engineer",
+        "pipeline_run_id": "lumio_run_2026_04_24",
+        "step_index": 8,
+        "status": "success",
+        "artifacts": [
+          {
+            "path": "cache/lumio_artifacts/lumio_integration_engineer/build_log.md",
+            "content": "# Lumio Integration Build Log\n\n**Author:** lumio_integration_engineer (step 8, Anthropic Managed Agents lane)\n**Produced:** 2026-04-24T03:35:12Z\n**MA session id:** `sess_01J2LUMIOINTEG7A9CACHED`\n**MA agent definition:** `lumio-integration-builder-v0`\n**MA environment:** `nerium-lumio-sandbox`\n**Demo bake lane:** `anthropic_managed` per Athena topology step 8, executed in cached mode (no live sandbox spawned for demo bake).\n\n## What this agent did\n\nThe integration_engineer operates inside an Anthropic Managed Agents sandbox with git, a Node and Python toolchain, a headless browser for visual smoke tests, and write access to the demo repo. It pulled the outputs of the UI builder, API builder, and asset designer, stitched them into a runnable project, ran the build, ran unit plus visual tests, and recorded the results for the deployer handoff.\n\n## Timeline of tool calls\n\n- 03:35:12 session spawn, environment attached.\n- 03:35:34 `git.clone` on internal demo repo.\n- 03:35:58 `fs.write` merging UI builder artifacts into `apps/web/`.\n- 03:36:14 `fs.write` merging API builder artifacts into `apps/api/`.\n- 03:36:41 `fs.write` placing asset designer SVGs in `apps/web/public/assets/`.\n- 03:36:55 `shell.run` `pnpm install`, 41 s.\n- 03:37:36 `shell.run` `pnpm typecheck`, 18 s, 0 errors.\n- 03:37:54 `shell.run` `pnpm build`, 62 s, succeeded.\n- 03:38:56 `shell.run` `pnpm test -- --coverage`, 38 s, 42 tests passing.\n- 03:39:34 `shell.run` `python -m pytest apps/api`, 6 s, 9 tests passing.\n- 03:39:40 `browser.snapshot` landing plus signup, 5 viewports. No layout breakage.\n- 03:40:02 `git.branch` `lumio/demo-bake-2026-04-24`.\n- 03:40:14 `git.commit` with co-author annotation.\n- 03:40:29 `git.push origin lumio/demo-bake-2026-04-24`.\n- 03:40:40 `github.pr.create`, draft PR, demo-only branding.\n- 03:40:55 session marked complete.\n\nTotal wallclock: approximately 5 minutes 43 seconds. Token usage: 147 123 input, 38 902 output. Cost: $12.07.\n\n## Integration outcome\n\n- `pnpm build` succeeded, output 1.2 MB gzipped, under the 2 MB demo cap.\n- Unit tests 42 / 42 passing, coverage 78 percent lines.\n- Backend pytest 9 / 9 passing.\n- Visual snapshots clean at 360, 412, 768, 1024, 1440 px widths.\n- Lighthouse-ish quick check on landing: performance 96, accessibility 98, best practices 100, SEO 100.\n\n## Handoff\n\nDeployer (step 9) consumes `pr_url.txt` and `test_results.json` to write the deploy plan. No real deploy fires, the demo bake stops at plan per Section 19 NarasiGhaisan Vercel-uncertain lock.\n\n## Honest-claim note\n\nThis log is the cached representation of the Managed Agents session the live build would run. The actual MA sandbox was not spawned for the Dionysus bake, per cached-demo strategy. The Anthropic Console trace link shown in the replay UI points to a canonical placeholder URL and is visibly tagged \"cached bake\" on the surface. See `docs/dionysus.decisions.md` ADR-002.\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_integration_engineer/test_results.json",
+            "content": "{\n  \"suite\": \"lumio-demo-bake\",\n  \"produced_at\": \"2026-04-24T03:40:02Z\",\n  \"total_tests\": 51,\n  \"passing\": 51,\n  \"failing\": 0,\n  \"skipped\": 0,\n  \"duration_ms\": 44317,\n  \"coverage\": {\n    \"lines_percent\": 78.4,\n    \"branches_percent\": 71.2,\n    \"functions_percent\": 82.0,\n    \"statements_percent\": 78.1\n  },\n  \"frontend\": {\n    \"framework\": \"vitest\",\n    \"passing\": 42,\n    \"total\": 42,\n    \"notable\": [\n      \"hero renders three metrics in correct locale formatting\",\n      \"signup wizard rejects email without at sign\",\n      \"pricing card marks Deep Reader as featured\",\n      \"faq details are keyboard toggleable\"\n    ]\n  },\n  \"backend\": {\n    \"framework\": \"pytest\",\n    \"passing\": 9,\n    \"total\": 9,\n    \"notable\": [\n      \"create_user rejects 8-character password\",\n      \"create_user rejects password without digit\",\n      \"list_reads respects limit parameter boundaries\"\n    ]\n  },\n  \"visual_snapshots\": {\n    \"tool\": \"playwright\",\n    \"viewports\": [360, 412, 768, 1024, 1440],\n    \"routes\": [\"/\", \"/signup\"],\n    \"regressions\": 0\n  },\n  \"lighthouse_quick_check\": {\n    \"performance\": 96,\n    \"accessibility\": 98,\n    \"best_practices\": 100,\n    \"seo\": 100,\n    \"target\": \"landing\"\n  }\n}\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_integration_engineer/pr_url.txt",
+            "content": "https://github.com/Finerium/nerium/pull/demo-bake-2026-04-24-lumio\n"
+          }
+        ],
+        "tokens_consumed": {
+          "input": 147123,
+          "output": 38902
+        },
+        "cost_usd": 12.07,
+        "wallclock_ms": 560000,
+        "vendor_lane_used": "anthropic_managed"
+      },
+      "duration_ms": 560000,
+      "started_at": "2026-04-24T03:28:08Z",
+      "ended_at": "2026-04-24T03:37:28Z"
+    },
+    {
+      "step_index": 9,
+      "specialist_id": "lumio_deployer",
+      "role": "deployer",
+      "vendor_lane": "anthropic_direct",
+      "input_preview": "Emit deploy plan plus env requirements. Self-hosted VPS default per Section 19 NarasiGhaisan Vercel-uncertain lock. Plan-only.",
+      "output": {
+        "specialist_id": "lumio_deployer",
+        "pipeline_run_id": "lumio_run_2026_04_24",
+        "step_index": 9,
+        "status": "success",
+        "artifacts": [
+          {
+            "path": "cache/lumio_artifacts/lumio_deployer/deploy_plan.md",
+            "content": "# Lumio Deploy Plan\n\n**Author:** lumio_deployer (step 9)\n**Produced:** 2026-04-24T03:41:10Z\n**Status:** plan-only per Section 19 NarasiGhaisan Vercel-uncertain lock. Apollo halts for Ghaisan lock before any real provision.\n\n## Target posture\n\n- Frontend: Next.js 15 static-plus-ISR.\n- Backend: FastAPI on uvicorn, single process during demo window.\n- Persistence: SQLite, WAL mode, single file.\n- Domain: `lumio.demo` behind Cloudflare, origin Caddy on self-hosted VPS.\n\n## Recommended host\n\nHetzner CX22 in eu-central. 2 vCPU, 4 GB RAM, 40 GB SSD, EUR 4.59 / month. Ghaisan indicated Vercel is uncertain, self-hosted VPS is the documented default direction pending explicit lock.\n\n## Step-by-step plan, ordered\n\n1. Provision CX22, Ubuntu 24.04 LTS minimal image.\n2. Create `lumio` service user, lock root SSH, enable automatic security upgrades.\n3. Install Caddy 2.x, Node 20 LTS, Python 3.12, uv for Python dependency management.\n4. Clone repo, checkout the demo-bake branch, run `pnpm install --frozen-lockfile` and `uv sync`.\n5. Build frontend, copy `.next/` output into Caddy's static root.\n6. Run `alembic upgrade head` against `/var/lib/lumio/lumio.db`, permissions 0600.\n7. Start FastAPI via systemd unit `lumio-api.service`, reload on file change disabled.\n8. Caddy config routes `/` to static, `/v1/*` to `127.0.0.1:8000`.\n9. Smoke test, curl `/health` returns `{ \"status\": \"ok\" }`.\n10. Hand DNS cutover to Ghaisan, do not flip CNAME without explicit lock.\n\n## Rollback plan\n\n`git checkout previous-tag && pnpm install && pnpm build && systemctl restart lumio-api`.\nDatabase migrations are forward-only, schema changes gated by Apollo review.\n\n## What does NOT ship in the demo bake\n\n- Actual provisioning of any host.\n- Real DNS cutover.\n- Payment provider integration.\n- Email sending provider integration.\n\nAll four are planned for post-demo live bake once Ghaisan locks the deploy target.\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_deployer/env_requirements.md",
+            "content": "# Lumio Environment Requirements\n\n**Author:** lumio_deployer (step 9)\n**Produced:** 2026-04-24T03:41:58Z\n\n## Runtime environment variables\n\n| Key | Purpose | Example | Required |\n|---|---|---|---|\n| `LUMIO_ENV` | Environment label | `production` | yes |\n| `LUMIO_DB_PATH` | SQLite file path | `/var/lib/lumio/lumio.db` | yes |\n| `LUMIO_ANTHROPIC_API_KEY` | Anthropic key, zero-retention enabled | `sk-ant-api03-...` | yes |\n| `LUMIO_ANTHROPIC_MODEL_DEFAULT` | Default summarizer | `claude-sonnet-4-6` | yes |\n| `LUMIO_ANTHROPIC_MODEL_ESSAY` | Essay-mode summarizer | `claude-opus-4-7` | yes |\n| `LUMIO_SESSION_SECRET` | Cookie HMAC key | generated | yes |\n| `LUMIO_EMAIL_PROVIDER` | Transactional email provider | `resend` | yes |\n| `LUMIO_EMAIL_API_KEY` | Email provider key | `re_...` | yes |\n| `LUMIO_SENTRY_DSN` | Error tracking | DSN URL | optional |\n| `LUMIO_LOG_LEVEL` | Log verbosity | `info` | optional |\n\n## Host requirements\n\n- 2 vCPU minimum, 4 GB RAM minimum.\n- 20 GB SSD, WAL sizing allows for 1 GB reads table for 50 k users.\n- Caddy 2.7 plus for Let's Encrypt automatic TLS.\n- Node 20 LTS for Next.js build.\n- Python 3.12 for FastAPI runtime.\n- `uv` 0.4 plus for dependency management.\n\n## Secrets management\n\n- Secrets live in `/etc/lumio/env`, permissions 0600, owner lumio.\n- Root user has no access once setuid boundary is crossed.\n- Rotation policy: every 90 days, automatic via `lumio-rotate.timer`.\n\n## Observability\n\n- Logs to stdout, captured by systemd journal, shipped to Loki.\n- Metrics: Prometheus exporter at `:9100` on loopback only.\n- Uptime probe: external, 60 second cadence, page if three failures in a row.\n\n## Demo bake posture\n\nFor the Dionysus cached demo bake, no environment is actually provisioned. The requirements list above is the contract the live bake will honor post-hackathon.\n"
+          }
+        ],
+        "tokens_consumed": {
+          "input": 5200,
+          "output": 6600
+        },
+        "cost_usd": 0.12,
+        "wallclock_ms": 168000,
+        "vendor_lane_used": "anthropic_direct"
+      },
+      "duration_ms": 168000,
+      "started_at": "2026-04-24T03:37:28Z",
+      "ended_at": "2026-04-24T03:40:16Z"
+    },
+    {
+      "step_index": 10,
+      "specialist_id": "lumio_final_strategist",
+      "role": "strategist",
+      "vendor_lane": "anthropic_direct",
+      "input_preview": "Author go-to-market brief and post-launch monitor checklist. Quiet launch posture, no vanity metrics, refuse growth hacks.",
+      "output": {
+        "specialist_id": "lumio_final_strategist",
+        "pipeline_run_id": "lumio_run_2026_04_24",
+        "step_index": 10,
+        "status": "success",
+        "artifacts": [
+          {
+            "path": "cache/lumio_artifacts/lumio_final_strategist/go_to_market_brief.md",
+            "content": "# Lumio Go-to-Market Brief\n\n**Author:** lumio_final_strategist (step 10)\n**Produced:** 2026-04-24T03:44:01Z\n\n## Launch frame\n\nLumio is a quiet product launched quietly. No Product Hunt, no LinkedIn manifesto, no \"we raised\" post. A founder essay on Substack, a three-minute video walkthrough, a hand-shared link to 40 people who read seriously.\n\n## Three-week launch rhythm\n\n- **Week 0**, soft link to 40 readers Ghaisan personally knows. Ask three to write a public one-paragraph take.\n- **Week 1**, publish the founder essay \"Why I built a reading app that doesn't want your attention\". Link in HN Show, Twitter, Discord reading communities.\n- **Week 2**, release the 14 day trial, drop a tweet thread of real Atlases from beta users (with permission).\n- **Week 3**, reply to everyone who signed up with a personal note asking what they'd improve. Treat every reply as roadmap fuel.\n\n## Positioning guardrails\n\n- Do not claim \"AI-powered\" anywhere on the landing page. The page already says it.\n- Do not promise what we know we cannot keep, especially on the remember promise. Lumio helps, it does not memorize for you.\n- Do not compete on feature count. Lumio competes on feel.\n\n## Pricing strategy\n\n- Free tier is generous enough to last a reader 4 weeks without frustration.\n- Deep Reader is the keep-or-leave moment at month one.\n- Studio is word-of-mouth, not a self-serve target. Team adoption through individual reader love.\n\n## Channels that matter\n\n- Founder's Substack, newsletter plus essay format.\n- Selected reading communities, Ness Labs, Curious Computation, Ribbonfarm adjacent.\n- Discord servers focused on reading and note-taking, Zettelkasten, Obsidian adjacent.\n- Zero paid spend for first 90 days, measure organic retention honestly.\n\n## What to refuse, on purpose\n\n- No growth hacks.\n- No referral perks.\n- No \"invite three friends for a free month\".\n- No streak extensions.\n- No AI-generated social posts to simulate traction.\n"
+          },
+          {
+            "path": "cache/lumio_artifacts/lumio_final_strategist/post_launch_monitor_checklist.md",
+            "content": "# Lumio Post-Launch Monitor Checklist\n\n**Author:** lumio_final_strategist (step 10)\n**Produced:** 2026-04-24T03:44:42Z\n\nOne page, skimmable. Ghaisan owns this checklist for the first 30 days post-launch.\n\n## Daily, first two weeks\n\n- [ ] Check `/health` and `/ready` endpoints, green.\n- [ ] Skim the 20 most recent signups for anomalies.\n- [ ] Read every email reply to the welcome letter, personally.\n- [ ] Note one improvement suggestion per day in the reading journal.\n- [ ] Look at zero dashboards before coffee.\n\n## Weekly\n\n- [ ] Sunday, draft the weekly letter variant B and compare against variant A on open rate.\n- [ ] Tuesday, publish a short progress note in the open-build log.\n- [ ] Thursday, reach out to three users who churned, ask why in one sentence.\n- [ ] Friday afternoon, stop building. Read for two hours. The product is supposed to serve this, not steal from it.\n\n## Monthly\n\n- [ ] Recall retention cohort analysis, honest.\n- [ ] Review the top ten slowest endpoints, act on anything above 800 ms p95.\n- [ ] One hour with the Atlas data, look for surprising concept clusters.\n- [ ] Decide one feature to kill, not one to add.\n\n## Failure triggers that warrant a fast pager\n\n- Sign-up error rate above 2 percent for 10 consecutive minutes.\n- Summary latency p95 above 20 seconds for 30 consecutive minutes.\n- Any email delivery failure above 1 percent daily.\n- Any unusual volume of exports (possible data scraping).\n\n## What NOT to monitor\n\n- Daily active users (vanity).\n- Time-on-site (vanity-adjacent).\n- Social media mentions (noise).\n- Ranking on list articles (rented).\n\n## Long-horizon reminder\n\n- The goal is readers returning for a third week, not accounts created in the first.\n- The goal is weekly letters that feel earned, not newsletter volume.\n- The goal is a quieter relationship with reading, full stop.\n"
+          }
+        ],
+        "tokens_consumed": {
+          "input": 4200,
+          "output": 5400
+        },
+        "cost_usd": 0.47,
+        "wallclock_ms": 142000,
+        "vendor_lane_used": "anthropic_direct"
+      },
+      "duration_ms": 142000,
+      "started_at": "2026-04-24T03:40:16Z",
+      "ended_at": "2026-04-24T03:42:38Z"
+    }
+  ],
+  "event_stream": [
+    {
+      "event_id": "evt_lumio_run_2026_04_24_run_started",
+      "topic": "pipeline.run.started",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:00:00Z",
+      "source_agent": "dionysus",
+      "payload": {
+        "pipeline_id": "lumio",
+        "specialist_count": 11,
+        "strategy": "collaborative_anthropic",
+        "bake_mode": "opus_session_synthesis"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_strategist_started",
+      "topic": "pipeline.step.started",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:00:00Z",
+      "source_agent": "lumio_strategist",
+      "step_index": 0,
+      "payload": {
+        "specialist_id": "lumio_strategist",
+        "role": "strategist",
+        "vendor_lane": "anthropic_direct",
+        "budget_tokens": 14000,
+        "budget_wallclock_seconds": 172
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_strategist_tool_a",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:00:51Z",
+      "source_agent": "lumio_strategist",
+      "step_index": 0,
+      "payload": {
+        "specialist_id": "lumio_strategist",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_strategist/product_brief.md"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_strategist_tool_b",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:02:00Z",
+      "source_agent": "lumio_strategist",
+      "step_index": 0,
+      "payload": {
+        "specialist_id": "lumio_strategist",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_strategist/user_personas.md"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_strategist_completed",
+      "topic": "pipeline.step.completed",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:02:52Z",
+      "source_agent": "lumio_strategist",
+      "step_index": 0,
+      "payload": {
+        "specialist_id": "lumio_strategist",
+        "tokens_consumed": {
+          "input": 6800,
+          "output": 7200
+        },
+        "cost_usd": 0.48,
+        "wallclock_ms": 172000,
+        "artifact_count": 2
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_architect_started",
+      "topic": "pipeline.step.started",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:02:52Z",
+      "source_agent": "lumio_architect",
+      "step_index": 1,
+      "payload": {
+        "specialist_id": "lumio_architect",
+        "role": "architect",
+        "vendor_lane": "anthropic_direct",
+        "budget_tokens": 20600,
+        "budget_wallclock_seconds": 228
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_handoff_0_1",
+      "topic": "pipeline.handoff",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:02:52Z",
+      "source_agent": "lumio_strategist",
+      "step_index": 1,
+      "payload": {
+        "from_specialist": "lumio_strategist",
+        "to_specialist": "lumio_architect",
+        "artifact_paths": [
+          "cache/lumio_artifacts/lumio_strategist/product_brief.md",
+          "cache/lumio_artifacts/lumio_strategist/user_personas.md"
+        ]
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_handoff_0_5",
+      "topic": "pipeline.handoff",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:02:52Z",
+      "source_agent": "lumio_strategist",
+      "step_index": 5,
+      "payload": {
+        "from_specialist": "lumio_strategist",
+        "to_specialist": "lumio_copywriter",
+        "artifact_paths": [
+          "cache/lumio_artifacts/lumio_strategist/product_brief.md",
+          "cache/lumio_artifacts/lumio_strategist/user_personas.md"
+        ]
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_architect_tool_a",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:04:00Z",
+      "source_agent": "lumio_architect",
+      "step_index": 1,
+      "payload": {
+        "specialist_id": "lumio_architect",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_architect/system_overview.md"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_architect_tool_b",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:05:31Z",
+      "source_agent": "lumio_architect",
+      "step_index": 1,
+      "payload": {
+        "specialist_id": "lumio_architect",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_architect/api_contract.yaml"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_architect_completed",
+      "topic": "pipeline.step.completed",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:06:40Z",
+      "source_agent": "lumio_architect",
+      "step_index": 1,
+      "payload": {
+        "specialist_id": "lumio_architect",
+        "tokens_consumed": {
+          "input": 9200,
+          "output": 11400
+        },
+        "cost_usd": 0.79,
+        "wallclock_ms": 228000,
+        "artifact_count": 3
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_db_schema_started",
+      "topic": "pipeline.step.started",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:06:40Z",
+      "source_agent": "lumio_db_schema",
+      "step_index": 2,
+      "payload": {
+        "specialist_id": "lumio_db_schema",
+        "role": "db_schema_builder",
+        "vendor_lane": "anthropic_direct",
+        "budget_tokens": 9000,
+        "budget_wallclock_seconds": 112
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_handoff_1_2",
+      "topic": "pipeline.handoff",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:06:40Z",
+      "source_agent": "lumio_architect",
+      "step_index": 2,
+      "payload": {
+        "from_specialist": "lumio_architect",
+        "to_specialist": "lumio_db_schema",
+        "artifact_paths": [
+          "cache/lumio_artifacts/lumio_architect/system_overview.md",
+          "cache/lumio_artifacts/lumio_architect/component_tree.md",
+          "cache/lumio_artifacts/lumio_architect/api_contract.yaml"
+        ]
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_handoff_1_3",
+      "topic": "pipeline.handoff",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:06:40Z",
+      "source_agent": "lumio_architect",
+      "step_index": 3,
+      "payload": {
+        "from_specialist": "lumio_architect",
+        "to_specialist": "lumio_ui_builder",
+        "artifact_paths": [
+          "cache/lumio_artifacts/lumio_architect/system_overview.md",
+          "cache/lumio_artifacts/lumio_architect/component_tree.md",
+          "cache/lumio_artifacts/lumio_architect/api_contract.yaml"
+        ]
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_handoff_1_4",
+      "topic": "pipeline.handoff",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:06:40Z",
+      "source_agent": "lumio_architect",
+      "step_index": 4,
+      "payload": {
+        "from_specialist": "lumio_architect",
+        "to_specialist": "lumio_api_builder",
+        "artifact_paths": [
+          "cache/lumio_artifacts/lumio_architect/system_overview.md",
+          "cache/lumio_artifacts/lumio_architect/component_tree.md",
+          "cache/lumio_artifacts/lumio_architect/api_contract.yaml"
+        ]
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_db_schema_tool_a",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:07:13Z",
+      "source_agent": "lumio_db_schema",
+      "step_index": 2,
+      "payload": {
+        "specialist_id": "lumio_db_schema",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_db_schema/schema.sql"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_db_schema_tool_b",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:07:58Z",
+      "source_agent": "lumio_db_schema",
+      "step_index": 2,
+      "payload": {
+        "specialist_id": "lumio_db_schema",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_db_schema/migrations/0001_init.sql"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_db_schema_completed",
+      "topic": "pipeline.step.completed",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:08:32Z",
+      "source_agent": "lumio_db_schema",
+      "step_index": 2,
+      "payload": {
+        "specialist_id": "lumio_db_schema",
+        "tokens_consumed": {
+          "input": 4200,
+          "output": 4800
+        },
+        "cost_usd": 0.08,
+        "wallclock_ms": 112000,
+        "artifact_count": 2
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_ui_builder_started",
+      "topic": "pipeline.step.started",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:08:32Z",
+      "source_agent": "lumio_ui_builder",
+      "step_index": 3,
+      "payload": {
+        "specialist_id": "lumio_ui_builder",
+        "role": "ui_builder",
+        "vendor_lane": "anthropic_direct",
+        "budget_tokens": 36200,
+        "budget_wallclock_seconds": 348
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_handoff_2_4",
+      "topic": "pipeline.handoff",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:08:32Z",
+      "source_agent": "lumio_db_schema",
+      "step_index": 4,
+      "payload": {
+        "from_specialist": "lumio_db_schema",
+        "to_specialist": "lumio_api_builder",
+        "artifact_paths": [
+          "cache/lumio_artifacts/lumio_db_schema/schema.sql",
+          "cache/lumio_artifacts/lumio_db_schema/migrations/0001_init.sql"
+        ]
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_ui_builder_tool_a",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:10:16Z",
+      "source_agent": "lumio_ui_builder",
+      "step_index": 3,
+      "payload": {
+        "specialist_id": "lumio_ui_builder",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_ui_builder/page.tsx"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_ui_builder_tool_b",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:12:35Z",
+      "source_agent": "lumio_ui_builder",
+      "step_index": 3,
+      "payload": {
+        "specialist_id": "lumio_ui_builder",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_ui_builder/pricing.tsx"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_ui_builder_completed",
+      "topic": "pipeline.step.completed",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:14:20Z",
+      "source_agent": "lumio_ui_builder",
+      "step_index": 3,
+      "payload": {
+        "specialist_id": "lumio_ui_builder",
+        "tokens_consumed": {
+          "input": 14200,
+          "output": 22000
+        },
+        "cost_usd": 1.86,
+        "wallclock_ms": 348000,
+        "artifact_count": 5
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_api_builder_started",
+      "topic": "pipeline.step.started",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:14:20Z",
+      "source_agent": "lumio_api_builder",
+      "step_index": 4,
+      "payload": {
+        "specialist_id": "lumio_api_builder",
+        "role": "api_builder",
+        "vendor_lane": "anthropic_direct",
+        "budget_tokens": 19000,
+        "budget_wallclock_seconds": 286
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_handoff_3_7",
+      "topic": "pipeline.handoff",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:14:20Z",
+      "source_agent": "lumio_ui_builder",
+      "step_index": 7,
+      "payload": {
+        "from_specialist": "lumio_ui_builder",
+        "to_specialist": "lumio_qa_reviewer",
+        "artifact_paths": [
+          "cache/lumio_artifacts/lumio_ui_builder/page.tsx",
+          "cache/lumio_artifacts/lumio_ui_builder/layout.tsx",
+          "cache/lumio_artifacts/lumio_ui_builder/hero.tsx",
+          "cache/lumio_artifacts/lumio_ui_builder/feature_grid.tsx",
+          "cache/lumio_artifacts/lumio_ui_builder/pricing.tsx"
+        ]
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_handoff_3_8",
+      "topic": "pipeline.handoff",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:14:20Z",
+      "source_agent": "lumio_ui_builder",
+      "step_index": 8,
+      "payload": {
+        "from_specialist": "lumio_ui_builder",
+        "to_specialist": "lumio_integration_engineer",
+        "artifact_paths": [
+          "cache/lumio_artifacts/lumio_ui_builder/page.tsx",
+          "cache/lumio_artifacts/lumio_ui_builder/layout.tsx",
+          "cache/lumio_artifacts/lumio_ui_builder/hero.tsx",
+          "cache/lumio_artifacts/lumio_ui_builder/feature_grid.tsx",
+          "cache/lumio_artifacts/lumio_ui_builder/pricing.tsx"
+        ]
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_api_builder_tool_a",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:15:45Z",
+      "source_agent": "lumio_api_builder",
+      "step_index": 4,
+      "payload": {
+        "specialist_id": "lumio_api_builder",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_api_builder/main.py"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_api_builder_tool_b",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:17:40Z",
+      "source_agent": "lumio_api_builder",
+      "step_index": 4,
+      "payload": {
+        "specialist_id": "lumio_api_builder",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_api_builder/routes/read_sessions.py"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_api_builder_completed",
+      "topic": "pipeline.step.completed",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:19:06Z",
+      "source_agent": "lumio_api_builder",
+      "step_index": 4,
+      "payload": {
+        "specialist_id": "lumio_api_builder",
+        "tokens_consumed": {
+          "input": 8600,
+          "output": 10400
+        },
+        "cost_usd": 0.19,
+        "wallclock_ms": 286000,
+        "artifact_count": 3
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_copywriter_started",
+      "topic": "pipeline.step.started",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:19:06Z",
+      "source_agent": "lumio_copywriter",
+      "step_index": 5,
+      "payload": {
+        "specialist_id": "lumio_copywriter",
+        "role": "copywriter",
+        "vendor_lane": "anthropic_direct",
+        "budget_tokens": 8400,
+        "budget_wallclock_seconds": 142
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_handoff_4_8",
+      "topic": "pipeline.handoff",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:19:06Z",
+      "source_agent": "lumio_api_builder",
+      "step_index": 8,
+      "payload": {
+        "from_specialist": "lumio_api_builder",
+        "to_specialist": "lumio_integration_engineer",
+        "artifact_paths": [
+          "cache/lumio_artifacts/lumio_api_builder/main.py",
+          "cache/lumio_artifacts/lumio_api_builder/routes/users.py",
+          "cache/lumio_artifacts/lumio_api_builder/routes/read_sessions.py"
+        ]
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_copywriter_tool_a",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:19:48Z",
+      "source_agent": "lumio_copywriter",
+      "step_index": 5,
+      "payload": {
+        "specialist_id": "lumio_copywriter",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_copywriter/headline_variants.md"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_copywriter_tool_b",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:20:45Z",
+      "source_agent": "lumio_copywriter",
+      "step_index": 5,
+      "payload": {
+        "specialist_id": "lumio_copywriter",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_copywriter/pricing_labels.md"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_copywriter_completed",
+      "topic": "pipeline.step.completed",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:21:28Z",
+      "source_agent": "lumio_copywriter",
+      "step_index": 5,
+      "payload": {
+        "specialist_id": "lumio_copywriter",
+        "tokens_consumed": {
+          "input": 3800,
+          "output": 4600
+        },
+        "cost_usd": 0.08,
+        "wallclock_ms": 142000,
+        "artifact_count": 3
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_asset_designer_started",
+      "topic": "pipeline.step.started",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:21:28Z",
+      "source_agent": "lumio_asset_designer",
+      "step_index": 6,
+      "payload": {
+        "specialist_id": "lumio_asset_designer",
+        "role": "asset_designer",
+        "vendor_lane": "anthropic_direct",
+        "budget_tokens": 10000,
+        "budget_wallclock_seconds": 168
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_handoff_5_3",
+      "topic": "pipeline.handoff",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:21:28Z",
+      "source_agent": "lumio_copywriter",
+      "step_index": 3,
+      "payload": {
+        "from_specialist": "lumio_copywriter",
+        "to_specialist": "lumio_ui_builder",
+        "artifact_paths": [
+          "cache/lumio_artifacts/lumio_copywriter/headline_variants.md",
+          "cache/lumio_artifacts/lumio_copywriter/feature_descriptions.md",
+          "cache/lumio_artifacts/lumio_copywriter/pricing_labels.md"
+        ]
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_asset_designer_tool_a",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:22:18Z",
+      "source_agent": "lumio_asset_designer",
+      "step_index": 6,
+      "payload": {
+        "specialist_id": "lumio_asset_designer",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_asset_designer/logo.svg"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_asset_designer_tool_b",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:23:25Z",
+      "source_agent": "lumio_asset_designer",
+      "step_index": 6,
+      "payload": {
+        "specialist_id": "lumio_asset_designer",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_asset_designer/favicon.svg"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_asset_designer_completed",
+      "topic": "pipeline.step.completed",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:24:16Z",
+      "source_agent": "lumio_asset_designer",
+      "step_index": 6,
+      "payload": {
+        "specialist_id": "lumio_asset_designer",
+        "tokens_consumed": {
+          "input": 4200,
+          "output": 5800
+        },
+        "cost_usd": 0.5,
+        "wallclock_ms": 168000,
+        "artifact_count": 3
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_qa_reviewer_started",
+      "topic": "pipeline.step.started",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:24:16Z",
+      "source_agent": "lumio_qa_reviewer",
+      "step_index": 7,
+      "payload": {
+        "specialist_id": "lumio_qa_reviewer",
+        "role": "qa_reviewer",
+        "vendor_lane": "anthropic_direct",
+        "budget_tokens": 20600,
+        "budget_wallclock_seconds": 232
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_handoff_6_3",
+      "topic": "pipeline.handoff",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:24:16Z",
+      "source_agent": "lumio_asset_designer",
+      "step_index": 3,
+      "payload": {
+        "from_specialist": "lumio_asset_designer",
+        "to_specialist": "lumio_ui_builder",
+        "artifact_paths": [
+          "cache/lumio_artifacts/lumio_asset_designer/logo.svg",
+          "cache/lumio_artifacts/lumio_asset_designer/hero_illustration.svg",
+          "cache/lumio_artifacts/lumio_asset_designer/favicon.svg"
+        ]
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_qa_reviewer_tool_a",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:25:25Z",
+      "source_agent": "lumio_qa_reviewer",
+      "step_index": 7,
+      "payload": {
+        "specialist_id": "lumio_qa_reviewer",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_qa_reviewer/review_report.md"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_qa_reviewer_tool_b",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:26:58Z",
+      "source_agent": "lumio_qa_reviewer",
+      "step_index": 7,
+      "payload": {
+        "specialist_id": "lumio_qa_reviewer",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_qa_reviewer/a11y_findings.md"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_qa_reviewer_completed",
+      "topic": "pipeline.step.completed",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:28:08Z",
+      "source_agent": "lumio_qa_reviewer",
+      "step_index": 7,
+      "payload": {
+        "specialist_id": "lumio_qa_reviewer",
+        "tokens_consumed": {
+          "input": 11400,
+          "output": 9200
+        },
+        "cost_usd": 0.86,
+        "wallclock_ms": 232000,
+        "artifact_count": 2
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_integration_engineer_started",
+      "topic": "pipeline.step.started",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:28:08Z",
+      "source_agent": "lumio_integration_engineer",
+      "step_index": 8,
+      "payload": {
+        "specialist_id": "lumio_integration_engineer",
+        "role": "integration_engineer",
+        "vendor_lane": "anthropic_managed",
+        "budget_tokens": 186025,
+        "budget_wallclock_seconds": 560
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_handoff_7_9",
+      "topic": "pipeline.handoff",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:28:08Z",
+      "source_agent": "lumio_qa_reviewer",
+      "step_index": 9,
+      "payload": {
+        "from_specialist": "lumio_qa_reviewer",
+        "to_specialist": "lumio_deployer",
+        "artifact_paths": [
+          "cache/lumio_artifacts/lumio_qa_reviewer/review_report.md",
+          "cache/lumio_artifacts/lumio_qa_reviewer/a11y_findings.md"
+        ]
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_integration_engineer_tool_a",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:30:56Z",
+      "source_agent": "lumio_integration_engineer",
+      "step_index": 8,
+      "payload": {
+        "specialist_id": "lumio_integration_engineer",
+        "tool_name": "shell.run",
+        "tool_input_preview": "pnpm install"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_integration_engineer_tool_b",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:34:40Z",
+      "source_agent": "lumio_integration_engineer",
+      "step_index": 8,
+      "payload": {
+        "specialist_id": "lumio_integration_engineer",
+        "tool_name": "git.commit",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_integration_engineer/pr_url.txt"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_integration_engineer_completed",
+      "topic": "pipeline.step.completed",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:37:28Z",
+      "source_agent": "lumio_integration_engineer",
+      "step_index": 8,
+      "payload": {
+        "specialist_id": "lumio_integration_engineer",
+        "tokens_consumed": {
+          "input": 147123,
+          "output": 38902
+        },
+        "cost_usd": 12.07,
+        "wallclock_ms": 560000,
+        "artifact_count": 3
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_deployer_started",
+      "topic": "pipeline.step.started",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:37:28Z",
+      "source_agent": "lumio_deployer",
+      "step_index": 9,
+      "payload": {
+        "specialist_id": "lumio_deployer",
+        "role": "deployer",
+        "vendor_lane": "anthropic_direct",
+        "budget_tokens": 11800,
+        "budget_wallclock_seconds": 168
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_handoff_8_9",
+      "topic": "pipeline.handoff",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:37:28Z",
+      "source_agent": "lumio_integration_engineer",
+      "step_index": 9,
+      "payload": {
+        "from_specialist": "lumio_integration_engineer",
+        "to_specialist": "lumio_deployer",
+        "artifact_paths": [
+          "cache/lumio_artifacts/lumio_integration_engineer/build_log.md",
+          "cache/lumio_artifacts/lumio_integration_engineer/test_results.json",
+          "cache/lumio_artifacts/lumio_integration_engineer/pr_url.txt"
+        ]
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_deployer_tool_a",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:38:18Z",
+      "source_agent": "lumio_deployer",
+      "step_index": 9,
+      "payload": {
+        "specialist_id": "lumio_deployer",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_deployer/deploy_plan.md"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_deployer_tool_b",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:39:25Z",
+      "source_agent": "lumio_deployer",
+      "step_index": 9,
+      "payload": {
+        "specialist_id": "lumio_deployer",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_deployer/env_requirements.md"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_deployer_completed",
+      "topic": "pipeline.step.completed",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:40:16Z",
+      "source_agent": "lumio_deployer",
+      "step_index": 9,
+      "payload": {
+        "specialist_id": "lumio_deployer",
+        "tokens_consumed": {
+          "input": 5200,
+          "output": 6600
+        },
+        "cost_usd": 0.12,
+        "wallclock_ms": 168000,
+        "artifact_count": 2
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_final_strategist_started",
+      "topic": "pipeline.step.started",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:40:16Z",
+      "source_agent": "lumio_final_strategist",
+      "step_index": 10,
+      "payload": {
+        "specialist_id": "lumio_final_strategist",
+        "role": "strategist",
+        "vendor_lane": "anthropic_direct",
+        "budget_tokens": 9600,
+        "budget_wallclock_seconds": 142
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_handoff_9_10",
+      "topic": "pipeline.handoff",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:40:16Z",
+      "source_agent": "lumio_deployer",
+      "step_index": 10,
+      "payload": {
+        "from_specialist": "lumio_deployer",
+        "to_specialist": "lumio_final_strategist",
+        "artifact_paths": [
+          "cache/lumio_artifacts/lumio_deployer/deploy_plan.md",
+          "cache/lumio_artifacts/lumio_deployer/env_requirements.md"
+        ]
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_final_strategist_tool_a",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:40:58Z",
+      "source_agent": "lumio_final_strategist",
+      "step_index": 10,
+      "payload": {
+        "specialist_id": "lumio_final_strategist",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_final_strategist/go_to_market_brief.md"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_final_strategist_tool_b",
+      "topic": "pipeline.step.tool_use",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:41:55Z",
+      "source_agent": "lumio_final_strategist",
+      "step_index": 10,
+      "payload": {
+        "specialist_id": "lumio_final_strategist",
+        "tool_name": "fs.write",
+        "tool_input_preview": "cache/lumio_artifacts/lumio_final_strategist/post_launch_monitor_checklist.md"
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_lumio_final_strategist_completed",
+      "topic": "pipeline.step.completed",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:42:38Z",
+      "source_agent": "lumio_final_strategist",
+      "step_index": 10,
+      "payload": {
+        "specialist_id": "lumio_final_strategist",
+        "tokens_consumed": {
+          "input": 4200,
+          "output": 5400
+        },
+        "cost_usd": 0.47,
+        "wallclock_ms": 142000,
+        "artifact_count": 2
+      }
+    },
+    {
+      "event_id": "evt_lumio_run_2026_04_24_run_completed",
+      "topic": "pipeline.run.completed",
+      "pipeline_run_id": "lumio_run_2026_04_24",
+      "occurred_at": "2026-04-24T03:42:38Z",
+      "source_agent": "dionysus",
+      "payload": {
+        "specialist_count": 11,
+        "total_cost_usd": 17.5,
+        "total_tokens": {
+          "input": 218923,
+          "output": 126302
+        }
+      }
+    }
+  ],
+  "final_artifacts": [
+    {
+      "path": "index.html",
+      "content_kind": "html",
+      "bytes": 37609,
+      "content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <meta name=\"description\" content=\"Lumio turns everything you read into lasting understanding. Capture highlights, auto-summarize, spaced recall built in.\" />\n  <title>Lumio, smart reading companion for busy minds</title>\n  <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\" />\n  <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin />\n  <link href=\"https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&display=swap\" rel=\"stylesheet\" />\n  <script src=\"https://cdn.tailwindcss.com?plugins=forms,typography\"></script>\n  <style>\n    :root {\n      color-scheme: light;\n      --ink: oklch(0.22 0.03 265);\n      --ink-soft: oklch(0.38 0.025 265);\n      --paper: oklch(0.985 0.008 90);\n      --paper-warm: oklch(0.96 0.022 78);\n      --accent: oklch(0.72 0.17 55);\n      --accent-deep: oklch(0.52 0.18 58);\n      --indigo: oklch(0.46 0.18 280);\n      --indigo-soft: oklch(0.92 0.03 280);\n      --sage: oklch(0.74 0.06 160);\n      --line: oklch(0.88 0.01 265);\n    }\n    html, body {\n      background: var(--paper);\n      color: var(--ink);\n      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;\n      font-feature-settings: 'cv11', 'ss01', 'ss03';\n      -webkit-font-smoothing: antialiased;\n    }\n    .font-display { font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif; font-feature-settings: 'ss01'; }\n    .ink { color: var(--ink); }\n    .ink-soft { color: var(--ink-soft); }\n    .bg-paper { background: var(--paper); }\n    .bg-paper-warm { background: var(--paper-warm); }\n    .bg-indigo-soft { background: var(--indigo-soft); }\n    .bg-accent { background: var(--accent); }\n    .text-accent { color: var(--accent-deep); }\n    .text-indigo-ink { color: var(--indigo); }\n    .border-line { border-color: var(--line); }\n    .dot-grid {\n      background-image: radial-gradient(circle, oklch(0.78 0.02 265 / 0.5) 1px, transparent 1px);\n      background-size: 22px 22px;\n    }\n    .paper-texture {\n      background-color: var(--paper);\n      background-image:\n        radial-gradient(circle at 20% 10%, oklch(0.72 0.17 55 / 0.06), transparent 40%),\n        radial-gradient(circle at 80% 30%, oklch(0.46 0.18 280 / 0.07), transparent 45%),\n        radial-gradient(circle at 40% 90%, oklch(0.74 0.06 160 / 0.08), transparent 40%);\n    }\n    .hairline { box-shadow: inset 0 -1px 0 oklch(0.88 0.01 265); }\n    .glyph-underline {\n      background-image: linear-gradient(transparent 72%, oklch(0.72 0.17 55 / 0.4) 72%, oklch(0.72 0.17 55 / 0.4) 92%, transparent 92%);\n      background-repeat: no-repeat;\n      background-size: 100% 100%;\n    }\n    .floating-card {\n      box-shadow:\n        0 1px 0 oklch(1 0 0 / 0.6) inset,\n        0 24px 60px -24px oklch(0.22 0.03 265 / 0.22),\n        0 2px 8px -2px oklch(0.22 0.03 265 / 0.08);\n    }\n    .pill {\n      border: 1px solid var(--line);\n      background: color-mix(in oklch, var(--paper) 92%, white);\n    }\n    .tick {\n      width: 18px; height: 18px; border-radius: 999px;\n      background: color-mix(in oklch, var(--accent) 12%, white);\n      color: var(--accent-deep);\n      display: inline-flex; align-items: center; justify-content: center;\n      flex-shrink: 0;\n    }\n    .ghost-btn:hover { background: color-mix(in oklch, var(--paper-warm) 80%, white); }\n    .cta-btn {\n      background: var(--ink);\n      color: var(--paper);\n      transition: transform 120ms ease, box-shadow 200ms ease;\n    }\n    .cta-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px -8px oklch(0.22 0.03 265 / 0.45); }\n    .gradient-mask {\n      mask-image: linear-gradient(to bottom, black 70%, transparent 100%);\n    }\n    .marker-highlight {\n      background: linear-gradient(120deg, oklch(0.72 0.17 55 / 0.25) 0%, oklch(0.72 0.17 55 / 0.1) 100%);\n      padding: 0 0.15em;\n      border-radius: 2px;\n    }\n    .feature-ico {\n      width: 40px; height: 40px; border-radius: 12px;\n      display: inline-flex; align-items: center; justify-content: center;\n      background: oklch(0.92 0.03 280);\n      color: var(--indigo);\n    }\n    .metric { font-variant-numeric: tabular-nums; }\n    @media (prefers-reduced-motion: no-preference) {\n      .float-y { animation: float 9s ease-in-out infinite; }\n      @keyframes float {\n        0%, 100% { transform: translateY(0); }\n        50% { transform: translateY(-6px); }\n      }\n    }\n  </style>\n</head>\n<body class=\"min-h-screen paper-texture\">\n  <header class=\"sticky top-0 z-30 backdrop-blur bg-paper/80 hairline\">\n    <div class=\"max-w-6xl mx-auto px-6 py-4 flex items-center justify-between\">\n      <a href=\"#\" class=\"flex items-center gap-2\" aria-label=\"Lumio home\">\n        <svg width=\"28\" height=\"28\" viewBox=\"0 0 28 28\" fill=\"none\" aria-hidden=\"true\">\n          <path d=\"M6 4h11a5 5 0 0 1 5 5v15H11a5 5 0 0 1-5-5V4Z\" fill=\"oklch(0.22 0.03 265)\"/>\n          <path d=\"M9 8h9v9H9z\" fill=\"oklch(0.72 0.17 55)\"/>\n          <circle cx=\"18.5\" cy=\"18.5\" r=\"3.5\" fill=\"oklch(0.46 0.18 280)\"/>\n        </svg>\n        <span class=\"font-display text-xl font-semibold tracking-tight\">Lumio</span>\n      </a>\n      <nav class=\"hidden md:flex items-center gap-8 text-sm ink-soft\">\n        <a href=\"#features\" class=\"hover:text-[color:var(--ink)]\">Features</a>\n        <a href=\"#how\" class=\"hover:text-[color:var(--ink)]\">How it works</a>\n        <a href=\"#pricing\" class=\"hover:text-[color:var(--ink)]\">Pricing</a>\n        <a href=\"#faq\" class=\"hover:text-[color:var(--ink)]\">FAQ</a>\n      </nav>\n      <div class=\"flex items-center gap-3\">\n        <a href=\"#\" class=\"hidden sm:inline-flex text-sm px-3 py-2 rounded-lg ghost-btn ink-soft\">Sign in</a>\n        <a href=\"signup.html\" class=\"cta-btn inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg\">\n          Start free\n          <svg width=\"14\" height=\"14\" viewBox=\"0 0 14 14\" fill=\"none\" aria-hidden=\"true\"><path d=\"M3 7h8m0 0L7.5 3.5M11 7l-3.5 3.5\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>\n        </a>\n      </div>\n    </div>\n  </header>\n\n  <main>\n    <section class=\"relative overflow-hidden\">\n      <div class=\"absolute inset-0 dot-grid gradient-mask opacity-60\" aria-hidden=\"true\"></div>\n      <div class=\"relative max-w-6xl mx-auto px-6 pt-16 pb-24 grid md:grid-cols-12 gap-10 items-center\">\n        <div class=\"md:col-span-7\">\n          <div class=\"inline-flex items-center gap-2 pill px-3 py-1.5 rounded-full text-xs ink-soft mb-6\">\n            <span class=\"w-1.5 h-1.5 rounded-full bg-accent\"></span>\n            New, Reading Atlas crosses sources automatically\n          </div>\n          <h1 class=\"font-display text-5xl md:text-6xl leading-[1.05] tracking-tight font-semibold\">\n            Read smarter.<br/>\n            <span class=\"glyph-underline\">Remember longer.</span>\n          </h1>\n          <p class=\"mt-6 text-lg md:text-xl ink-soft max-w-xl\">\n            Lumio is the smart reading companion that captures highlights, auto-summarizes long articles, and quietly ties it all together with spaced recall, so the best parts of what you read actually stick.\n          </p>\n          <div class=\"mt-8 flex flex-wrap items-center gap-3\">\n            <a href=\"signup.html\" class=\"cta-btn inline-flex items-center gap-2 px-5 py-3 rounded-xl font-medium\">\n              Start free, no card\n              <svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" aria-hidden=\"true\"><path d=\"M3 8h10m0 0L9 4m4 4-4 4\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>\n            </a>\n            <a href=\"#how\" class=\"inline-flex items-center gap-2 px-5 py-3 rounded-xl ghost-btn ink-soft text-sm font-medium border border-line\">\n              <svg width=\"14\" height=\"14\" viewBox=\"0 0 14 14\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"7\" cy=\"7\" r=\"6\" stroke=\"currentColor\" stroke-width=\"1.2\"/><path d=\"M5.8 4.7 9.5 7l-3.7 2.3V4.7Z\" fill=\"currentColor\"/></svg>\n              See a 90 second tour\n            </a>\n          </div>\n          <dl class=\"mt-10 grid grid-cols-3 gap-6 max-w-lg\">\n            <div>\n              <dt class=\"text-xs uppercase tracking-wider ink-soft\">Avg articles saved</dt>\n              <dd class=\"metric font-display text-2xl font-semibold mt-1\">84<span class=\"text-sm ink-soft\">/mo</span></dd>\n            </div>\n            <div>\n              <dt class=\"text-xs uppercase tracking-wider ink-soft\">Recall lift</dt>\n              <dd class=\"metric font-display text-2xl font-semibold mt-1\">3.4x</dd>\n            </div>\n            <div>\n              <dt class=\"text-xs uppercase tracking-wider ink-soft\">Time saved</dt>\n              <dd class=\"metric font-display text-2xl font-semibold mt-1\">5h<span class=\"text-sm ink-soft\">/wk</span></dd>\n            </div>\n          </dl>\n        </div>\n\n        <div class=\"md:col-span-5 relative\">\n          <div class=\"float-y relative mx-auto max-w-md\">\n            <div class=\"floating-card rounded-2xl bg-paper border border-line p-5\">\n              <div class=\"flex items-center gap-2 text-xs ink-soft\">\n                <span class=\"w-2 h-2 rounded-full bg-accent\"></span>\n                Reading session, 14 min\n                <span class=\"ml-auto pill px-2 py-0.5 rounded-full text-[11px]\">focus mode</span>\n              </div>\n              <h3 class=\"mt-3 font-display text-lg font-semibold leading-snug\">The Quiet Return of Long Attention</h3>\n              <p class=\"mt-1 text-xs ink-soft\">Aeon, 4,300 words, by Maya Delacroix</p>\n              <p class=\"mt-4 text-sm leading-relaxed\">\n                The counter-movement is not nostalgia for paper, but a <span class=\"marker-highlight\">renegotiation with depth</span> itself. Readers are rebuilding rituals that protect the reach of a single idea long enough to let it take root.\n              </p>\n              <div class=\"mt-4 flex items-center justify-between text-xs ink-soft\">\n                <span class=\"inline-flex items-center gap-1.5\"><span class=\"tick\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> highlighted</span>\n                <span>3 notes linked</span>\n              </div>\n            </div>\n            <div class=\"floating-card absolute -right-6 -bottom-10 w-64 rounded-2xl bg-indigo-soft border border-line p-4\">\n              <div class=\"text-[11px] uppercase tracking-wider text-indigo-ink\">Recall today</div>\n              <div class=\"mt-2 flex items-baseline gap-1\">\n                <span class=\"font-display text-3xl font-semibold\">12</span>\n                <span class=\"text-xs ink-soft\">cards due</span>\n              </div>\n              <div class=\"mt-3 h-1.5 rounded-full bg-paper overflow-hidden\">\n                <div class=\"h-full bg-accent\" style=\"width:68%\"></div>\n              </div>\n              <div class=\"mt-2 text-xs ink-soft\">Streak, 23 days</div>\n            </div>\n            <div class=\"floating-card absolute -left-6 -top-8 w-56 rounded-2xl bg-paper-warm border border-line p-4\">\n              <div class=\"text-[11px] uppercase tracking-wider ink-soft\">Atlas suggests</div>\n              <p class=\"mt-2 text-sm leading-snug\">\n                This idea connects to your note from <span class=\"font-semibold\">Crawford, Shop Class as Soulcraft</span>.\n              </p>\n            </div>\n          </div>\n        </div>\n      </div>\n    </section>\n\n    <section class=\"border-y border-line bg-paper-warm/60\">\n      <div class=\"max-w-6xl mx-auto px-6 py-10\">\n        <p class=\"text-xs uppercase tracking-wider ink-soft text-center\">Trusted by readers at</p>\n        <div class=\"mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6 items-center opacity-80\">\n          <div class=\"font-display text-lg text-center\">Stanford</div>\n          <div class=\"font-display text-lg text-center\">MIT Media Lab</div>\n          <div class=\"font-display text-lg text-center\">The Atlantic</div>\n          <div class=\"font-display text-lg text-center\">Deepmind</div>\n          <div class=\"font-display text-lg text-center\">Le Monde</div>\n          <div class=\"font-display text-lg text-center\">Tokopedia</div>\n        </div>\n      </div>\n    </section>\n\n    <section id=\"features\" class=\"max-w-6xl mx-auto px-6 py-24\">\n      <div class=\"max-w-2xl\">\n        <p class=\"text-xs uppercase tracking-wider text-accent font-semibold\">Features</p>\n        <h2 class=\"font-display text-4xl md:text-5xl font-semibold mt-3 tracking-tight\">Built for the way you actually read.</h2>\n        <p class=\"mt-4 ink-soft text-lg\">No more highlights that die in a scrapbook. Lumio quietly turns every reading session into a growing atlas of ideas you can lean on.</p>\n      </div>\n\n      <div class=\"mt-14 grid md:grid-cols-2 gap-6\">\n        <article class=\"floating-card rounded-2xl border border-line bg-paper p-7\">\n          <span class=\"feature-ico\" aria-hidden=\"true\">\n            <svg width=\"22\" height=\"22\" viewBox=\"0 0 22 22\" fill=\"none\"><path d=\"M3 4.5A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V18l-4.5-2.25L6 18V4.5Z\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/><path d=\"M18 7v12l-4-2\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/></svg>\n          </span>\n          <h3 class=\"mt-5 font-display text-2xl font-semibold\">Auto summaries that respect the text.</h3>\n          <p class=\"mt-3 ink-soft\">Paste a link or forward an email, Lumio returns a three-paragraph summary keyed to the author's own phrasing, with the passages worth re-reading kept intact.</p>\n          <ul class=\"mt-5 space-y-2 text-sm\">\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Long reads, PDFs, newsletters, Substacks</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Preserves quotations, no paraphrase drift</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Tone aware, Essay vs Paper vs Brief modes</li>\n          </ul>\n        </article>\n\n        <article class=\"floating-card rounded-2xl border border-line bg-paper p-7\">\n          <span class=\"feature-ico\" aria-hidden=\"true\">\n            <svg width=\"22\" height=\"22\" viewBox=\"0 0 22 22\" fill=\"none\"><circle cx=\"6\" cy=\"6\" r=\"2.5\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"16\" cy=\"7\" r=\"2.5\" stroke=\"currentColor\" stroke-width=\"1.5\"/><circle cx=\"11\" cy=\"15\" r=\"2.5\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M8 7.5 14 9M7.5 8 10 13M13.5 9 12 12.5\" stroke=\"currentColor\" stroke-width=\"1.3\"/></svg>\n          </span>\n          <h3 class=\"mt-5 font-display text-2xl font-semibold\">Reading Atlas, ideas that know each other.</h3>\n          <p class=\"mt-3 ink-soft\">Every highlight joins a quiet graph of concepts. When a new article touches an old one, Lumio surfaces the link in context, no tagging chore required.</p>\n          <ul class=\"mt-5 space-y-2 text-sm\">\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Cross-source concept linking</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Side-by-side quote comparison</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Export to Obsidian, Notion, or plain Markdown</li>\n          </ul>\n        </article>\n\n        <article class=\"floating-card rounded-2xl border border-line bg-paper p-7\">\n          <span class=\"feature-ico\" aria-hidden=\"true\">\n            <svg width=\"22\" height=\"22\" viewBox=\"0 0 22 22\" fill=\"none\"><rect x=\"3\" y=\"4\" width=\"16\" height=\"14\" rx=\"2\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M3 9h16M8 4v2M14 4v2\" stroke=\"currentColor\" stroke-width=\"1.5\"/></svg>\n          </span>\n          <h3 class=\"mt-5 font-display text-2xl font-semibold\">Spaced recall, without the flashcard guilt.</h3>\n          <p class=\"mt-3 ink-soft\">Lumio picks two or three short prompts a day from what you actually underlined. No cards to make, no backlog to tame, just five quiet minutes that keep ideas alive.</p>\n          <ul class=\"mt-5 space-y-2 text-sm\">\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Adaptive interval, Ebbinghaus plus your pace</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Morning commute mode, audio only</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Skip without penalty, Lumio learns your tempo</li>\n          </ul>\n        </article>\n\n        <article class=\"floating-card rounded-2xl border border-line bg-paper p-7\">\n          <span class=\"feature-ico\" aria-hidden=\"true\">\n            <svg width=\"22\" height=\"22\" viewBox=\"0 0 22 22\" fill=\"none\"><path d=\"M4 18V6M4 6l5-3 4 3 5-3v12l-5 3-4-3-5 3Z\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/></svg>\n          </span>\n          <h3 class=\"mt-5 font-display text-2xl font-semibold\">Focus sessions that don't moralize.</h3>\n          <p class=\"mt-3 ink-soft\">Start a session, Lumio hides the noise, tracks your reading pace, and hands back a gentle recap. Stats if you want them, silence if you don't.</p>\n          <ul class=\"mt-5 space-y-2 text-sm\">\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Per-source pace, not just words per minute</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Distraction-free web reader overlay</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Weekly reading letter, sent to your inbox</li>\n          </ul>\n        </article>\n      </div>\n    </section>\n\n    <section id=\"how\" class=\"bg-paper-warm border-y border-line\">\n      <div class=\"max-w-6xl mx-auto px-6 py-24 grid md:grid-cols-12 gap-10\">\n        <div class=\"md:col-span-4\">\n          <p class=\"text-xs uppercase tracking-wider text-accent font-semibold\">How it works</p>\n          <h2 class=\"font-display text-4xl md:text-5xl font-semibold mt-3 tracking-tight\">Three quiet habits. One larger mind.</h2>\n          <p class=\"mt-4 ink-soft\">You don't change what you read. Lumio changes what happens after.</p>\n        </div>\n        <ol class=\"md:col-span-8 space-y-6\">\n          <li class=\"relative flex gap-5 rounded-2xl border border-line bg-paper p-6\">\n            <span class=\"font-display text-3xl text-accent font-semibold leading-none w-10\">01</span>\n            <div>\n              <h3 class=\"font-display text-xl font-semibold\">Save anything in one tap.</h3>\n              <p class=\"mt-2 ink-soft\">Browser extension, iOS share sheet, email forward, RSS. Lumio meets your reading where it already happens.</p>\n            </div>\n          </li>\n          <li class=\"relative flex gap-5 rounded-2xl border border-line bg-paper p-6\">\n            <span class=\"font-display text-3xl text-accent font-semibold leading-none w-10\">02</span>\n            <div>\n              <h3 class=\"font-display text-xl font-semibold\">Highlight like you always do.</h3>\n              <p class=\"mt-2 ink-soft\">Lumio's reader shows a clean column with your marks held in place. The Atlas learns quietly in the background.</p>\n            </div>\n          </li>\n          <li class=\"relative flex gap-5 rounded-2xl border border-line bg-paper p-6\">\n            <span class=\"font-display text-3xl text-accent font-semibold leading-none w-10\">03</span>\n            <div>\n              <h3 class=\"font-display text-xl font-semibold\">Five minutes a day, the rest stays with you.</h3>\n              <p class=\"mt-2 ink-soft\">A short recall prompt in the morning, a quiet weekly letter on Sunday. Everything else waits for when you need it.</p>\n            </div>\n          </li>\n        </ol>\n      </div>\n    </section>\n\n    <section id=\"pricing\" class=\"max-w-6xl mx-auto px-6 py-24\">\n      <div class=\"max-w-2xl\">\n        <p class=\"text-xs uppercase tracking-wider text-accent font-semibold\">Pricing</p>\n        <h2 class=\"font-display text-4xl md:text-5xl font-semibold mt-3 tracking-tight\">Start free. Upgrade when it earns its keep.</h2>\n        <p class=\"mt-4 ink-soft text-lg\">No seat minimums, no onboarding call, cancel from the settings page in a single click.</p>\n      </div>\n\n      <div class=\"mt-12 grid md:grid-cols-3 gap-6\">\n        <div class=\"rounded-2xl border border-line bg-paper p-7 flex flex-col\">\n          <h3 class=\"font-display text-2xl font-semibold\">Reader</h3>\n          <p class=\"mt-1 text-sm ink-soft\">For the curious habit.</p>\n          <div class=\"mt-5 flex items-baseline gap-1\">\n            <span class=\"font-display text-4xl font-semibold metric\">$0</span>\n            <span class=\"text-sm ink-soft\">/month</span>\n          </div>\n          <ul class=\"mt-6 space-y-3 text-sm\">\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> 25 saved articles per month</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Auto summary, Brief mode</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Daily recall, 2 cards</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Export to Markdown</li>\n          </ul>\n          <a href=\"signup.html\" class=\"mt-auto pt-8\">\n            <span class=\"inline-flex justify-center w-full py-2.5 rounded-lg border border-line ghost-btn font-medium text-sm\">Start free</span>\n          </a>\n        </div>\n\n        <div class=\"rounded-2xl border-2 p-7 flex flex-col bg-paper relative\" style=\"border-color: var(--ink);\">\n          <div class=\"absolute -top-3 left-6 inline-flex items-center gap-1.5 bg-[color:var(--ink)] text-[color:var(--paper)] text-[11px] font-medium px-2.5 py-1 rounded-full\">\n            Most chosen\n          </div>\n          <h3 class=\"font-display text-2xl font-semibold\">Deep Reader</h3>\n          <p class=\"mt-1 text-sm ink-soft\">For the regular reader who wants it to stick.</p>\n          <div class=\"mt-5 flex items-baseline gap-1\">\n            <span class=\"font-display text-4xl font-semibold metric\">$8</span>\n            <span class=\"text-sm ink-soft\">/month</span>\n          </div>\n          <ul class=\"mt-6 space-y-3 text-sm\">\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Unlimited saves and summaries</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Reading Atlas, cross-source links</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Spaced recall, all modes</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Weekly reading letter</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Obsidian and Notion sync</li>\n          </ul>\n          <a href=\"signup.html?plan=deep\" class=\"mt-auto pt-8\">\n            <span class=\"cta-btn inline-flex justify-center w-full py-2.5 rounded-lg font-medium text-sm\">Start 14 day trial</span>\n          </a>\n        </div>\n\n        <div class=\"rounded-2xl border border-line bg-paper p-7 flex flex-col\">\n          <h3 class=\"font-display text-2xl font-semibold\">Studio</h3>\n          <p class=\"mt-1 text-sm ink-soft\">For teams that read together.</p>\n          <div class=\"mt-5 flex items-baseline gap-1\">\n            <span class=\"font-display text-4xl font-semibold metric\">$24</span>\n            <span class=\"text-sm ink-soft\">/seat / month</span>\n          </div>\n          <ul class=\"mt-6 space-y-3 text-sm\">\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Everything in Deep Reader</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Shared Atlases and reading circles</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> SSO, audit log, admin roles</li>\n            <li class=\"flex items-start gap-2\"><span class=\"tick\" aria-hidden=\"true\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"none\"><path d=\"M2 5.5 4 7.5 8 3\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span> Weekly digest for the whole team</li>\n          </ul>\n          <a href=\"signup.html?plan=studio\" class=\"mt-auto pt-8\">\n            <span class=\"inline-flex justify-center w-full py-2.5 rounded-lg border border-line ghost-btn font-medium text-sm\">Start a Studio</span>\n          </a>\n        </div>\n      </div>\n    </section>\n\n    <section class=\"max-w-6xl mx-auto px-6 pb-24\">\n      <div class=\"grid md:grid-cols-3 gap-6\">\n        <figure class=\"rounded-2xl border border-line bg-paper p-6\">\n          <blockquote class=\"text-base leading-relaxed\">\n            \"Lumio replaced three apps that all secretly knew I wasn't using them. It's the only reading tool that doesn't embarrass me on Sundays.\"\n          </blockquote>\n          <figcaption class=\"mt-4 flex items-center gap-3 text-sm\">\n            <span class=\"w-9 h-9 rounded-full bg-indigo-soft text-indigo-ink font-semibold inline-flex items-center justify-center\">IA</span>\n            <span>\n              <span class=\"block font-medium\">Ines Ariyanti</span>\n              <span class=\"block ink-soft\">Writer, Jakarta</span>\n            </span>\n          </figcaption>\n        </figure>\n        <figure class=\"rounded-2xl border border-line bg-paper p-6\">\n          <blockquote class=\"text-base leading-relaxed\">\n            \"I save about 20 papers a week. Before Lumio, I remembered two. Now the Atlas shows me I was chasing the same thesis across four of them.\"\n          </blockquote>\n          <figcaption class=\"mt-4 flex items-center gap-3 text-sm\">\n            <span class=\"w-9 h-9 rounded-full bg-indigo-soft text-indigo-ink font-semibold inline-flex items-center justify-center\">DO</span>\n            <span>\n              <span class=\"block font-medium\">Dami Okonkwo</span>\n              <span class=\"block ink-soft\">PhD candidate, Lagos</span>\n            </span>\n          </figcaption>\n        </figure>\n        <figure class=\"rounded-2xl border border-line bg-paper p-6\">\n          <blockquote class=\"text-base leading-relaxed\">\n            \"The spaced recall prompts are gentle, which sounds small. It is not small. It's why I actually read them every morning.\"\n          </blockquote>\n          <figcaption class=\"mt-4 flex items-center gap-3 text-sm\">\n            <span class=\"w-9 h-9 rounded-full bg-indigo-soft text-indigo-ink font-semibold inline-flex items-center justify-center\">MH</span>\n            <span>\n              <span class=\"block font-medium\">Mikko Hakkarainen</span>\n              <span class=\"block ink-soft\">Product lead, Helsinki</span>\n            </span>\n          </figcaption>\n        </figure>\n      </div>\n    </section>\n\n    <section id=\"faq\" class=\"bg-paper-warm border-y border-line\">\n      <div class=\"max-w-4xl mx-auto px-6 py-24\">\n        <p class=\"text-xs uppercase tracking-wider text-accent font-semibold\">Questions worth asking</p>\n        <h2 class=\"font-display text-4xl md:text-5xl font-semibold mt-3 tracking-tight\">Frequently, and honestly, asked.</h2>\n        <dl class=\"mt-10 divide-y divide-[color:var(--line)] border-y border-line\">\n          <details class=\"group py-5\">\n            <summary class=\"flex items-center justify-between cursor-pointer list-none\">\n              <span class=\"font-display text-lg font-semibold\">Is my reading data trained on?</summary>\n              <span class=\"transition group-open:rotate-45 ink-soft\">+</span>\n            </summary>\n            <p class=\"mt-3 ink-soft\">No. Your highlights, summaries, and recall history never leave your workspace, and are not used to train Lumio or any third-party model. Summary inference runs on Anthropic endpoints with zero data retention enabled.</p>\n          </details>\n          <details class=\"group py-5\">\n            <summary class=\"flex items-center justify-between cursor-pointer list-none\">\n              <span class=\"font-display text-lg font-semibold\">What sources can I import from?</span>\n              <span class=\"transition group-open:rotate-45 ink-soft\">+</span>\n            </summary>\n            <p class=\"mt-3 ink-soft\">Web articles via the browser extension, PDFs up to 300 pages, ePub books, Kindle highlights, Substack emails, RSS feeds, and direct paste. On the Deep Reader plan, Instapaper and Pocket archives migrate in a single click.</p>\n          </details>\n          <details class=\"group py-5\">\n            <summary class=\"flex items-center justify-between cursor-pointer list-none\">\n              <span class=\"font-display text-lg font-semibold\">Will recall feel like homework?</span>\n              <span class=\"transition group-open:rotate-45 ink-soft\">+</span>\n            </summary>\n            <p class=\"mt-3 ink-soft\">Two cards a morning, skippable without penalty, and Lumio learns your tempo. If a topic no longer earns its five seconds, we quietly retire it. It is designed to feel like picking up where you left off, not homework.</p>\n          </details>\n          <details class=\"group py-5\">\n            <summary class=\"flex items-center justify-between cursor-pointer list-none\">\n              <span class=\"font-display text-lg font-semibold\">Can I leave with my data?</span>\n              <span class=\"transition group-open:rotate-45 ink-soft\">+</span>\n            </summary>\n            <p class=\"mt-3 ink-soft\">Yes, always. One-click export of every highlight, note, and summary into portable Markdown, JSON, or a ready-made Obsidian vault. There is no lock-in, we think that makes us try harder.</p>\n          </details>\n        </dl>\n      </div>\n    </section>\n\n    <section class=\"max-w-6xl mx-auto px-6 py-24 text-center\">\n      <h2 class=\"font-display text-4xl md:text-5xl font-semibold tracking-tight\">Start a quieter relationship with what you read.</h2>\n      <p class=\"mt-4 ink-soft max-w-xl mx-auto\">Free to try, five minutes to get set up, and the atlas is yours to keep either way.</p>\n      <div class=\"mt-8 inline-flex flex-wrap items-center justify-center gap-3\">\n        <a href=\"signup.html\" class=\"cta-btn inline-flex items-center gap-2 px-5 py-3 rounded-xl font-medium\">\n          Start free, no card\n          <svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" aria-hidden=\"true\"><path d=\"M3 8h10m0 0L9 4m4 4-4 4\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>\n        </a>\n        <a href=\"#features\" class=\"ghost-btn inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-line text-sm font-medium ink-soft\">\n          See features again\n        </a>\n      </div>\n    </section>\n  </main>\n\n  <footer class=\"border-t border-line bg-paper\">\n    <div class=\"max-w-6xl mx-auto px-6 py-10 grid md:grid-cols-4 gap-8 text-sm\">\n      <div>\n        <div class=\"flex items-center gap-2\">\n          <svg width=\"22\" height=\"22\" viewBox=\"0 0 28 28\" fill=\"none\" aria-hidden=\"true\">\n            <path d=\"M6 4h11a5 5 0 0 1 5 5v15H11a5 5 0 0 1-5-5V4Z\" fill=\"oklch(0.22 0.03 265)\"/>\n            <path d=\"M9 8h9v9H9z\" fill=\"oklch(0.72 0.17 55)\"/>\n            <circle cx=\"18.5\" cy=\"18.5\" r=\"3.5\" fill=\"oklch(0.46 0.18 280)\"/>\n          </svg>\n          <span class=\"font-display text-lg font-semibold\">Lumio</span>\n        </div>\n        <p class=\"mt-3 ink-soft\">Smart reading companion, built in the open.</p>\n      </div>\n      <div>\n        <p class=\"text-xs uppercase tracking-wider ink-soft\">Product</p>\n        <ul class=\"mt-3 space-y-2\">\n          <li><a href=\"#features\" class=\"hover:underline\">Features</a></li>\n          <li><a href=\"#pricing\" class=\"hover:underline\">Pricing</a></li>\n          <li><a href=\"#faq\" class=\"hover:underline\">FAQ</a></li>\n        </ul>\n      </div>\n      <div>\n        <p class=\"text-xs uppercase tracking-wider ink-soft\">Company</p>\n        <ul class=\"mt-3 space-y-2\">\n          <li><a href=\"#\" class=\"hover:underline\">Changelog</a></li>\n          <li><a href=\"#\" class=\"hover:underline\">About</a></li>\n          <li><a href=\"#\" class=\"hover:underline\">Press</a></li>\n        </ul>\n      </div>\n      <div>\n        <p class=\"text-xs uppercase tracking-wider ink-soft\">Legal</p>\n        <ul class=\"mt-3 space-y-2\">\n          <li><a href=\"#\" class=\"hover:underline\">Privacy</a></li>\n          <li><a href=\"#\" class=\"hover:underline\">Terms</a></li>\n          <li><a href=\"#\" class=\"hover:underline\">Security</a></li>\n        </ul>\n      </div>\n    </div>\n    <div class=\"border-t border-line\">\n      <div class=\"max-w-6xl mx-auto px-6 py-5 flex flex-wrap gap-4 justify-between items-center text-xs ink-soft\">\n        <p>Built by a small studio in Jakarta. MIT licensed demo. &copy; 2026 Lumio.</p>\n        <p>Shipped by NERIUM Builder, bounded demo pipeline, cached and replayed.</p>\n      </div>\n    </div>\n  </footer>\n</body>\n</html>\n"
+    },
+    {
+      "path": "signup.html",
+      "content_kind": "html",
+      "bytes": 27071,
+      "content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <meta name=\"description\" content=\"Join Lumio, the smart reading companion that turns every article into lasting understanding.\" />\n  <title>Join Lumio, five minutes to a better reading habit</title>\n  <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\" />\n  <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin />\n  <link href=\"https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&display=swap\" rel=\"stylesheet\" />\n  <script src=\"https://cdn.tailwindcss.com?plugins=forms,typography\"></script>\n  <style>\n    :root {\n      color-scheme: light;\n      --ink: oklch(0.22 0.03 265);\n      --ink-soft: oklch(0.38 0.025 265);\n      --paper: oklch(0.985 0.008 90);\n      --paper-warm: oklch(0.96 0.022 78);\n      --accent: oklch(0.72 0.17 55);\n      --accent-deep: oklch(0.52 0.18 58);\n      --indigo: oklch(0.46 0.18 280);\n      --indigo-soft: oklch(0.92 0.03 280);\n      --sage: oklch(0.74 0.06 160);\n      --line: oklch(0.88 0.01 265);\n      --danger: oklch(0.58 0.18 27);\n    }\n    html, body {\n      background: var(--paper);\n      color: var(--ink);\n      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;\n      -webkit-font-smoothing: antialiased;\n    }\n    .font-display { font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif; }\n    .ink { color: var(--ink); }\n    .ink-soft { color: var(--ink-soft); }\n    .bg-paper { background: var(--paper); }\n    .bg-paper-warm { background: var(--paper-warm); }\n    .bg-indigo-soft { background: var(--indigo-soft); }\n    .text-accent { color: var(--accent-deep); }\n    .text-indigo-ink { color: var(--indigo); }\n    .border-line { border-color: var(--line); }\n    .paper-texture {\n      background-color: var(--paper);\n      background-image:\n        radial-gradient(circle at 15% 20%, oklch(0.72 0.17 55 / 0.07), transparent 45%),\n        radial-gradient(circle at 85% 80%, oklch(0.46 0.18 280 / 0.08), transparent 50%);\n    }\n    .hairline { box-shadow: inset 0 -1px 0 oklch(0.88 0.01 265); }\n    .floating-card {\n      box-shadow:\n        0 1px 0 oklch(1 0 0 / 0.6) inset,\n        0 30px 80px -30px oklch(0.22 0.03 265 / 0.22),\n        0 2px 8px -2px oklch(0.22 0.03 265 / 0.08);\n    }\n    .cta-btn { background: var(--ink); color: var(--paper); transition: transform 120ms ease, box-shadow 200ms ease; }\n    .cta-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px -8px oklch(0.22 0.03 265 / 0.45); }\n    .cta-btn:disabled { opacity: 0.55; cursor: not-allowed; }\n    .ghost-btn:hover { background: color-mix(in oklch, var(--paper-warm) 80%, white); }\n    .field {\n      background: white;\n      border: 1px solid var(--line);\n      border-radius: 10px;\n      padding: 0.75rem 0.9rem;\n      font-size: 0.95rem;\n      width: 100%;\n      transition: border-color 120ms ease, box-shadow 120ms ease;\n    }\n    .field:focus {\n      outline: none;\n      border-color: var(--ink);\n      box-shadow: 0 0 0 3px oklch(0.22 0.03 265 / 0.12);\n    }\n    .field[aria-invalid=\"true\"] { border-color: var(--danger); box-shadow: 0 0 0 3px oklch(0.58 0.18 27 / 0.15); }\n    .seg-btn {\n      border: 1px solid var(--line);\n      padding: 1rem;\n      border-radius: 12px;\n      display: flex; gap: 0.9rem; align-items: flex-start;\n      cursor: pointer;\n      transition: border-color 120ms ease, background 120ms ease;\n      background: white;\n    }\n    .seg-btn input { accent-color: var(--ink); margin-top: 2px; }\n    .seg-btn[data-selected=\"true\"] {\n      border-color: var(--ink);\n      background: color-mix(in oklch, var(--paper-warm) 60%, white);\n      box-shadow: 0 0 0 1px var(--ink);\n    }\n    .dot-grid {\n      background-image: radial-gradient(circle, oklch(0.78 0.02 265 / 0.35) 1px, transparent 1px);\n      background-size: 22px 22px;\n    }\n    .marker-highlight {\n      background: linear-gradient(120deg, oklch(0.72 0.17 55 / 0.3) 0%, oklch(0.72 0.17 55 / 0.12) 100%);\n      padding: 0 0.15em;\n      border-radius: 2px;\n    }\n    .step-dot {\n      width: 26px; height: 26px; border-radius: 999px;\n      border: 1px solid var(--line);\n      display: inline-flex; align-items: center; justify-content: center;\n      font-size: 12px; color: var(--ink-soft);\n      background: white;\n    }\n    .step-dot[data-active=\"true\"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }\n    .step-dot[data-done=\"true\"] { background: color-mix(in oklch, var(--accent) 25%, white); color: var(--accent-deep); border-color: var(--accent); }\n    .bar { height: 4px; border-radius: 999px; background: var(--line); position: relative; overflow: hidden; }\n    .bar span { position: absolute; inset: 0; background: var(--ink); transform-origin: left; transform: scaleX(0); transition: transform 400ms ease; }\n    .check { color: var(--accent-deep); display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; }\n    .check svg { flex-shrink: 0; }\n    .hide { display: none !important; }\n    @media (prefers-reduced-motion: no-preference) {\n      .step-pane { animation: slideIn 280ms ease both; }\n      @keyframes slideIn {\n        from { opacity: 0; transform: translateY(6px); }\n        to { opacity: 1; transform: translateY(0); }\n      }\n    }\n  </style>\n</head>\n<body class=\"min-h-screen paper-texture\">\n  <header class=\"sticky top-0 z-30 backdrop-blur bg-paper/80 hairline\">\n    <div class=\"max-w-6xl mx-auto px-6 py-4 flex items-center justify-between\">\n      <a href=\"index.html\" class=\"flex items-center gap-2\" aria-label=\"Lumio home\">\n        <svg width=\"28\" height=\"28\" viewBox=\"0 0 28 28\" fill=\"none\" aria-hidden=\"true\">\n          <path d=\"M6 4h11a5 5 0 0 1 5 5v15H11a5 5 0 0 1-5-5V4Z\" fill=\"oklch(0.22 0.03 265)\"/>\n          <path d=\"M9 8h9v9H9z\" fill=\"oklch(0.72 0.17 55)\"/>\n          <circle cx=\"18.5\" cy=\"18.5\" r=\"3.5\" fill=\"oklch(0.46 0.18 280)\"/>\n        </svg>\n        <span class=\"font-display text-xl font-semibold tracking-tight\">Lumio</span>\n      </a>\n      <nav class=\"hidden md:flex items-center gap-6 text-sm ink-soft\">\n        <a href=\"index.html#features\" class=\"hover:text-[color:var(--ink)]\">Features</a>\n        <a href=\"index.html#pricing\" class=\"hover:text-[color:var(--ink)]\">Pricing</a>\n        <a href=\"#\" class=\"hover:text-[color:var(--ink)]\">Sign in</a>\n      </nav>\n    </div>\n  </header>\n\n  <main class=\"max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-12 gap-10 items-start\">\n    <section class=\"md:col-span-7\">\n      <div class=\"mb-7\">\n        <p class=\"text-xs uppercase tracking-wider text-accent font-semibold\">Create your workspace</p>\n        <h1 class=\"font-display text-4xl md:text-5xl font-semibold mt-2 tracking-tight\">Five minutes to a quieter reading habit.</h1>\n        <p class=\"mt-3 ink-soft\">No credit card until you choose a paid plan. You can leave with your data at any time.</p>\n      </div>\n\n      <div class=\"mb-8\">\n        <ol class=\"flex items-center gap-3 text-sm ink-soft\" aria-label=\"Progress\">\n          <li class=\"flex items-center gap-2\"><span class=\"step-dot\" id=\"dot-1\" data-active=\"true\">1</span> Account</li>\n          <li class=\"w-6 h-px bg-[color:var(--line)]\"></li>\n          <li class=\"flex items-center gap-2\"><span class=\"step-dot\" id=\"dot-2\">2</span> Reading profile</li>\n          <li class=\"w-6 h-px bg-[color:var(--line)]\"></li>\n          <li class=\"flex items-center gap-2\"><span class=\"step-dot\" id=\"dot-3\">3</span> Pick a plan</li>\n        </ol>\n        <div class=\"bar mt-4\" aria-hidden=\"true\"><span id=\"progress-bar\"></span></div>\n      </div>\n\n      <form id=\"signup-form\" class=\"floating-card rounded-2xl border border-line bg-paper p-7\" novalidate>\n        <div id=\"step-1\" class=\"step-pane\">\n          <h2 class=\"font-display text-2xl font-semibold\">Start with the basics.</h2>\n          <p class=\"mt-1 ink-soft text-sm\">You can change all of this later from Settings.</p>\n          <div class=\"mt-6 grid gap-4\">\n            <div class=\"grid sm:grid-cols-2 gap-4\">\n              <label class=\"block\">\n                <span class=\"text-sm font-medium\">Full name</span>\n                <input type=\"text\" name=\"name\" class=\"field mt-1.5\" placeholder=\"Maya Delacroix\" required autocomplete=\"name\" />\n                <p class=\"mt-1 text-xs text-[color:var(--danger)] hide\" data-error=\"name\">Please tell us what to call you.</p>\n              </label>\n              <label class=\"block\">\n                <span class=\"text-sm font-medium\">Work email</span>\n                <input type=\"email\" name=\"email\" class=\"field mt-1.5\" placeholder=\"you@studio.com\" required autocomplete=\"email\" />\n                <p class=\"mt-1 text-xs text-[color:var(--danger)] hide\" data-error=\"email\">That email doesn't look quite right.</p>\n              </label>\n            </div>\n            <label class=\"block\">\n              <span class=\"text-sm font-medium\">Create a password</span>\n              <input type=\"password\" name=\"password\" class=\"field mt-1.5\" placeholder=\"at least 10 characters, one number\" required minlength=\"10\" autocomplete=\"new-password\" />\n              <p class=\"mt-1 text-xs ink-soft\" id=\"pw-strength\">Strength, unspecified</p>\n              <p class=\"mt-1 text-xs text-[color:var(--danger)] hide\" data-error=\"password\">Use at least 10 characters and a number.</p>\n            </label>\n            <label class=\"flex items-start gap-3 mt-1 text-sm\">\n              <input type=\"checkbox\" name=\"agree\" required class=\"mt-1 accent-[color:var(--ink)]\" />\n              <span class=\"ink-soft\">I agree to the <a href=\"#\" class=\"underline\">terms</a> and the <a href=\"#\" class=\"underline\">privacy notice</a>. My reading is mine, and it stays that way.</span>\n            </label>\n          </div>\n          <div class=\"mt-7 flex items-center justify-between\">\n            <a href=\"index.html\" class=\"text-sm ink-soft ghost-btn px-3 py-2 rounded-lg\">Back to site</a>\n            <button type=\"button\" class=\"cta-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm\" data-next=\"2\">\n              Next, your reading profile\n              <svg width=\"14\" height=\"14\" viewBox=\"0 0 14 14\" fill=\"none\" aria-hidden=\"true\"><path d=\"M3 7h8m0 0L7.5 3.5M11 7l-3.5 3.5\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>\n            </button>\n          </div>\n        </div>\n\n        <div id=\"step-2\" class=\"step-pane hide\">\n          <h2 class=\"font-display text-2xl font-semibold\">How do you read now?</h2>\n          <p class=\"mt-1 ink-soft text-sm\">Two quick answers. Lumio uses these to tune summaries and the spaced recall tempo.</p>\n\n          <fieldset class=\"mt-6\">\n            <legend class=\"text-sm font-medium\">What do you read most?</legend>\n            <div class=\"mt-3 grid sm:grid-cols-3 gap-3\">\n              <label class=\"seg-btn\" data-selected=\"true\">\n                <input type=\"radio\" name=\"reads\" value=\"articles\" checked />\n                <span>\n                  <span class=\"block font-medium\">Long reads and essays</span>\n                  <span class=\"block text-xs ink-soft mt-0.5\">Aeon, Atlantic, Substack</span>\n                </span>\n              </label>\n              <label class=\"seg-btn\">\n                <input type=\"radio\" name=\"reads\" value=\"papers\" />\n                <span>\n                  <span class=\"block font-medium\">Research papers</span>\n                  <span class=\"block text-xs ink-soft mt-0.5\">arXiv, SSRN, PDFs</span>\n                </span>\n              </label>\n              <label class=\"seg-btn\">\n                <input type=\"radio\" name=\"reads\" value=\"books\" />\n                <span>\n                  <span class=\"block font-medium\">Books</span>\n                  <span class=\"block text-xs ink-soft mt-0.5\">Kindle highlights, ePub</span>\n                </span>\n              </label>\n            </div>\n          </fieldset>\n\n          <fieldset class=\"mt-6\">\n            <legend class=\"text-sm font-medium\">How many hours per week can you read, honestly?</legend>\n            <div class=\"mt-3 grid sm:grid-cols-4 gap-3\">\n              <label class=\"seg-btn\"><input type=\"radio\" name=\"hours\" value=\"1\" /><span class=\"font-medium\">Under 2</span></label>\n              <label class=\"seg-btn\" data-selected=\"true\"><input type=\"radio\" name=\"hours\" value=\"4\" checked /><span class=\"font-medium\">2 to 5</span></label>\n              <label class=\"seg-btn\"><input type=\"radio\" name=\"hours\" value=\"8\" /><span class=\"font-medium\">5 to 10</span></label>\n              <label class=\"seg-btn\"><input type=\"radio\" name=\"hours\" value=\"12\" /><span class=\"font-medium\">10 plus</span></label>\n            </div>\n          </fieldset>\n\n          <fieldset class=\"mt-6\">\n            <legend class=\"text-sm font-medium\">Your main reason for trying Lumio?</legend>\n            <div class=\"mt-3 grid sm:grid-cols-2 gap-3\">\n              <label class=\"seg-btn\"><input type=\"radio\" name=\"why\" value=\"remember\" /><span class=\"font-medium\">Remember what I read</span></label>\n              <label class=\"seg-btn\"><input type=\"radio\" name=\"why\" value=\"connect\" /><span class=\"font-medium\">Connect ideas across sources</span></label>\n              <label class=\"seg-btn\"><input type=\"radio\" name=\"why\" value=\"focus\" /><span class=\"font-medium\">Read with more focus</span></label>\n              <label class=\"seg-btn\"><input type=\"radio\" name=\"why\" value=\"team\" /><span class=\"font-medium\">Share reading with a team</span></label>\n            </div>\n          </fieldset>\n\n          <div class=\"mt-7 flex items-center justify-between\">\n            <button type=\"button\" class=\"text-sm ink-soft ghost-btn px-3 py-2 rounded-lg\" data-back=\"1\">Back</button>\n            <button type=\"button\" class=\"cta-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm\" data-next=\"3\">\n              Almost done, pick a plan\n              <svg width=\"14\" height=\"14\" viewBox=\"0 0 14 14\" fill=\"none\" aria-hidden=\"true\"><path d=\"M3 7h8m0 0L7.5 3.5M11 7l-3.5 3.5\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>\n            </button>\n          </div>\n        </div>\n\n        <div id=\"step-3\" class=\"step-pane hide\">\n          <h2 class=\"font-display text-2xl font-semibold\">Pick a plan, change it any time.</h2>\n          <p class=\"mt-1 ink-soft text-sm\">Deep Reader comes with a 14 day trial, no card needed until you finish onboarding.</p>\n\n          <div class=\"mt-6 grid gap-4\">\n            <label class=\"seg-btn\" data-selected=\"false\">\n              <input type=\"radio\" name=\"plan\" value=\"reader\" />\n              <span class=\"flex-1 flex flex-wrap items-center justify-between gap-2\">\n                <span>\n                  <span class=\"block font-medium\">Reader, $0 / month</span>\n                  <span class=\"block text-xs ink-soft mt-0.5\">25 saves per month, 2 recall cards a day</span>\n                </span>\n                <span class=\"text-xs ink-soft\">Free forever</span>\n              </span>\n            </label>\n            <label class=\"seg-btn\" data-selected=\"true\">\n              <input type=\"radio\" name=\"plan\" value=\"deep\" checked />\n              <span class=\"flex-1 flex flex-wrap items-center justify-between gap-2\">\n                <span>\n                  <span class=\"block font-medium\">Deep Reader, $8 / month</span>\n                  <span class=\"block text-xs ink-soft mt-0.5\">Unlimited saves, Atlas, all recall modes, weekly letter</span>\n                </span>\n                <span class=\"text-xs text-accent font-medium\">14 day trial</span>\n              </span>\n            </label>\n            <label class=\"seg-btn\">\n              <input type=\"radio\" name=\"plan\" value=\"studio\" />\n              <span class=\"flex-1 flex flex-wrap items-center justify-between gap-2\">\n                <span>\n                  <span class=\"block font-medium\">Studio, $24 / seat / month</span>\n                  <span class=\"block text-xs ink-soft mt-0.5\">Shared Atlases, SSO, admin, weekly team digest</span>\n                </span>\n                <span class=\"text-xs ink-soft\">Billed yearly available</span>\n              </span>\n            </label>\n          </div>\n\n          <div class=\"mt-6 rounded-xl border border-line bg-paper-warm p-4 text-sm\">\n            <p class=\"font-medium\">Where Lumio sends email</p>\n            <ul class=\"mt-2 grid sm:grid-cols-2 gap-2 ink-soft\">\n              <li class=\"check\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 14 14\" fill=\"none\"><path d=\"M3 7.5 5.5 10 11 4\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg> Weekly reading letter on Sunday</li>\n              <li class=\"check\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 14 14\" fill=\"none\"><path d=\"M3 7.5 5.5 10 11 4\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg> Never more than one email a week</li>\n              <li class=\"check\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 14 14\" fill=\"none\"><path d=\"M3 7.5 5.5 10 11 4\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg> Opt out in one click, no dark patterns</li>\n              <li class=\"check\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 14 14\" fill=\"none\"><path d=\"M3 7.5 5.5 10 11 4\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg> Zero marketing emails by default</li>\n            </ul>\n          </div>\n\n          <div class=\"mt-7 flex items-center justify-between\">\n            <button type=\"button\" class=\"text-sm ink-soft ghost-btn px-3 py-2 rounded-lg\" data-back=\"2\">Back</button>\n            <button type=\"submit\" class=\"cta-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm\" id=\"submit-btn\">\n              Create my workspace\n              <svg width=\"14\" height=\"14\" viewBox=\"0 0 14 14\" fill=\"none\" aria-hidden=\"true\"><path d=\"M3 7h8m0 0L7.5 3.5M11 7l-3.5 3.5\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>\n            </button>\n          </div>\n        </div>\n\n        <div id=\"step-done\" class=\"step-pane hide text-center\">\n          <div class=\"mx-auto w-14 h-14 rounded-full bg-indigo-soft text-indigo-ink inline-flex items-center justify-center\">\n            <svg width=\"26\" height=\"26\" viewBox=\"0 0 26 26\" fill=\"none\" aria-hidden=\"true\"><path d=\"M6 13.5 11 18.5 20 8\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>\n          </div>\n          <h2 class=\"font-display text-3xl font-semibold mt-5\">Your workspace is ready.</h2>\n          <p class=\"mt-2 ink-soft\">We mailed you a verification link. It usually lands in under a minute. While you wait, here is what happens next.</p>\n          <ul class=\"mt-6 max-w-md mx-auto space-y-3 text-sm text-left\">\n            <li class=\"flex items-start gap-3\"><span class=\"step-dot\" data-done=\"true\">1</span><span>Install the Lumio browser extension, it's how saves work in one tap.</span></li>\n            <li class=\"flex items-start gap-3\"><span class=\"step-dot\" data-done=\"true\">2</span><span>Forward any newsletter to save@lumio.app to try the auto summary.</span></li>\n            <li class=\"flex items-start gap-3\"><span class=\"step-dot\" data-done=\"true\">3</span><span>Tomorrow morning, your first two recall cards will be waiting.</span></li>\n          </ul>\n          <a href=\"index.html\" class=\"mt-8 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl cta-btn font-medium text-sm\">Back to the site</a>\n        </div>\n      </form>\n\n      <p class=\"mt-4 text-xs ink-soft text-center\">\n        This page is a bounded demo artifact. It does not transmit the form. NERIUM Builder replayed this signup from cache.\n      </p>\n    </section>\n\n    <aside class=\"md:col-span-5 md:sticky md:top-24 self-start space-y-5\">\n      <div class=\"floating-card rounded-2xl border border-line bg-paper p-6\">\n        <p class=\"text-xs uppercase tracking-wider ink-soft\">What your week looks like with Lumio</p>\n        <div class=\"mt-4 space-y-3 text-sm\">\n          <div class=\"flex items-center justify-between pb-3 hairline\">\n            <span class=\"font-medium\">Monday morning</span>\n            <span class=\"ink-soft\">Two recall cards, 4 min</span>\n          </div>\n          <div class=\"flex items-center justify-between pb-3 hairline\">\n            <span class=\"font-medium\">Wednesday evening</span>\n            <span class=\"ink-soft\">Three articles summarized</span>\n          </div>\n          <div class=\"flex items-center justify-between pb-3 hairline\">\n            <span class=\"font-medium\">Saturday afternoon</span>\n            <span class=\"ink-soft\">One long read, deep focus mode</span>\n          </div>\n          <div class=\"flex items-center justify-between\">\n            <span class=\"font-medium\">Sunday, 08:00</span>\n            <span class=\"ink-soft\">Weekly letter in your inbox</span>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"floating-card rounded-2xl border border-line bg-indigo-soft p-6 relative overflow-hidden\">\n        <div class=\"absolute inset-0 dot-grid opacity-40\" aria-hidden=\"true\"></div>\n        <div class=\"relative\">\n          <p class=\"text-xs uppercase tracking-wider text-indigo-ink font-semibold\">What one reader said</p>\n          <blockquote class=\"mt-3 font-display text-xl leading-snug\">\n            \"I signed up on a whim and the second weekly letter made me <span class=\"marker-highlight\">cry, in a small good way</span>. It handed me back a thought I had in May.\"\n          </blockquote>\n          <figcaption class=\"mt-4 text-sm ink-soft\">\n            Mikko Hakkarainen, Deep Reader since January\n          </figcaption>\n        </div>\n      </div>\n\n      <div class=\"rounded-2xl border border-line bg-paper p-6 text-sm\">\n        <p class=\"font-medium\">Lumio is calm by design.</p>\n        <ul class=\"mt-3 space-y-2 ink-soft\">\n          <li class=\"flex items-start gap-2\"><span class=\"text-accent\">&#9679;</span> No streak guilt, skipping days is fine.</li>\n          <li class=\"flex items-start gap-2\"><span class=\"text-accent\">&#9679;</span> No gamification that pretends to be growth.</li>\n          <li class=\"flex items-start gap-2\"><span class=\"text-accent\">&#9679;</span> Quiet recall, not loud notifications.</li>\n          <li class=\"flex items-start gap-2\"><span class=\"text-accent\">&#9679;</span> Your data exports on day one, not day ninety.</li>\n        </ul>\n      </div>\n    </aside>\n  </main>\n\n  <footer class=\"border-t border-line bg-paper\">\n    <div class=\"max-w-6xl mx-auto px-6 py-6 flex flex-wrap gap-4 justify-between items-center text-xs ink-soft\">\n      <p>Bounded demo build, shipped by NERIUM Builder. No actual account created.</p>\n      <p>&copy; 2026 Lumio. MIT licensed demo.</p>\n    </div>\n  </footer>\n\n  <script>\n    (function () {\n      'use strict';\n      const form = document.getElementById('signup-form');\n      const dots = {\n        1: document.getElementById('dot-1'),\n        2: document.getElementById('dot-2'),\n        3: document.getElementById('dot-3'),\n      };\n      const panes = {\n        1: document.getElementById('step-1'),\n        2: document.getElementById('step-2'),\n        3: document.getElementById('step-3'),\n        done: document.getElementById('step-done'),\n      };\n      const bar = document.getElementById('progress-bar');\n\n      function setActive(step) {\n        Object.entries(dots).forEach(function (entry) {\n          const key = entry[0];\n          const el = entry[1];\n          if (!el) return;\n          el.removeAttribute('data-active');\n          el.removeAttribute('data-done');\n          const k = Number(key);\n          if (k < step) el.setAttribute('data-done', 'true');\n          if (k === step) el.setAttribute('data-active', 'true');\n        });\n        Object.entries(panes).forEach(function (entry) {\n          entry[1].classList.add('hide');\n        });\n        const current = step === 'done' ? panes.done : panes[step];\n        if (current) current.classList.remove('hide');\n        const progress = step === 'done' ? 1 : (step - 1) / 2;\n        bar.style.transform = 'scaleX(' + progress + ')';\n      }\n\n      function validateStep1() {\n        let ok = true;\n        const name = form.elements['name'];\n        const email = form.elements['email'];\n        const password = form.elements['password'];\n        const agree = form.elements['agree'];\n        const show = function (field, valid) {\n          field.setAttribute('aria-invalid', valid ? 'false' : 'true');\n          const err = form.querySelector('[data-error=\"' + field.name + '\"]');\n          if (err) err.classList.toggle('hide', valid);\n        };\n        show(name, name.value.trim().length >= 2);\n        if (name.value.trim().length < 2) ok = false;\n        const emailOk = /.+@.+\\..+/.test(email.value);\n        show(email, emailOk);\n        if (!emailOk) ok = false;\n        const pwOk = password.value.length >= 10 && /\\d/.test(password.value);\n        show(password, pwOk);\n        if (!pwOk) ok = false;\n        if (!agree.checked) ok = false;\n        return ok;\n      }\n\n      form.querySelectorAll('[data-next]').forEach(function (btn) {\n        btn.addEventListener('click', function () {\n          const target = Number(btn.getAttribute('data-next'));\n          if (target === 2 && !validateStep1()) return;\n          setActive(target);\n        });\n      });\n      form.querySelectorAll('[data-back]').forEach(function (btn) {\n        btn.addEventListener('click', function () {\n          setActive(Number(btn.getAttribute('data-back')));\n        });\n      });\n\n      form.querySelectorAll('.seg-btn').forEach(function (label) {\n        label.addEventListener('click', function () {\n          const input = label.querySelector('input');\n          if (!input) return;\n          const name = input.name;\n          form.querySelectorAll('.seg-btn').forEach(function (other) {\n            const otherInput = other.querySelector('input');\n            if (otherInput && otherInput.name === name) other.setAttribute('data-selected', 'false');\n          });\n          label.setAttribute('data-selected', 'true');\n        });\n      });\n\n      const pw = form.elements['password'];\n      const pwOut = document.getElementById('pw-strength');\n      pw.addEventListener('input', function () {\n        const val = pw.value;\n        let score = 0;\n        if (val.length >= 10) score += 1;\n        if (/[A-Z]/.test(val)) score += 1;\n        if (/\\d/.test(val)) score += 1;\n        if (/[^A-Za-z0-9]/.test(val)) score += 1;\n        const label = ['Strength, unspecified', 'Strength, a bit light', 'Strength, fair', 'Strength, good', 'Strength, strong'][score] || 'Strength, strong';\n        pwOut.textContent = label;\n      });\n\n      form.addEventListener('submit', function (event) {\n        event.preventDefault();\n        setActive('done');\n      });\n\n      setActive(1);\n    })();\n  </script>\n</body>\n</html>\n"
+    }
+  ],
+  "replay_compatibility_version": "0.1.0"
+}

@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Lumio turns everything you read into lasting understanding. Capture highlights, auto-summarize, spaced recall built in." />
+  <title>Lumio, smart reading companion for busy minds</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: oklch(0.22 0.03 265);
+      --ink-soft: oklch(0.38 0.025 265);
+      --paper: oklch(0.985 0.008 90);
+      --paper-warm: oklch(0.96 0.022 78);
+      --accent: oklch(0.72 0.17 55);
+      --accent-deep: oklch(0.52 0.18 58);
+      --indigo: oklch(0.46 0.18 280);
+      --indigo-soft: oklch(0.92 0.03 280);
+      --sage: oklch(0.74 0.06 160);
+      --line: oklch(0.88 0.01 265);
+    }
+    html, body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+      font-feature-settings: 'cv11', 'ss01', 'ss03';
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-display { font-family: 'Fraunces', 'Iowan Old Style', Georgia, serif; font-feature-settings: 'ss01'; }
+    .ink { color: var(--ink); }
+    .ink-soft { color: var(--ink-soft); }
+    .bg-paper { background: var(--paper); }
+    .bg-paper-warm { background: var(--paper-warm); }
+    .bg-indigo-soft { background: var(--indigo-soft); }
+    .bg-accent { background: var(--accent); }
+    .text-accent { color: var(--accent-deep); }
+    .text-indigo-ink { color: var(--indigo); }
+    .border-line { border-color: var(--line); }
+    .dot-grid {
+      background-image: radial-gradient(circle, oklch(0.78 0.02 265 / 0.5) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+    .paper-texture {
+      background-color: var(--paper);
+      background-image:
+        radial-gradient(circle at 20% 10%, oklch(0.72 0.17 55 / 0.06), transparent 40%),
+        radial-gradient(circle at 80% 30%, oklch(0.46 0.18 280 / 0.07), transparent 45%),
+        radial-gradient(circle at 40% 90%, oklch(0.74 0.06 160 / 0.08), transparent 40%);
+    }
+    .hairline { box-shadow: inset 0 -1px 0 oklch(0.88 0.01 265); }
+    .glyph-underline {
+      background-image: linear-gradient(transparent 72%, oklch(0.72 0.17 55 / 0.4) 72%, oklch(0.72 0.17 55 / 0.4) 92%, transparent 92%);
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+    }
+    .floating-card {
+      box-shadow:
+        0 1px 0 oklch(1 0 0 / 0.6) inset,
+        0 24px 60px -24px oklch(0.22 0.03 265 / 0.22),
+        0 2px 8px -2px oklch(0.22 0.03 265 / 0.08);
+    }
+    .pill {
+      border: 1px solid var(--line);
+      background: color-mix(in oklch, var(--paper) 92%, white);
+    }
+    .tick {
+      width: 18px; height: 18px; border-radius: 999px;
+      background: color-mix(in oklch, var(--accent) 12%, white);
+      color: var(--accent-deep);
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .ghost-btn:hover { background: color-mix(in oklch, var(--paper-warm) 80%, white); }
+    .cta-btn {
+      background: var(--ink);
+      color: var(--paper);
+      transition: transform 120ms ease, box-shadow 200ms ease;
+    }
+    .cta-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px -8px oklch(0.22 0.03 265 / 0.45); }
+    .gradient-mask {
+      mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+    }
+    .marker-highlight {
+      background: linear-gradient(120deg, oklch(0.72 0.17 55 / 0.25) 0%, oklch(0.72 0.17 55 / 0.1) 100%);
+      padding: 0 0.15em;
+      border-radius: 2px;
+    }
+    .feature-ico {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: oklch(0.92 0.03 280);
+      color: var(--indigo);
+    }
+    .metric { font-variant-numeric: tabular-nums; }
+    @media (prefers-reduced-motion: no-preference) {
+      .float-y { animation: float 9s ease-in-out infinite; }
+      @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen paper-texture">
+  <header class="sticky top-0 z-30 backdrop-blur bg-paper/80 hairline">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-2" aria-label="Lumio home">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <path d="M6 4h11a5 5 0 0 1 5 5v15H11a5 5 0 0 1-5-5V4Z" fill="oklch(0.22 0.03 265)"/>
+          <path d="M9 8h9v9H9z" fill="oklch(0.72 0.17 55)"/>
+          <circle cx="18.5" cy="18.5" r="3.5" fill="oklch(0.46 0.18 280)"/>
+        </svg>
+        <span class="font-display text-xl font-semibold tracking-tight">Lumio</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-8 text-sm ink-soft">
+        <a href="#features" class="hover:text-[color:var(--ink)]">Features</a>
+        <a href="#how" class="hover:text-[color:var(--ink)]">How it works</a>
+        <a href="#pricing" class="hover:text-[color:var(--ink)]">Pricing</a>
+        <a href="#faq" class="hover:text-[color:var(--ink)]">FAQ</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <a href="#" class="hidden sm:inline-flex text-sm px-3 py-2 rounded-lg ghost-btn ink-soft">Sign in</a>
+        <a href="signup.html" class="cta-btn inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg">
+          Start free
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7h8m0 0L7.5 3.5M11 7l-3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="relative overflow-hidden">
+      <div class="absolute inset-0 dot-grid gradient-mask opacity-60" aria-hidden="true"></div>
+      <div class="relative max-w-6xl mx-auto px-6 pt-16 pb-24 grid md:grid-cols-12 gap-10 items-center">
+        <div class="md:col-span-7">
+          <div class="inline-flex items-center gap-2 pill px-3 py-1.5 rounded-full text-xs ink-soft mb-6">
+            <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+            New, Reading Atlas crosses sources automatically
+          </div>
+          <h1 class="font-display text-5xl md:text-6xl leading-[1.05] tracking-tight font-semibold">
+            Read smarter.<br/>
+            <span class="glyph-underline">Remember longer.</span>
+          </h1>
+          <p class="mt-6 text-lg md:text-xl ink-soft max-w-xl">
+            Lumio is the smart reading companion that captures highlights, auto-summarizes long articles, and quietly ties it all together with spaced recall, so the best parts of what you read actually stick.
+          </p>
+          <div class="mt-8 flex flex-wrap items-center gap-3">
+            <a href="signup.html" class="cta-btn inline-flex items-center gap-2 px-5 py-3 rounded-xl font-medium">
+              Start free, no card
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10m0 0L9 4m4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <a href="#how" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl ghost-btn ink-soft text-sm font-medium border border-line">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M5.8 4.7 9.5 7l-3.7 2.3V4.7Z" fill="currentColor"/></svg>
+              See a 90 second tour
+            </a>
+          </div>
+          <dl class="mt-10 grid grid-cols-3 gap-6 max-w-lg">
+            <div>
+              <dt class="text-xs uppercase tracking-wider ink-soft">Avg articles saved</dt>
+              <dd class="metric font-display text-2xl font-semibold mt-1">84<span class="text-sm ink-soft">/mo</span></dd>
+            </div>
+            <div>
+              <dt class="text-xs uppercase tracking-wider ink-soft">Recall lift</dt>
+              <dd class="metric font-display text-2xl font-semibold mt-1">3.4x</dd>
+            </div>
+            <div>
+              <dt class="text-xs uppercase tracking-wider ink-soft">Time saved</dt>
+              <dd class="metric font-display text-2xl font-semibold mt-1">5h<span class="text-sm ink-soft">/wk</span></dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="md:col-span-5 relative">
+          <div class="float-y relative mx-auto max-w-md">
+            <div class="floating-card rounded-2xl bg-paper border border-line p-5">
+              <div class="flex items-center gap-2 text-xs ink-soft">
+                <span class="w-2 h-2 rounded-full bg-accent"></span>
+                Reading session, 14 min
+                <span class="ml-auto pill px-2 py-0.5 rounded-full text-[11px]">focus mode</span>
+              </div>
+              <h3 class="mt-3 font-display text-lg font-semibold leading-snug">The Quiet Return of Long Attention</h3>
+              <p class="mt-1 text-xs ink-soft">Aeon, 4,300 words, by Maya Delacroix</p>
+              <p class="mt-4 text-sm leading-relaxed">
+                The counter-movement is not nostalgia for paper, but a <span class="marker-highlight">renegotiation with depth</span> itself. Readers are rebuilding rituals that protect the reach of a single idea long enough to let it take root.
+              </p>
+              <div class="mt-4 flex items-center justify-between text-xs ink-soft">
+                <span class="inline-flex items-center gap-1.5"><span class="tick"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> highlighted</span>
+                <span>3 notes linked</span>
+              </div>
+            </div>
+            <div class="floating-card absolute -right-6 -bottom-10 w-64 rounded-2xl bg-indigo-soft border border-line p-4">
+              <div class="text-[11px] uppercase tracking-wider text-indigo-ink">Recall today</div>
+              <div class="mt-2 flex items-baseline gap-1">
+                <span class="font-display text-3xl font-semibold">12</span>
+                <span class="text-xs ink-soft">cards due</span>
+              </div>
+              <div class="mt-3 h-1.5 rounded-full bg-paper overflow-hidden">
+                <div class="h-full bg-accent" style="width:68%"></div>
+              </div>
+              <div class="mt-2 text-xs ink-soft">Streak, 23 days</div>
+            </div>
+            <div class="floating-card absolute -left-6 -top-8 w-56 rounded-2xl bg-paper-warm border border-line p-4">
+              <div class="text-[11px] uppercase tracking-wider ink-soft">Atlas suggests</div>
+              <p class="mt-2 text-sm leading-snug">
+                This idea connects to your note from <span class="font-semibold">Crawford, Shop Class as Soulcraft</span>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="border-y border-line bg-paper-warm/60">
+      <div class="max-w-6xl mx-auto px-6 py-10">
+        <p class="text-xs uppercase tracking-wider ink-soft text-center">Trusted by readers at</p>
+        <div class="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6 items-center opacity-80">
+          <div class="font-display text-lg text-center">Stanford</div>
+          <div class="font-display text-lg text-center">MIT Media Lab</div>
+          <div class="font-display text-lg text-center">The Atlantic</div>
+          <div class="font-display text-lg text-center">Deepmind</div>
+          <div class="font-display text-lg text-center">Le Monde</div>
+          <div class="font-display text-lg text-center">Tokopedia</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="max-w-6xl mx-auto px-6 py-24">
+      <div class="max-w-2xl">
+        <p class="text-xs uppercase tracking-wider text-accent font-semibold">Features</p>
+        <h2 class="font-display text-4xl md:text-5xl font-semibold mt-3 tracking-tight">Built for the way you actually read.</h2>
+        <p class="mt-4 ink-soft text-lg">No more highlights that die in a scrapbook. Lumio quietly turns every reading session into a growing atlas of ideas you can lean on.</p>
+      </div>
+
+      <div class="mt-14 grid md:grid-cols-2 gap-6">
+        <article class="floating-card rounded-2xl border border-line bg-paper p-7">
+          <span class="feature-ico" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 4.5A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V18l-4.5-2.25L6 18V4.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M18 7v12l-4-2" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </span>
+          <h3 class="mt-5 font-display text-2xl font-semibold">Auto summaries that respect the text.</h3>
+          <p class="mt-3 ink-soft">Paste a link or forward an email, Lumio returns a three-paragraph summary keyed to the author's own phrasing, with the passages worth re-reading kept intact.</p>
+          <ul class="mt-5 space-y-2 text-sm">
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Long reads, PDFs, newsletters, Substacks</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Preserves quotations, no paraphrase drift</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Tone aware, Essay vs Paper vs Brief modes</li>
+          </ul>
+        </article>
+
+        <article class="floating-card rounded-2xl border border-line bg-paper p-7">
+          <span class="feature-ico" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="6" cy="6" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="16" cy="7" r="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="15" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 7.5 14 9M7.5 8 10 13M13.5 9 12 12.5" stroke="currentColor" stroke-width="1.3"/></svg>
+          </span>
+          <h3 class="mt-5 font-display text-2xl font-semibold">Reading Atlas, ideas that know each other.</h3>
+          <p class="mt-3 ink-soft">Every highlight joins a quiet graph of concepts. When a new article touches an old one, Lumio surfaces the link in context, no tagging chore required.</p>
+          <ul class="mt-5 space-y-2 text-sm">
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Cross-source concept linking</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Side-by-side quote comparison</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Export to Obsidian, Notion, or plain Markdown</li>
+          </ul>
+        </article>
+
+        <article class="floating-card rounded-2xl border border-line bg-paper p-7">
+          <span class="feature-ico" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="4" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 9h16M8 4v2M14 4v2" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <h3 class="mt-5 font-display text-2xl font-semibold">Spaced recall, without the flashcard guilt.</h3>
+          <p class="mt-3 ink-soft">Lumio picks two or three short prompts a day from what you actually underlined. No cards to make, no backlog to tame, just five quiet minutes that keep ideas alive.</p>
+          <ul class="mt-5 space-y-2 text-sm">
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Adaptive interval, Ebbinghaus plus your pace</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Morning commute mode, audio only</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Skip without penalty, Lumio learns your tempo</li>
+          </ul>
+        </article>
+
+        <article class="floating-card rounded-2xl border border-line bg-paper p-7">
+          <span class="feature-ico" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4 18V6M4 6l5-3 4 3 5-3v12l-5 3-4-3-5 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </span>
+          <h3 class="mt-5 font-display text-2xl font-semibold">Focus sessions that don't moralize.</h3>
+          <p class="mt-3 ink-soft">Start a session, Lumio hides the noise, tracks your reading pace, and hands back a gentle recap. Stats if you want them, silence if you don't.</p>
+          <ul class="mt-5 space-y-2 text-sm">
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Per-source pace, not just words per minute</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Distraction-free web reader overlay</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Weekly reading letter, sent to your inbox</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="how" class="bg-paper-warm border-y border-line">
+      <div class="max-w-6xl mx-auto px-6 py-24 grid md:grid-cols-12 gap-10">
+        <div class="md:col-span-4">
+          <p class="text-xs uppercase tracking-wider text-accent font-semibold">How it works</p>
+          <h2 class="font-display text-4xl md:text-5xl font-semibold mt-3 tracking-tight">Three quiet habits. One larger mind.</h2>
+          <p class="mt-4 ink-soft">You don't change what you read. Lumio changes what happens after.</p>
+        </div>
+        <ol class="md:col-span-8 space-y-6">
+          <li class="relative flex gap-5 rounded-2xl border border-line bg-paper p-6">
+            <span class="font-display text-3xl text-accent font-semibold leading-none w-10">01</span>
+            <div>
+              <h3 class="font-display text-xl font-semibold">Save anything in one tap.</h3>
+              <p class="mt-2 ink-soft">Browser extension, iOS share sheet, email forward, RSS. Lumio meets your reading where it already happens.</p>
+            </div>
+          </li>
+          <li class="relative flex gap-5 rounded-2xl border border-line bg-paper p-6">
+            <span class="font-display text-3xl text-accent font-semibold leading-none w-10">02</span>
+            <div>
+              <h3 class="font-display text-xl font-semibold">Highlight like you always do.</h3>
+              <p class="mt-2 ink-soft">Lumio's reader shows a clean column with your marks held in place. The Atlas learns quietly in the background.</p>
+            </div>
+          </li>
+          <li class="relative flex gap-5 rounded-2xl border border-line bg-paper p-6">
+            <span class="font-display text-3xl text-accent font-semibold leading-none w-10">03</span>
+            <div>
+              <h3 class="font-display text-xl font-semibold">Five minutes a day, the rest stays with you.</h3>
+              <p class="mt-2 ink-soft">A short recall prompt in the morning, a quiet weekly letter on Sunday. Everything else waits for when you need it.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="pricing" class="max-w-6xl mx-auto px-6 py-24">
+      <div class="max-w-2xl">
+        <p class="text-xs uppercase tracking-wider text-accent font-semibold">Pricing</p>
+        <h2 class="font-display text-4xl md:text-5xl font-semibold mt-3 tracking-tight">Start free. Upgrade when it earns its keep.</h2>
+        <p class="mt-4 ink-soft text-lg">No seat minimums, no onboarding call, cancel from the settings page in a single click.</p>
+      </div>
+
+      <div class="mt-12 grid md:grid-cols-3 gap-6">
+        <div class="rounded-2xl border border-line bg-paper p-7 flex flex-col">
+          <h3 class="font-display text-2xl font-semibold">Reader</h3>
+          <p class="mt-1 text-sm ink-soft">For the curious habit.</p>
+          <div class="mt-5 flex items-baseline gap-1">
+            <span class="font-display text-4xl font-semibold metric">$0</span>
+            <span class="text-sm ink-soft">/month</span>
+          </div>
+          <ul class="mt-6 space-y-3 text-sm">
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> 25 saved articles per month</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Auto summary, Brief mode</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Daily recall, 2 cards</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Export to Markdown</li>
+          </ul>
+          <a href="signup.html" class="mt-auto pt-8">
+            <span class="inline-flex justify-center w-full py-2.5 rounded-lg border border-line ghost-btn font-medium text-sm">Start free</span>
+          </a>
+        </div>
+
+        <div class="rounded-2xl border-2 p-7 flex flex-col bg-paper relative" style="border-color: var(--ink);">
+          <div class="absolute -top-3 left-6 inline-flex items-center gap-1.5 bg-[color:var(--ink)] text-[color:var(--paper)] text-[11px] font-medium px-2.5 py-1 rounded-full">
+            Most chosen
+          </div>
+          <h3 class="font-display text-2xl font-semibold">Deep Reader</h3>
+          <p class="mt-1 text-sm ink-soft">For the regular reader who wants it to stick.</p>
+          <div class="mt-5 flex items-baseline gap-1">
+            <span class="font-display text-4xl font-semibold metric">$8</span>
+            <span class="text-sm ink-soft">/month</span>
+          </div>
+          <ul class="mt-6 space-y-3 text-sm">
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Unlimited saves and summaries</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Reading Atlas, cross-source links</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Spaced recall, all modes</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Weekly reading letter</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Obsidian and Notion sync</li>
+          </ul>
+          <a href="signup.html?plan=deep" class="mt-auto pt-8">
+            <span class="cta-btn inline-flex justify-center w-full py-2.5 rounded-lg font-medium text-sm">Start 14 day trial</span>
+          </a>
+        </div>
+
+        <div class="rounded-2xl border border-line bg-paper p-7 flex flex-col">
+          <h3 class="font-display text-2xl font-semibold">Studio</h3>
+          <p class="mt-1 text-sm ink-soft">For teams that read together.</p>
+          <div class="mt-5 flex items-baseline gap-1">
+            <span class="font-display text-4xl font-semibold metric">$24</span>
+            <span class="text-sm ink-soft">/seat / month</span>
+          </div>
+          <ul class="mt-6 space-y-3 text-sm">
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Everything in Deep Reader</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Shared Atlases and reading circles</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> SSO, audit log, admin roles</li>
+            <li class="flex items-start gap-2"><span class="tick" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.5 4 7.5 8 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Weekly digest for the whole team</li>
+          </ul>
+          <a href="signup.html?plan=studio" class="mt-auto pt-8">
+            <span class="inline-flex justify-center w-full py-2.5 rounded-lg border border-line ghost-btn font-medium text-sm">Start a Studio</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto px-6 pb-24">
+      <div class="grid md:grid-cols-3 gap-6">
+        <figure class="rounded-2xl border border-line bg-paper p-6">
+          <blockquote class="text-base leading-relaxed">
+            "Lumio replaced three apps that all secretly knew I wasn't using them. It's the only reading tool that doesn't embarrass me on Sundays."
+          </blockquote>
+          <figcaption class="mt-4 flex items-center gap-3 text-sm">
+            <span class="w-9 h-9 rounded-full bg-indigo-soft text-indigo-ink font-semibold inline-flex items-center justify-center">IA</span>
+            <span>
+              <span class="block font-medium">Ines Ariyanti</span>
+              <span class="block ink-soft">Writer, Jakarta</span>
+            </span>
+          </figcaption>
+        </figure>
+        <figure class="rounded-2xl border border-line bg-paper p-6">
+          <blockquote class="text-base leading-relaxed">
+            "I save about 20 papers a week. Before Lumio, I remembered two. Now the Atlas shows me I was chasing the same thesis across four of them."
+          </blockquote>
+          <figcaption class="mt-4 flex items-center gap-3 text-sm">
+            <span class="w-9 h-9 rounded-full bg-indigo-soft text-indigo-ink font-semibold inline-flex items-center justify-center">DO</span>
+            <span>
+              <span class="block font-medium">Dami Okonkwo</span>
+              <span class="block ink-soft">PhD candidate, Lagos</span>
+            </span>
+          </figcaption>
+        </figure>
+        <figure class="rounded-2xl border border-line bg-paper p-6">
+          <blockquote class="text-base leading-relaxed">
+            "The spaced recall prompts are gentle, which sounds small. It is not small. It's why I actually read them every morning."
+          </blockquote>
+          <figcaption class="mt-4 flex items-center gap-3 text-sm">
+            <span class="w-9 h-9 rounded-full bg-indigo-soft text-indigo-ink font-semibold inline-flex items-center justify-center">MH</span>
+            <span>
+              <span class="block font-medium">Mikko Hakkarainen</span>
+              <span class="block ink-soft">Product lead, Helsinki</span>
+            </span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="faq" class="bg-paper-warm border-y border-line">
+      <div class="max-w-4xl mx-auto px-6 py-24">
+        <p class="text-xs uppercase tracking-wider text-accent font-semibold">Questions worth asking</p>
+        <h2 class="font-display text-4xl md:text-5xl font-semibold mt-3 tracking-tight">Frequently, and honestly, asked.</h2>
+        <dl class="mt-10 divide-y divide-[color:var(--line)] border-y border-line">
+          <details class="group py-5">
+            <summary class="flex items-center justify-between cursor-pointer list-none">
+              <span class="font-display text-lg font-semibold">Is my reading data trained on?</summary>
+              <span class="transition group-open:rotate-45 ink-soft">+</span>
+            </summary>
+            <p class="mt-3 ink-soft">No. Your highlights, summaries, and recall history never leave your workspace, and are not used to train Lumio or any third-party model. Summary inference runs on Anthropic endpoints with zero data retention enabled.</p>
+          </details>
+          <details class="group py-5">
+            <summary class="flex items-center justify-between cursor-pointer list-none">
+              <span class="font-display text-lg font-semibold">What sources can I import from?</span>
+              <span class="transition group-open:rotate-45 ink-soft">+</span>
+            </summary>
+            <p class="mt-3 ink-soft">Web articles via the browser extension, PDFs up to 300 pages, ePub books, Kindle highlights, Substack emails, RSS feeds, and direct paste. On the Deep Reader plan, Instapaper and Pocket archives migrate in a single click.</p>
+          </details>
+          <details class="group py-5">
+            <summary class="flex items-center justify-between cursor-pointer list-none">
+              <span class="font-display text-lg font-semibold">Will recall feel like homework?</span>
+              <span class="transition group-open:rotate-45 ink-soft">+</span>
+            </summary>
+            <p class="mt-3 ink-soft">Two cards a morning, skippable without penalty, and Lumio learns your tempo. If a topic no longer earns its five seconds, we quietly retire it. It is designed to feel like picking up where you left off, not homework.</p>
+          </details>
+          <details class="group py-5">
+            <summary class="flex items-center justify-between cursor-pointer list-none">
+              <span class="font-display text-lg font-semibold">Can I leave with my data?</span>
+              <span class="transition group-open:rotate-45 ink-soft">+</span>
+            </summary>
+            <p class="mt-3 ink-soft">Yes, always. One-click export of every highlight, note, and summary into portable Markdown, JSON, or a ready-made Obsidian vault. There is no lock-in, we think that makes us try harder.</p>
+          </details>
+        </dl>
+      </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto px-6 py-24 text-center">
+      <h2 class="font-display text-4xl md:text-5xl font-semibold tracking-tight">Start a quieter relationship with what you read.</h2>
+      <p class="mt-4 ink-soft max-w-xl mx-auto">Free to try, five minutes to get set up, and the atlas is yours to keep either way.</p>
+      <div class="mt-8 inline-flex flex-wrap items-center justify-center gap-3">
+        <a href="signup.html" class="cta-btn inline-flex items-center gap-2 px-5 py-3 rounded-xl font-medium">
+          Start free, no card
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10m0 0L9 4m4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#features" class="ghost-btn inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-line text-sm font-medium ink-soft">
+          See features again
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-line bg-paper">
+    <div class="max-w-6xl mx-auto px-6 py-10 grid md:grid-cols-4 gap-8 text-sm">
+      <div>
+        <div class="flex items-center gap-2">
+          <svg width="22" height="22" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <path d="M6 4h11a5 5 0 0 1 5 5v15H11a5 5 0 0 1-5-5V4Z" fill="oklch(0.22 0.03 265)"/>
+            <path d="M9 8h9v9H9z" fill="oklch(0.72 0.17 55)"/>
+            <circle cx="18.5" cy="18.5" r="3.5" fill="oklch(0.46 0.18 280)"/>
+          </svg>
+          <span class="font-display text-lg font-semibold">Lumio</span>
+        </div>
+        <p class="mt-3 ink-soft">Smart reading companion, built in the open.</p>
+      </div>
+      <div>
+        <p class="text-xs uppercase tracking-wider ink-soft">Product</p>
+        <ul class="mt-3 space-y-2">
+          <li><a href="#features" class="hover:underline">Features</a></li>
+          <li><a href="#pricing" class="hover:underline">Pricing</a></li>
+          <li><a href="#faq" class="hover:underline">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="text-xs uppercase tracking-wider ink-soft">Company</p>
+        <ul class="mt-3 space-y-2">
+          <li><a href="#" class="hover:underline">Changelog</a></li>
+          <li><a href="#" class="hover:underline">About</a></li>
+          <li><a href="#" class="hover:underline">Press</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="text-xs uppercase tracking-wider ink-soft">Legal</p>
+        <ul class="mt-3 space-y-2">
+          <li><a href="#" class="hover:underline">Privacy</a></li>
+          <li><a href="#" class="hover:underline">Terms</a></li>
+          <li><a href="#" class="hover:underline">Security</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-line">
+      <div class="max-w-6xl mx-auto px-6 py-5 flex flex-wrap gap-4 justify-between items-center text-xs ink-soft">
+        <p>Built by a small studio in Jakarta. MIT licensed demo. &copy; 2026 Lumio.</p>
+        <p>Shipped by NERIUM Builder, bounded demo pipeline, cached and replayed.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

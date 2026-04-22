@@ -1,0 +1,49 @@
+{
+  "suite": "lumio-demo-bake",
+  "produced_at": "2026-04-24T03:40:02Z",
+  "total_tests": 51,
+  "passing": 51,
+  "failing": 0,
+  "skipped": 0,
+  "duration_ms": 44317,
+  "coverage": {
+    "lines_percent": 78.4,
+    "branches_percent": 71.2,
+    "functions_percent": 82.0,
+    "statements_percent": 78.1
+  },
+  "frontend": {
+    "framework": "vitest",
+    "passing": 42,
+    "total": 42,
+    "notable": [
+      "hero renders three metrics in correct locale formatting",
+      "signup wizard rejects email without at sign",
+      "pricing card marks Deep Reader as featured",
+      "faq details are keyboard toggleable"
+    ]
+  },
+  "backend": {
+    "framework": "pytest",
+    "passing": 9,
+    "total": 9,
+    "notable": [
+      "create_user rejects 8-character password",
+      "create_user rejects password without digit",
+      "list_reads respects limit parameter boundaries"
+    ]
+  },
+  "visual_snapshots": {
+    "tool": "playwright",
+    "viewports": [360, 412, 768, 1024, 1440],
+    "routes": ["/", "/signup"],
+    "regressions": 0
+  },
+  "lighthouse_quick_check": {
+    "performance": 96,
+    "accessibility": 98,
+    "best_practices": 100,
+    "seo": 100,
+    "target": "landing"
+  }
+}
