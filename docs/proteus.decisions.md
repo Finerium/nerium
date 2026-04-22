@@ -122,10 +122,31 @@ Standing CLAUDE.md anti-patterns. Noted here for ADR auditability and to anchor 
 
 ---
 
+## ADR-009: Proteus-v2 review fixes (audit pass)
+
+**Context.** Self-initiated Proteus-v2 audit pass flagged a CRITICAL adapter-shape bug and a handful of MINOR deadcode and fidelity-note gaps. Findings and fixes captured in `docs/qa/proteus_v2_review.md`.
+
+**Decision.** Apply surgical fixes without re-litigating locked ADRs (001 through 007).
+
+**Fixes applied.**
+1. `anthropic_adapter.ts` CRITICAL: `multimodalToBlock` previously emitted `source: {type: 'file', url: ref}` for non-http image refs, which is not a valid Anthropic image content block shape. Now discriminates: http(s) to `source.type=url`, `file_<id>` pattern to `source.type=file` with `file_id`, anything else drops with a fidelity note. Real API calls no longer produce malformed bodies.
+2. `anthropic_adapter.ts` MINOR: `response_format.kind='xml'` now emits a fidelity note (previously silent), matching the json_object/json_schema handling pattern.
+3. `anthropic_adapter.ts` MINOR: system message with `multimodal_parts` now emits a fidelity note explaining the drop (Anthropic system field is text only).
+4. `gemini_adapter.mock.ts` MINOR: collapsed dead conditional in `multimodalPart` whose two branches returned identical objects; non-http references now annotate a mock-only note so consumers know real Gemini would require a Files API upload.
+5. `gemini_adapter.mock.ts` MINOR: system message with `multimodal_parts` now emits a fidelity note.
+6. `agent_intent.ts` MINOR: removed dead empty `if` block in the tool_result forEach walker; consolidated the sequential sanity check with a clarifying comment.
+7. `proteus.output.md` spec drift: Section 7 round-trip test previously referenced `tool_use` which the IR cannot express in outbound messages; rewrote the test to match schema capability and added an explicit note that assistant tool_use round-trip is a contract-level gap.
+
+**Consequences.** No breaking changes to public adapter surface. Fidelity note coverage is now consistent across honest-claim pathways. The assistant tool_use IR gap is promoted from implicit limitation to explicit Open Question for Pythia v0.2.0 (see below).
+
+---
+
 ## Open Questions (Ferry to Apollo or V3 when relevant)
 
 - Cache marker granularity (per-block TTL hints). Contract Section 11 open item.
 - Streaming surface. Current contract is request-response. Post-hackathon extension.
 - RFC 8785 canonicalization upgrade if audit path demands cryptographic determinism across Unicode normalization.
+- Assistant `tool_use` request shape missing from `MessageContent` v0.1.0. IR can represent `tool_result` inbound but not an assistant's outbound tool_use content block. Multi-turn conversations that preserve tool_use across turns are not round-trippable. Pythia v0.2.0 ferry territory.
+- Sync fingerprint precision degrades for hash values where `h2 > 2^21` (JS Number mantissa limit in `(h2 >>> 0) * 0x100000000 + (h1 >>> 0)`). Collision clustering is acceptable for intra-session identity per ADR-005; audit paths should use the async WebCrypto `hash` export. Upgrade to BigInt or xxhash128 is post-hackathon.
 
 End of Proteus decisions log.

@@ -99,6 +99,11 @@ export class GeminiAdapterMock extends VendorAdapter {
         if (m.cache_marker) {
           fidelity_notes.push('cache_marker dropped (Gemini prompt caching not supported in mock)');
         }
+        if (m.multimodal_parts && m.multimodal_parts.length > 0) {
+          fidelity_notes.push(
+            'multimodal_parts on system message dropped (Gemini system_instruction is text only)',
+          );
+        }
       } else {
         nonSystem.push(m);
       }
@@ -217,11 +222,17 @@ function toGeminiFunction(t: ToolDefinition): GeminiFunctionDeclaration {
   return { name: t.name, description: t.description, parameters: t.parameters };
 }
 
-function multimodalPart(kind: string, reference: string): GeminiPart | null {
+function multimodalPart(
+  kind: string,
+  reference: string,
+  fidelity_notes: string[],
+): GeminiPart | null {
   if (kind !== 'image' && kind !== 'pdf' && kind !== 'audio' && kind !== 'video') return null;
   const mime = kindToMime(kind);
-  if (/^https?:/i.test(reference)) {
-    return { file_data: { mime_type: mime, file_uri: reference } };
+  if (!/^https?:/i.test(reference)) {
+    fidelity_notes.push(
+      `multimodal reference ${reference} is not an http(s) URL; mock emits file_data with file_uri unchanged (real Gemini would require prior Files API upload)`,
+    );
   }
   return { file_data: { mime_type: mime, file_uri: reference } };
 }
@@ -272,7 +283,7 @@ function mergeRunsForGemini(messages: MessageContent[], fidelity_notes: string[]
 
     if (m.multimodal_parts) {
       for (const p of m.multimodal_parts) {
-        const part = multimodalPart(p.kind, p.reference);
+        const part = multimodalPart(p.kind, p.reference, fidelity_notes);
         if (part) parts.push(part);
         else fidelity_notes.push(`multimodal kind ${p.kind} not mapped for Gemini, dropped`);
       }

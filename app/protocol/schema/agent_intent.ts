@@ -204,15 +204,13 @@ export function validate(intent: AgentIntent): ValidationResult {
       }
     }
 
+    // tool_call_id pairing with the originating assistant tool_use block is an
+    // adapter-level concern; schema validation only ensures a prior assistant
+    // turn exists so the tool_result makes sequential sense.
     intent.messages.forEach((m, i) => {
-      if (m.tool_call_id && m.role === 'tool_result') {
-        // tool_call_id references are pairwise with prior assistant tool_use blocks; deep
-        // pairing validation is adapter-level. Schema validation only ensures shape.
-      }
       if (m.role === 'tool_result' && m.tool_call_id) {
-        const earlier = intent.messages.slice(0, i);
-        const hasMatch = earlier.some((prev) => prev.role === 'assistant');
-        if (!hasMatch) {
+        const hasPriorAssistant = intent.messages.slice(0, i).some((prev) => prev.role === 'assistant');
+        if (!hasPriorAssistant) {
           warnings.push(`messages[${i}] tool_result appears with no prior assistant turn`);
         }
       }

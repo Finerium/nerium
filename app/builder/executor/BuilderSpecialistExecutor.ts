@@ -184,6 +184,13 @@ export class AnthropicDirectExecutor extends BuilderSpecialistExecutor {
       budget_wallclock_seconds: input.budget_wallclock_seconds,
     }, input.specialist_id);
 
+    const error_message = 'AnthropicDirectExecutor.execute not implemented yet (P2)';
+    await this.emit('pipeline.step.failed', input, {
+      specialist_id: input.specialist_id,
+      error_message,
+      retry_count: 0,
+    }, input.specialist_id);
+
     return {
       specialist_id: input.specialist_id,
       pipeline_run_id: input.pipeline_run_id,
@@ -194,7 +201,7 @@ export class AnthropicDirectExecutor extends BuilderSpecialistExecutor {
       cost_usd: 0,
       wallclock_ms: 0,
       vendor_lane_used: this.lane,
-      error_message: 'AnthropicDirectExecutor.execute not implemented yet (P2)',
+      error_message,
     };
   }
 }
@@ -241,6 +248,22 @@ export class AnthropicManagedExecutor extends BuilderSpecialistExecutor {
 
   async execute(input: SpecialistInput): Promise<SpecialistOutput> {
     // Placeholder. Heracles P2 replaces with real MA session orchestration.
+    await this.emit('pipeline.step.started', input, {
+      specialist_id: input.specialist_id,
+      role: input.role,
+      vendor_lane: this.lane,
+      budget_tokens: input.budget_tokens,
+      budget_wallclock_seconds: input.budget_wallclock_seconds,
+    }, input.specialist_id);
+
+    const error_message =
+      'AnthropicManagedExecutor.execute is a P1 skeleton. Heracles P2 owns implementation.';
+    await this.emit('pipeline.step.failed', input, {
+      specialist_id: input.specialist_id,
+      error_message,
+      retry_count: 0,
+    }, input.specialist_id);
+
     return {
       specialist_id: input.specialist_id,
       pipeline_run_id: input.pipeline_run_id,
@@ -251,8 +274,7 @@ export class AnthropicManagedExecutor extends BuilderSpecialistExecutor {
       cost_usd: 0,
       wallclock_ms: 0,
       vendor_lane_used: this.lane,
-      error_message:
-        'AnthropicManagedExecutor.execute is a P1 skeleton. Heracles P2 owns implementation.',
+      error_message,
     };
   }
 }
@@ -275,18 +297,36 @@ export class GeminiStubExecutor extends BuilderSpecialistExecutor {
   }
 
   async execute(input: SpecialistInput): Promise<SpecialistOutput> {
+    await this.emit('pipeline.step.started', input, {
+      specialist_id: input.specialist_id,
+      role: input.role,
+      vendor_lane: this.lane,
+      budget_tokens: input.budget_tokens,
+      budget_wallclock_seconds: input.budget_wallclock_seconds,
+    }, input.specialist_id);
+
+    const artifacts = [
+      {
+        path: `simulated/${input.specialist_id}.note.md`,
+        content:
+          'Simulated Gemini response. Multi-vendor lane is a post-hackathon feature surface.',
+      },
+    ];
+
+    await this.emit('pipeline.step.completed', input, {
+      specialist_id: input.specialist_id,
+      tokens_consumed: { input: 0, output: 0 },
+      cost_usd: 0,
+      wallclock_ms: 1,
+      artifact_count: artifacts.length,
+    }, input.specialist_id);
+
     return {
       specialist_id: input.specialist_id,
       pipeline_run_id: input.pipeline_run_id,
       step_index: input.step_index,
       status: 'success',
-      artifacts: [
-        {
-          path: `simulated/${input.specialist_id}.note.md`,
-          content:
-            'Simulated Gemini response. Multi-vendor lane is a post-hackathon feature surface.',
-        },
-      ],
+      artifacts,
       tokens_consumed: { input: 0, output: 0 },
       cost_usd: 0,
       wallclock_ms: 1,
@@ -307,18 +347,36 @@ export class HiggsfieldStubExecutor extends BuilderSpecialistExecutor {
   }
 
   async execute(input: SpecialistInput): Promise<SpecialistOutput> {
+    await this.emit('pipeline.step.started', input, {
+      specialist_id: input.specialist_id,
+      role: input.role,
+      vendor_lane: this.lane,
+      budget_tokens: input.budget_tokens,
+      budget_wallclock_seconds: input.budget_wallclock_seconds,
+    }, input.specialist_id);
+
+    const artifacts = [
+      {
+        path: `simulated/${input.specialist_id}.note.md`,
+        content:
+          'Simulated Higgsfield response. Multi-vendor lane is a post-hackathon feature surface.',
+      },
+    ];
+
+    await this.emit('pipeline.step.completed', input, {
+      specialist_id: input.specialist_id,
+      tokens_consumed: { input: 0, output: 0 },
+      cost_usd: 0,
+      wallclock_ms: 1,
+      artifact_count: artifacts.length,
+    }, input.specialist_id);
+
     return {
       specialist_id: input.specialist_id,
       pipeline_run_id: input.pipeline_run_id,
       step_index: input.step_index,
       status: 'success',
-      artifacts: [
-        {
-          path: `simulated/${input.specialist_id}.note.md`,
-          content:
-            'Simulated Higgsfield response. Multi-vendor lane is a post-hackathon feature surface.',
-        },
-      ],
+      artifacts,
       tokens_consumed: { input: 0, output: 0 },
       cost_usd: 0,
       wallclock_ms: 1,

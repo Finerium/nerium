@@ -20,12 +20,14 @@ import {
   VendorToolUseCall,
 } from './VendorAdapter';
 
+type AnthropicImageSource =
+  | { type: 'url'; url: string }
+  | { type: 'base64'; media_type: string; data: string }
+  | { type: 'file'; file_id: string };
+
 type AnthropicContentBlock =
   | { type: 'text'; text: string; cache_control?: { type: 'ephemeral' } }
-  | {
-      type: 'image';
-      source: { type: 'url' | 'base64' | 'file'; url?: string; data?: string; media_type?: string };
-    }
+  | { type: 'image'; source: AnthropicImageSource }
   | { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> }
   | { type: 'tool_result'; tool_use_id: string; content: string };
 
@@ -86,6 +88,11 @@ export class AnthropicAdapter extends VendorAdapter {
     const nonSystem: MessageContent[] = [];
     for (const m of intent.messages) {
       if (m.role === 'system') {
+        if (m.multimodal_parts && m.multimodal_parts.length > 0) {
+          fidelity_notes.push(
+            'multimodal_parts on system message dropped (Anthropic system field is text only)',
+          );
+        }
         if (!m.text) {
           fidelity_notes.push('system message without text skipped');
           continue;
@@ -124,12 +131,16 @@ export class AnthropicAdapter extends VendorAdapter {
     }
 
     if (intent.response_format) {
-      // Anthropic Messages API does not take a response_format field; json output
-      // is coerced via system instruction. Record the fidelity note rather than
-      // silently dropping the signal.
+      // Anthropic Messages API does not take a response_format field; json/xml
+      // shape is coerced via system instruction. Record the fidelity note rather
+      // than silently dropping the signal.
       if (intent.response_format.kind === 'json_object' || intent.response_format.kind === 'json_schema') {
         fidelity_notes.push(
           'response_format mapped to system instruction (Anthropic Messages API has no native response_format field)',
+        );
+      } else if (intent.response_format.kind === 'xml') {
+        fidelity_notes.push(
+          'response_format=xml requires per-message xml_tag_preference or system instruction, not a top-level API field on Anthropic',
         );
       }
     }
@@ -194,13 +205,25 @@ function toAnthropicTool(t: ToolDefinition): AnthropicTool {
   };
 }
 
-function multimodalToBlock(p: MultimodalPart): AnthropicContentBlock | null {
-  if (p.kind !== 'image') return null;
+function multimodalToBlock(
+  p: MultimodalPart,
+  fidelity_notes: string[],
+): AnthropicContentBlock | null {
+  if (p.kind !== 'image') {
+    fidelity_notes.push(`multimodal kind ${p.kind} not supported by Anthropic adapter, dropped`);
+    return null;
+  }
   const ref = p.reference;
   if (/^https?:/i.test(ref)) {
     return { type: 'image', source: { type: 'url', url: ref } };
   }
-  return { type: 'image', source: { type: 'file', url: ref } };
+  if (/^file_[A-Za-z0-9_-]+$/.test(ref)) {
+    return { type: 'image', source: { type: 'file', file_id: ref } };
+  }
+  fidelity_notes.push(
+    `multimodal image reference ${ref} is not an http(s) URL or Files API id, dropped (base64 encoding required upstream)`,
+  );
+  return null;
 }
 
 function mergeRunsForAnthropic(
@@ -230,9 +253,8 @@ function mergeRunsForAnthropic(
 
     if (m.multimodal_parts) {
       for (const p of m.multimodal_parts) {
-        const block = multimodalToBlock(p);
+        const block = multimodalToBlock(p, fidelity_notes);
         if (block) blocks.push(block);
-        else fidelity_notes.push(`multimodal kind ${p.kind} not supported by Anthropic adapter, dropped`);
       }
     }
 

@@ -73,8 +73,10 @@ Per NarasiGhaisan Section 16 and CLAUDE.md anti-patterns:
 
 ## 7. Testing Surface (Suggested Triton/Nemea Coverage)
 
-- Round-trip fidelity: build canonical intent with system plus user plus tool_use plus tool_result plus image part plus cache_marker; serialize via `AnthropicAdapter`; assert body shape under `anthropic_messages_v1`.
-- Mock identity: `GeminiAdapterMock.isMock() === true` and serialized payload contains `_honest_claim`.
+- Round-trip fidelity: build canonical intent with system plus user plus assistant plus tool_result plus http image part plus cache_marker; serialize via `AnthropicAdapter`; assert body shape under `anthropic_messages_v1` (system block, tool_result content block, image source.type=url, cache_control ephemeral).
+- Image source discrimination: http(s) reference maps to `source.type=url`, a `file_<id>` reference maps to `source.type=file` with `file_id`, any other reference drops with a fidelity note.
+- Assistant tool_use request is NOT round-trippable in the current IR (contract v0.1.0 gap documented under Open Questions); `parseResponse` captures inbound `tool_use_calls` but IR has no outbound tool_use message shape. Triton's demo is single-turn, so this gap does not block the hackathon surface.
+- Mock identity: `GeminiAdapterMock.isMock() === true` and serialized payload contains `_honest_claim` plus `_mock_marker` literal strings.
 - Fidelity notes: serialize an intent with `cache_marker: true` on the Gemini mock; assert `fidelity_notes` includes the caching-not-supported entry.
 - Parse robustness: feed malformed vendor JSON to both `parseResponse` methods; assert no throw and `extracted_text === ''`.
 - Overflow: construct an oversize intent and assert `ContextOverflowError` thrown.
@@ -90,6 +92,7 @@ Open questions deferred to Apollo plus V3:
 
 - Cache marker granularity (per-block TTL hints) when more vendors adopt caching.
 - Bidirectional streaming adapter surface (current contract is request-response).
+- Assistant `tool_use` request shape missing from `MessageContent` v0.1.0 (IR cannot express an outbound tool_use block). Pythia v0.2.0 territory.
 
 ## 9. Post-Hackathon Trajectory
 
