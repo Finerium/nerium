@@ -1,0 +1,38 @@
+{
+  "$schema_pointer": "docs/contracts/managed_agent_executor.contract.md v0.1.0 Section 3 ManagedAgentEnvironment",
+  "$owner_agent": "heracles",
+  "$last_updated": "2026-04-22",
+  "environment_id": "nerium-integ-env",
+  "agent_definition_id": "nerium-integration-engineer",
+  "description": "Environment template that pairs the nerium-integration-engineer agent definition with a scoped GitHub credential and a session-scoped filesystem prefix. Each MA session derived from this environment receives an isolated sandbox container and a fresh vault-materialised token; the plaintext token value never reaches the NERIUM backend.",
+  "vault_secret_refs": {
+    "github_token_scoped": "vault:nerium/github-pat-scoped"
+  },
+  "vault_secret_refs_notes": {
+    "github_token_scoped": "Fine-grained GitHub PAT. Scope: contents:read, pull_requests:write, and optionally workflows:read on the single target repo. Never code repos outside that list. Rotation cadence: every 30 days manually during hackathon, automated via GitHub App installation token post-hackathon per ADR-004."
+  },
+  "file_scope_prefix": "nerium/integration/",
+  "file_scope_prefix_notes": "All artifacts written by the MA session under /mnt/session/outputs/ are surfaced through the Files API with scope_id = session_id. The file_scope_prefix is applied by the MaFilesApiClient as an assertion target for pullArtifacts; paths outside this prefix are logged but still returned.",
+  "networking_tier": "limited",
+  "networking_allowlist_inherited_from_agent_definition": true,
+  "session_defaults": {
+    "task_budget": {
+      "max_tokens": 200000,
+      "max_wallclock_seconds": 1800
+    },
+    "timezone": "Asia/Jakarta",
+    "locale": "en_US.UTF-8"
+  },
+  "vault_setup_instructions": [
+    "Step 1. In GitHub, create a fine-grained Personal Access Token scoped to the single NERIUM integration target repo (Finerium/nerium for the hackathon demo). Permissions: Contents:read, Pull requests:read and write, Workflows:read, Metadata:read.",
+    "Step 2. In the Anthropic Console under Managed Agents > Vault, create a secret at path nerium/github-pat-scoped with the PAT value. Alternatively use the ant CLI: `ant vault secrets set nerium/github-pat-scoped --value <pat>`. The plaintext value never transits the NERIUM backend; it is held server-side.",
+    "Step 3. Register this environment template via `ant environments create --file ma_environment.nerium_integration_engineer.json` or the Console Environments UI. Confirm the vault reference resolves before spawning the first session.",
+    "Step 4. Day 1 smoke test: spawn one session with a trivial task prompt (ask the agent to print the GitHub API user response). Assert the Console trace shows a successful api.github.com call. If blocked, check the networking allow-list and vault ref resolution.",
+    "Step 5. Rotation: set a monthly reminder to re-issue the PAT and rewrite the vault secret. Sessions pick up the new value on next spawn; in-flight sessions continue with the value they were spawned with."
+  ],
+  "post_hackathon_refactor_notes": [
+    "Replace PAT with a GitHub App installation token vended per tenant; update vault path schema to nerium/{tenant}/github-app-token.",
+    "Expand session_defaults.task_budget dynamically based on NERIUM Builder strategy (Opus all vs Collaborative Anthropic vs Auto); currently a static pair.",
+    "Add a separate environment template for non-GitHub integration targets (GitLab, Bitbucket) once multi-provider support lands."
+  ]
+}

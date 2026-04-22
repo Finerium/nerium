@@ -206,78 +206,30 @@ export class AnthropicDirectExecutor extends BuilderSpecialistExecutor {
   }
 }
 
-// ---------- Anthropic Managed Agents lane (Heracles owns implementation) ----------
+// ---------- Anthropic Managed Agents lane (Heracles implements in P2) ----------
 //
 // Per MANAGED_AGENTS_RESEARCH.md Section D1 and D3, MA is one lane, not the
-// substrate. Heracles fills POST /v1/sessions plus SSE bridge plus Files API
-// artifact fetch behind this class. Per Athena decisions ADR-003, this stays
-// a stub in P1 and Heracles owns functional implementation in P2.
+// substrate. Heracles P2 implements the full session spawn plus SSE bridge
+// plus Files API pull behind AnthropicManagedExecutor at the canonical
+// contract path docs/contracts/managed_agent_executor.contract.md v0.1.0
+// Section 6: app/builder/executor/AnthropicManagedExecutor.ts.
+//
+// Callers that need the concrete class import it directly from that file to
+// avoid the circular import that a value re-export here would create (the
+// implementation file imports BuilderSpecialistExecutor for its `extends`
+// clause). Only type-level re-exports live here, which are safe because
+// TypeScript elides them at runtime.
 
-export interface AnthropicManagedConfig {
-  readonly api_key: string;
-  readonly agent_definition_id: string; // e.g. 'nerium-integration-engineer'
-  readonly environment_template_id: string;
-  readonly max_session_hours: number;
-  readonly beta_header: string; // MA beta header pinned
-}
-
-export class AnthropicManagedExecutor extends BuilderSpecialistExecutor {
-  readonly lane: VendorLane = 'anthropic_managed';
-  private readonly config: AnthropicManagedConfig;
-
-  constructor(deps: ExecutorDeps, config: AnthropicManagedConfig) {
-    super(deps);
-    this.config = config;
-  }
-
-  supportsRole(role: SpecialistRole): boolean {
-    // Demo lean: MA shines on long-horizon autonomous coding tasks. Restrict
-    // to integration_engineer per M1 D3 recommendation. Apollo may widen this
-    // post-hackathon once session-duration and concurrency limits are charted.
-    return role === 'integration_engineer';
-  }
-
-  estimateCost(input: SpecialistInput): number {
-    // MA session-hour $0.08 plus token cost plus $10 per 1K web searches.
-    const session_hours = input.budget_wallclock_seconds / 3600;
-    const session_fee = 0.08 * session_hours;
-    const token_cost =
-      (input.budget_tokens / 1_000_000) * 75; // Opus output rate upper bound
-    return session_fee + token_cost;
-  }
-
-  async execute(input: SpecialistInput): Promise<SpecialistOutput> {
-    // Placeholder. Heracles P2 replaces with real MA session orchestration.
-    await this.emit('pipeline.step.started', input, {
-      specialist_id: input.specialist_id,
-      role: input.role,
-      vendor_lane: this.lane,
-      budget_tokens: input.budget_tokens,
-      budget_wallclock_seconds: input.budget_wallclock_seconds,
-    }, input.specialist_id);
-
-    const error_message =
-      'AnthropicManagedExecutor.execute is a P1 skeleton. Heracles P2 owns implementation.';
-    await this.emit('pipeline.step.failed', input, {
-      specialist_id: input.specialist_id,
-      error_message,
-      retry_count: 0,
-    }, input.specialist_id);
-
-    return {
-      specialist_id: input.specialist_id,
-      pipeline_run_id: input.pipeline_run_id,
-      step_index: input.step_index,
-      status: 'error',
-      artifacts: [],
-      tokens_consumed: { input: 0, output: 0 },
-      cost_usd: 0,
-      wallclock_ms: 0,
-      vendor_lane_used: this.lane,
-      error_message,
-    };
-  }
-}
+export type {
+  AnthropicManagedConfig,
+  ManagedAgentDefinition,
+  ManagedAgentEnvironment,
+  ManagedSessionSpawnRequest,
+  ManagedSessionHandle,
+  ManagedSessionTaskBudget,
+  ManagedSessionEvent,
+  ManagedSessionEventKind,
+} from './AnthropicManagedExecutor';
 
 // ---------- Stub lanes: Gemini and Higgsfield (type skeleton only) ----------
 //
