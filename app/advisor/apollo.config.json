@@ -1,0 +1,160 @@
+{
+  "version": "0.1.0",
+  "owner_agent": "apollo",
+  "contract_refs": [
+    "docs/contracts/advisor_interaction.contract.md v0.1.0",
+    "docs/contracts/pillar_lead_handoff.contract.md v0.1.0",
+    "docs/contracts/prediction_layer_surface.contract.md v0.1.0"
+  ],
+  "brevity": {
+    "max_sentences_per_advisor_turn": 3,
+    "max_questions_per_advisor_turn": 2,
+    "auto_rewrite_on_violation": true,
+    "rationale": "NarasiGhaisan Section 13 communication style, enforced at data layer in apollo.ts plus prompt layer in apollo.prompts.ts."
+  },
+  "turn_budget": {
+    "max_output_tokens_per_turn": 240,
+    "lead_dispatch_timeout_seconds": 60,
+    "intent_parse_timeout_seconds": 15,
+    "rationale": "Short-turn Advisor style bounds token burn per NarasiGhaisan Section 4 Tokopedia-tier cost awareness."
+  },
+  "routing_keywords": {
+    "builder": [
+      "build", "bikin", "buat",
+      "aplikasi", "app", "website", "web",
+      "saas", "landing", "prototype", "prototyp",
+      "develop", "coding", "code",
+      "dashboard", "mvp", "fitur", "feature"
+    ],
+    "marketplace": [
+      "jual", "sell",
+      "marketplace", "market",
+      "listing", "list",
+      "submit", "discover",
+      "browse", "cari agent", "search agent",
+      "katalog", "catalog",
+      "ekosistem", "ecosystem"
+    ],
+    "banking": [
+      "bayar", "pay", "payment",
+      "billing", "bill",
+      "wallet", "saldo",
+      "harga", "cost", "biaya",
+      "budget", "anggaran",
+      "tier", "pricing",
+      "revenue", "share",
+      "meter", "tagihan"
+    ],
+    "registry": [
+      "identity", "identitas",
+      "trust", "percaya", "kepercayaan",
+      "verif", "verify",
+      "audit", "reputation", "reputasi",
+      "creator", "pencipta",
+      "badge", "lencana"
+    ],
+    "protocol": [
+      "translate", "terjemah",
+      "gemini", "higgsfield",
+      "multi-vendor", "cross-vendor",
+      "adapter", "protocol",
+      "ir", "canonical",
+      "non-anthropic"
+    ]
+  },
+  "routing_rules": {
+    "default_pillar": "builder",
+    "allow_fanout": true,
+    "fanout_max_pillars": 3,
+    "fallback_on_reject": "surface_system_turn_no_retry",
+    "rationale": "Builder is hero pillar per CLAUDE.md locked decisions; fanout up to three pillars enables cross-pillar flows like build + listing + billing in one user turn; reject surfaces as system turn with no automatic retry to avoid token waste on deterministic failure."
+  },
+  "model_strategy": {
+    "default_for_new_session": "collaborative",
+    "demo_override": "opus_all",
+    "modes": {
+      "opus_all": {
+        "label_en": "Opus all the way",
+        "label_id": "Opus semua",
+        "real_execution_on_hackathon": true,
+        "honest_claim_annotation": null,
+        "description_en": "Premium tier, Opus across every agent.",
+        "description_id": "Tier premium, Opus di setiap agent."
+      },
+      "collaborative": {
+        "label_en": "Collaborative Anthropic",
+        "label_id": "Anthropic kolaboratif",
+        "real_execution_on_hackathon": true,
+        "honest_claim_annotation": null,
+        "description_en": "Opus for strategic agents, Sonnet for execution workers.",
+        "description_id": "Opus buat agent strategis, Sonnet buat worker eksekusi."
+      },
+      "multi_vendor": {
+        "label_en": "Multi-vendor",
+        "label_id": "Multi-vendor",
+        "real_execution_on_hackathon": false,
+        "honest_claim_annotation": "Demo execution Anthropic only, multi-vendor unlock post-hackathon.",
+        "description_en": "User picks per-task vendor (Claude, Gemini, Higgsfield, others).",
+        "description_id": "User pilih vendor per-task (Claude, Gemini, Higgsfield, dll)."
+      },
+      "auto": {
+        "label_en": "Auto",
+        "label_id": "Auto",
+        "real_execution_on_hackathon": false,
+        "honest_claim_annotation": "Auto routing ships post-hackathon; current demo uses collaborative Anthropic.",
+        "description_en": "Orchestrator researches and decides per-task model.",
+        "description_id": "Orchestrator riset dan pilih model per-task."
+      }
+    }
+  },
+  "prediction_warning": {
+    "confidence_threshold": 0.6,
+    "gamified_copy_variant": "building_floor",
+    "variant_options": ["building_floor", "save_point", "neutral"],
+    "rationale": "Threshold 0.6 matches prediction_layer_surface.contract.md band boundary (medium-to-low); building_floor variant proposed by Apollo, pending Ghaisan voice sign-off per docs/apollo.decisions.md ADR-0003."
+  },
+  "world_aesthetic": {
+    "default": "cyberpunk_shanghai",
+    "supported": [
+      "medieval_desert",
+      "cyberpunk_shanghai",
+      "steampunk_victorian"
+    ],
+    "rationale": "Default cyberpunk_shanghai matches Ghaisan's most-referenced aesthetic (NERIUMcyberpunkcity.html reference). Steampunk_victorian is V2 proposal pending explicit Ghaisan confirm per NarasiGhaisan Section 7."
+  },
+  "locale": {
+    "default": "en-US",
+    "supported": ["en-US", "id-ID"]
+  },
+  "intent_parser": {
+    "mode": "keyword_heuristic",
+    "opus_assist_on": false,
+    "rationale": "Keyword heuristic first for cost; Opus assist optional post-hackathon or on request via injected UserIntentParser per apollo.ts AdvisorAgentDeps."
+  },
+  "event_bus": {
+    "advisor_topics": [
+      "advisor.session.started",
+      "advisor.turn.appended",
+      "advisor.intent.parsed",
+      "advisor.locale.changed",
+      "advisor.strategy.changed",
+      "advisor.moment.presented"
+    ],
+    "pipeline_topic_subscriptions": [
+      "pipeline.handoff",
+      "pipeline.step.completed",
+      "pipeline.step.failed",
+      "pipeline.run.completed",
+      "pipeline.run.failed",
+      "pipeline.prediction.emitted",
+      "pipeline.prediction.warning",
+      "pipeline.budget.warning"
+    ],
+    "rationale": "Apollo owns advisor.* namespace and consumes pipeline.* for cross-pillar awareness; cross-pillar namespaces (marketplace.*, banking.*, registry.*, protocol.*) are observed on an as-needed basis per each pillar contract."
+  },
+  "blueprint_moment": {
+    "default_trigger_timestamp_ms_into_demo": 90000,
+    "default_end_timestamp_ms_into_demo": 130000,
+    "rationale": "Locked 1:30 to 2:10 of the 3-minute demo per apollo.md context and blueprint_moment.contract.md handoff."
+  }
+}
