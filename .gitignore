@@ -1,0 +1,38 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Node
+node_modules/
+.next/
+dist/
+build/
+out/
+.turbo/
+*.log
+npm-debug.log*
+
+# Python
+__pycache__/
+*.pyc
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+
+# Env
+.env
+.env*
+!.env.example
+
+# Deploy
+.vercel
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/settings.json
+*.swp
+
+# Claude Code local
+.claude/local/

@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NERIUM :: Agent Flow Diagram :: Phase 0 Genesis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-0: #06060c;
+  --bg-1: #0b0b18;
+  --bg-2: #111126;
+  --cyan: #00f0ff;
+  --magenta: #ff2e88;
+  --purple: #8b5cf6;
+  --gold: #ffd166;
+  --gold-hot: #ffb703;
+  --ink: #e8ecff;
+  --ink-dim: #8888a8;
+  --grid-line: rgba(0, 240, 255, 0.07);
+  --zone-overlay: rgba(139, 92, 246, 0.045);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg-0);
+  color: var(--ink);
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body {
+  background-image:
+    radial-gradient(ellipse 800px 400px at 20% 10%, rgba(139, 92, 246, 0.08), transparent 70%),
+    radial-gradient(ellipse 600px 300px at 80% 90%, rgba(255, 46, 136, 0.06), transparent 70%),
+    linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 50%, var(--bg-0) 100%);
+  background-attachment: fixed;
+}
+
+body.gamified {
+  background-image:
+    radial-gradient(2px 2px at 20% 30%, var(--cyan), transparent),
+    radial-gradient(1px 1px at 60% 70%, var(--magenta), transparent),
+    radial-gradient(1.5px 1.5px at 85% 20%, var(--gold), transparent),
+    radial-gradient(1px 1px at 35% 85%, var(--purple), transparent),
+    radial-gradient(2px 2px at 72% 50%, var(--cyan), transparent),
+    linear-gradient(180deg, #02020a 0%, #0a0a1a 100%);
+  background-size: 400px 400px, 300px 300px, 500px 500px, 350px 350px, 250px 250px, 100% 100%;
+}
+
+/* Header */
+header {
+  padding: 28px 40px 12px;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.12);
+  background: linear-gradient(180deg, rgba(6, 6, 12, 0.95), rgba(6, 6, 12, 0.6));
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(6px);
+}
+
+.header-grid {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  font-size: 28px;
+  color: var(--cyan);
+  text-shadow: 0 0 18px rgba(0, 240, 255, 0.45), 0 0 2px rgba(0, 240, 255, 0.9);
+  line-height: 1.1;
+}
+
+h1 .accent {
+  color: var(--magenta);
+  text-shadow: 0 0 16px rgba(255, 46, 136, 0.6);
+}
+
+.subtitle {
+  color: var(--ink-dim);
+  font-size: 13px;
+  margin-top: 6px;
+  letter-spacing: 0.08em;
+}
+
+.meta-strip {
+  display: flex;
+  gap: 20px;
+  font-size: 11px;
+  color: var(--ink-dim);
+  margin-top: 10px;
+  letter-spacing: 0.12em;
+}
+
+.meta-strip span strong {
+  color: var(--cyan);
+  font-weight: normal;
+}
+
+.controls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.controls button {
+  background: transparent;
+  color: var(--ink-dim);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  padding: 8px 16px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: all 180ms ease;
+  border-radius: 2px;
+}
+
+.controls button:hover {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.25);
+}
+
+.controls button.active {
+  color: var(--bg-0);
+  background: var(--cyan);
+  border-color: var(--cyan);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+}
+
+/* Main canvas */
+main {
+  padding: 24px 20px 40px;
+  position: relative;
+}
+
+.diagram-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1780px;
+  margin: 0 auto;
+  background: linear-gradient(180deg, rgba(11, 11, 24, 0.4), rgba(17, 17, 38, 0.3));
+  border: 1px solid rgba(0, 240, 255, 0.14);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 0 60px rgba(139, 92, 246, 0.08) inset, 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+svg#flow {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: transparent;
+}
+
+/* Phase zones */
+.phase-band rect {
+  fill: var(--zone-overlay);
+  stroke: rgba(139, 92, 246, 0.18);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+
+.phase-band.even rect {
+  fill: rgba(0, 240, 255, 0.025);
+}
+
+.phase-label {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  fill: var(--cyan);
+  text-anchor: middle;
+}
+
+.phase-sublabel {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  fill: var(--ink-dim);
+  text-anchor: middle;
+}
+
+/* Agent nodes */
+.agent-group {
+  cursor: pointer;
+}
+
+.agent-group .agent-node {
+  transition: stroke-width 180ms ease, stroke-opacity 180ms ease;
+}
+
+.agent-group:hover .agent-node {
+  stroke-width: 3.2;
+}
+
+.agent-group:hover .agent-label {
+  fill: var(--cyan);
+}
+
+.agent-label {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  fill: var(--ink);
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.agent-model {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  fill: var(--ink-dim);
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.agent-group.tier-advisor .agent-node {
+  fill: rgba(255, 209, 102, 0.18);
+  stroke: var(--gold);
+  stroke-width: 2;
+  filter: url(#glow-gold);
+}
+
+.agent-group.tier-lead .agent-node {
+  fill: rgba(139, 92, 246, 0.18);
+  stroke: var(--purple);
+  stroke-width: 2;
+  filter: url(#glow-purple);
+}
+
+.agent-group.tier-worker .agent-node {
+  fill: rgba(0, 240, 255, 0.12);
+  stroke: var(--cyan);
+  stroke-width: 1.6;
+  filter: url(#glow-cyan);
+}
+
+.agent-group.tier-ma .agent-node {
+  fill: rgba(255, 46, 136, 0.18);
+  stroke: var(--magenta);
+  stroke-width: 2.4;
+  filter: url(#glow-magenta);
+}
+
+.agent-group.tier-exception .agent-node {
+  fill: rgba(255, 209, 102, 0.08);
+  stroke: var(--gold-hot);
+  stroke-width: 1.6;
+  stroke-dasharray: 3 2;
+  filter: url(#glow-amber);
+}
+
+.agent-group.highlighted .agent-node {
+  stroke-width: 3.5 !important;
+  animation: nodePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes nodePulse {
+  0%, 100% { stroke-opacity: 1; }
+  50% { stroke-opacity: 0.45; }
+}
+
+.agent-group.dimmed {
+  opacity: 0.22;
+}
+
+.agent-group.dimmed .agent-label, .agent-group.dimmed .agent-model {
+  opacity: 0.4;
+}
+
+/* Arrows */
+.edge {
+  fill: none;
+  stroke: var(--cyan);
+  stroke-width: 1.3;
+  stroke-opacity: 0.55;
+  stroke-dasharray: 52 4;
+  animation: dashFlow 4.5s linear infinite;
+  transition: stroke-width 220ms ease, stroke-opacity 220ms ease;
+}
+
+@keyframes dashFlow {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -56; }
+}
+
+.edge.fade {
+  stroke-opacity: 0.12;
+  stroke-dasharray: none;
+  animation: none;
+}
+
+.edge.loop {
+  stroke: var(--magenta);
+  stroke-width: 1.6;
+  stroke-dasharray: 5 3;
+  stroke-opacity: 0.85;
+  animation: loopPulse 2.6s linear infinite;
+}
+
+@keyframes loopPulse {
+  0% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -16; }
+}
+
+.edge.fork {
+  stroke: var(--purple);
+  stroke-width: 1.4;
+  stroke-opacity: 0.6;
+  stroke-dasharray: 52 4;
+  animation: dashFlow 6.5s linear infinite;
+}
+
+.edge.timeline {
+  stroke: var(--ink-dim);
+  stroke-width: 1;
+  stroke-dasharray: 1 3;
+  stroke-opacity: 0.4;
+  animation: none;
+}
+
+.edge.highlighted {
+  stroke-width: 2.8 !important;
+  stroke-opacity: 1 !important;
+  animation-duration: 2s !important;
+}
+
+/* Parallel fork indicators */
+.fork-bracket {
+  fill: none;
+  stroke: var(--purple);
+  stroke-width: 1.2;
+  stroke-opacity: 0.55;
+}
+
+.fork-label {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  fill: var(--purple);
+  text-anchor: middle;
+  filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.5));
+}
+
+/* Timeline arrow bottom */
+.timeline-arrow line {
+  stroke: var(--cyan);
+  stroke-width: 2;
+  stroke-opacity: 0.55;
+}
+
+.timeline-tick {
+  stroke: var(--cyan);
+  stroke-width: 1.2;
+  stroke-opacity: 0.5;
+}
+
+.timeline-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  fill: var(--ink-dim);
+  text-anchor: middle;
+}
+
+/* Inspector Panel (inline HUD, zero cursor-follow, diagram never obstructed) */
+.inspector {
+  max-width: 1780px;
+  margin: 20px auto 0;
+  position: relative;
+  background: linear-gradient(135deg, rgba(11, 11, 24, 0.82), rgba(17, 17, 38, 0.7));
+  border: 1px solid rgba(0, 240, 255, 0.6);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(0, 240, 255, 0.18) inset,
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 0 60px rgba(0, 240, 255, 0.22),
+    0 14px 44px rgba(0, 0, 0, 0.6);
+  transition: border-color 280ms ease, box-shadow 380ms ease;
+}
+
+/* Animated scan lines overlay (CRT effect) */
+.inspector::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(0deg, transparent 50%, rgba(0, 240, 255, 0.035) 50%);
+  background-size: 100% 3px;
+  animation: scanlineMove 10s linear infinite;
+  z-index: 1;
+  mix-blend-mode: screen;
+}
+
+@keyframes scanlineMove {
+  from { background-position: 0 0; }
+  to { background-position: 0 60px; }
+}
+
+/* Tier-colored accent strip left edge */
+.inspector::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: var(--cyan);
+  box-shadow: 0 0 14px var(--cyan), 0 0 28px var(--cyan);
+  transition: background 280ms ease, box-shadow 280ms ease;
+  z-index: 2;
+}
+
+.inspector.tier-advisor::after { background: var(--gold); box-shadow: 0 0 18px var(--gold), 0 0 36px var(--gold); }
+.inspector.tier-lead::after { background: var(--purple); box-shadow: 0 0 16px var(--purple), 0 0 32px var(--purple); }
+.inspector.tier-worker::after { background: var(--cyan); box-shadow: 0 0 14px var(--cyan), 0 0 28px var(--cyan); }
+.inspector.tier-ma::after { background: var(--magenta); box-shadow: 0 0 22px var(--magenta), 0 0 40px var(--magenta); }
+.inspector.tier-exception::after { background: var(--gold-hot); box-shadow: 0 0 16px var(--gold-hot), 0 0 32px var(--gold-hot); }
+
+.inspector.tier-advisor { border-color: rgba(255, 209, 102, 0.75); box-shadow: 0 0 0 1px rgba(255,209,102,0.22) inset, 0 1px 0 rgba(255,255,255,0.1) inset, 0 0 60px rgba(255,209,102,0.28), 0 14px 44px rgba(0,0,0,0.6); }
+.inspector.tier-lead { border-color: rgba(139, 92, 246, 0.75); box-shadow: 0 0 0 1px rgba(139,92,246,0.22) inset, 0 1px 0 rgba(255,255,255,0.1) inset, 0 0 60px rgba(139,92,246,0.28), 0 14px 44px rgba(0,0,0,0.6); }
+.inspector.tier-ma { border-color: rgba(255, 46, 136, 0.8); box-shadow: 0 0 0 1px rgba(255,46,136,0.22) inset, 0 1px 0 rgba(255,255,255,0.1) inset, 0 0 70px rgba(255,46,136,0.34), 0 14px 44px rgba(0,0,0,0.6); }
+.inspector.tier-exception { border-color: rgba(255, 183, 3, 0.75); box-shadow: 0 0 0 1px rgba(255,183,3,0.22) inset, 0 1px 0 rgba(255,255,255,0.1) inset, 0 0 60px rgba(255,183,3,0.28), 0 14px 44px rgba(0,0,0,0.6); }
+
+/* Header strip */
+.inspector-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 24px 10px 30px;
+  border-bottom: 1px dashed rgba(0, 240, 255, 0.22);
+  position: relative;
+  z-index: 3;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--cyan);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.inspector-head-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.inspector-head-title::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--cyan);
+  animation: headerDotBlink 2.4s ease-in-out infinite;
+}
+
+@keyframes headerDotBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+.inspector-head-status {
+  color: var(--ink-dim);
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.locked-indicator {
+  color: var(--magenta);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-shadow: 0 0 6px rgba(255, 46, 136, 0.5);
+}
+
+.locked-indicator::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  background: var(--magenta);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--magenta), 0 0 16px var(--magenta);
+  animation: lockedDotPulse 1.1s ease-in-out infinite;
+}
+
+@keyframes lockedDotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.6); }
+}
+
+/* Body */
+.inspector-body {
+  padding: 22px 30px 26px 30px;
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) 2.4fr;
+  gap: 36px;
+  position: relative;
+  z-index: 2;
+  min-height: 240px;
+}
+
+.inspector-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
+
+.inspector-name {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 38px;
+  letter-spacing: 0.14em;
+  color: var(--cyan);
+  line-height: 1;
+  text-shadow:
+    0 0 12px rgba(0, 240, 255, 0.8),
+    0 0 28px rgba(0, 240, 255, 0.5),
+    0 0 2px rgba(0, 240, 255, 0.9);
+}
+
+.inspector.tier-advisor .inspector-name { color: var(--gold); text-shadow: 0 0 12px rgba(255,209,102,0.85), 0 0 28px rgba(255,209,102,0.5), 0 0 2px rgba(255,209,102,0.9); }
+.inspector.tier-lead .inspector-name { color: var(--purple); text-shadow: 0 0 12px rgba(139,92,246,0.9), 0 0 28px rgba(139,92,246,0.55), 0 0 2px rgba(139,92,246,0.9); }
+.inspector.tier-ma .inspector-name { color: var(--magenta); text-shadow: 0 0 16px rgba(255,46,136,0.95), 0 0 36px rgba(255,46,136,0.6), 0 0 2px rgba(255,46,136,0.9); }
+.inspector.tier-exception .inspector-name { color: var(--gold-hot); text-shadow: 0 0 12px rgba(255,183,3,0.8), 0 0 28px rgba(255,183,3,0.45); }
+
+.inspector-tier {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: var(--cyan);
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+}
+
+.inspector.tier-advisor .inspector-tier { color: var(--gold); text-shadow: 0 0 8px rgba(255,209,102,0.6); }
+.inspector.tier-lead .inspector-tier { color: var(--purple); text-shadow: 0 0 8px rgba(139,92,246,0.6); }
+.inspector.tier-ma .inspector-tier { color: var(--magenta); text-shadow: 0 0 10px rgba(255,46,136,0.7); }
+.inspector.tier-exception .inspector-tier { color: var(--gold-hot); text-shadow: 0 0 8px rgba(255,183,3,0.55); }
+
+.inspector-meta-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.chip {
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  padding: 4px 10px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+  background: rgba(0, 240, 255, 0.08);
+  border-radius: 2px;
+}
+
+.chip-magenta { border-color: rgba(255, 46, 136, 0.55); color: var(--magenta); background: rgba(255, 46, 136, 0.1); }
+.chip-gold { border-color: rgba(255, 209, 102, 0.55); color: var(--gold); background: rgba(255, 209, 102, 0.1); }
+.chip-purple { border-color: rgba(139, 92, 246, 0.55); color: var(--purple); background: rgba(139, 92, 246, 0.1); }
+.chip-amber { border-color: rgba(255, 183, 3, 0.55); color: var(--gold-hot); background: rgba(255, 183, 3, 0.1); }
+
+.inspector-right {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.insp-row {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 16px;
+  padding: 7px 0;
+  border-bottom: 1px dashed rgba(0, 240, 255, 0.08);
+  line-height: 1.55;
+}
+
+.insp-row:last-child { border-bottom: none; }
+
+.insp-key {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--cyan);
+  padding-top: 2px;
+  opacity: 0.78;
+}
+
+.insp-val {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12.5px;
+  color: var(--ink);
+}
+
+/* Default state: welcome stats grid */
+.inspector-default {
+  padding: 30px 40px 24px;
+  position: relative;
+  z-index: 2;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 22px 32px;
+}
+
+.stat-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-left: 2px solid rgba(0, 240, 255, 0.4);
+  padding-left: 14px;
+}
+
+.stat-value {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: 0.06em;
+  color: var(--cyan);
+  text-shadow: 0 0 14px rgba(0, 240, 255, 0.55);
+  line-height: 1.1;
+}
+
+.stat-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--ink-dim);
+}
+
+.stat-block.accent-magenta .stat-value { color: var(--magenta); text-shadow: 0 0 14px rgba(255,46,136,0.55); }
+.stat-block.accent-magenta { border-left-color: rgba(255, 46, 136, 0.6); }
+.stat-block.accent-gold .stat-value { color: var(--gold); text-shadow: 0 0 14px rgba(255,209,102,0.55); }
+.stat-block.accent-gold { border-left-color: rgba(255, 209, 102, 0.6); }
+.stat-block.accent-purple .stat-value { color: var(--purple); text-shadow: 0 0 14px rgba(139,92,246,0.55); }
+.stat-block.accent-purple { border-left-color: rgba(139, 92, 246, 0.6); }
+
+.inspector-hint {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--cyan);
+  opacity: 0.85;
+  margin-top: 22px;
+  text-align: center;
+  animation: hintBlink 2.5s ease-in-out infinite;
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+@keyframes hintBlink {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 0.4; }
+}
+
+/* Glitch-in transition on content change */
+.inspector-content.glitching {
+  animation: panelGlitch 380ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes panelGlitch {
+  0% { opacity: 0; transform: translateX(-8px) skewX(-4deg); filter: hue-rotate(55deg) brightness(1.6); }
+  15% { opacity: 0.35; transform: translateX(6px) skewX(3deg); filter: hue-rotate(-30deg) brightness(1.3); }
+  30% { opacity: 0.65; transform: translateX(-4px) skewX(-1.5deg); filter: hue-rotate(15deg) brightness(1.15); }
+  50% { opacity: 0.85; transform: translateX(2px) skewX(1deg); filter: hue-rotate(5deg) brightness(1.05); }
+  100% { opacity: 1; transform: translateX(0) skewX(0); filter: none; }
+}
+
+@media (max-width: 780px) {
+  .inspector-body { grid-template-columns: 1fr; gap: 20px; }
+  .inspector-name { font-size: 30px; }
+  .insp-row { grid-template-columns: 72px 1fr; gap: 10px; }
+  .inspector-default { padding: 22px; }
+  .stat-value { font-size: 22px; }
+}
+
+/* Legend */
+.legend-block {
+  max-width: 1780px;
+  margin: 20px auto 0;
+  padding: 18px 24px;
+  border: 1px solid rgba(0, 240, 255, 0.14);
+  background: linear-gradient(180deg, rgba(11, 11, 24, 0.5), rgba(17, 17, 38, 0.35));
+  border-radius: 4px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.legend-section h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--cyan);
+  margin-bottom: 10px;
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0;
+  color: var(--ink);
+}
+
+.legend-row .dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-row .swatch {
+  width: 22px;
+  height: 2px;
+  flex-shrink: 0;
+}
+
+.swatch.dashed { border-top: 2px dashed; height: 0; }
+
+.dot.advisor { background: rgba(255, 209, 102, 0.3); border: 2px solid var(--gold); box-shadow: 0 0 8px var(--gold); }
+.dot.lead { background: rgba(139, 92, 246, 0.3); border: 2px solid var(--purple); box-shadow: 0 0 8px var(--purple); }
+.dot.worker { background: rgba(0, 240, 255, 0.25); border: 2px solid var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+.dot.ma { background: rgba(255, 46, 136, 0.3); border: 2px solid var(--magenta); box-shadow: 0 0 10px var(--magenta); }
+.dot.exception { background: rgba(255, 179, 7, 0.15); border: 2px dashed var(--gold-hot); }
+
+.swatch.cyan { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+.swatch.magenta { background: var(--magenta); box-shadow: 0 0 6px var(--magenta); }
+.swatch.purple { background: var(--purple); box-shadow: 0 0 6px var(--purple); }
+.swatch.dashed-magenta { border-top: 2px dashed var(--magenta); }
+
+/* Gamified mode layer variations */
+body.gamified .agent-group.tier-worker .agent-node {
+  stroke-width: 2;
+  filter: url(#glow-cyan-strong);
+}
+
+body.gamified .agent-group.tier-advisor .agent-node,
+body.gamified .agent-group.tier-lead .agent-node {
+  stroke-width: 2.6;
+}
+
+body.gamified .edge {
+  stroke-opacity: 0.7;
+}
+
+body.gamified h1 {
+  animation: titlePulse 3.5s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+  0%, 100% { text-shadow: 0 0 18px rgba(0, 240, 255, 0.45), 0 0 2px rgba(0, 240, 255, 0.9); }
+  50% { text-shadow: 0 0 26px rgba(0, 240, 255, 0.7), 0 0 4px rgba(255, 46, 136, 0.6); }
+}
+
+body.gamified .phase-label {
+  filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.6));
+}
+
+/* Footer stamp */
+footer {
+  max-width: 1780px;
+  margin: 20px auto 12px;
+  padding: 12px 20px;
+  font-size: 10px;
+  color: var(--ink-dim);
+  letter-spacing: 0.12em;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+footer .stamp {
+  color: var(--cyan);
+  opacity: 0.7;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  h1 { font-size: 20px; }
+  .meta-strip { flex-wrap: wrap; gap: 10px; }
+}
+</style>
+</head>
+<body class="gamified">
+
+<header>
+  <div class="header-grid">
+    <div>
+      <h1>NERIUM <span class="accent">::</span> AGENT FLOW DIAGRAM</h1>
+      <div class="subtitle">22 AGENTS / 7 PHASES / BUILT WITH OPUS 4.7 / CEREBRAL VALLEY HACKATHON</div>
+      <div class="meta-strip">
+        <span>M3 OUTPUT / <strong>METIS</strong></span>
+        <span>SUBMIT DEADLINE / <strong>27 APR 07:00 WIB</strong></span>
+        <span>RATIO / <strong>95% OPUS . 5% SONNET . 0% HAIKU</strong></span>
+        <span>HARD CONSTRAINTS / <strong>NO EM DASH . NO EMOJI</strong></span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="diagram-wrapper">
+<svg id="flow" viewBox="0 0 1780 1000" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+
+<!-- Defs: glow filters, arrow markers, gradients -->
+<defs>
+
+  <filter id="glow-cyan" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="3" result="blur"/>
+    <feFlood flood-color="#00f0ff" flood-opacity="0.7"/>
+    <feComposite in2="blur" operator="in"/>
+    <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+
+  <filter id="glow-cyan-strong" x="-60%" y="-60%" width="220%" height="220%">
+    <feGaussianBlur stdDeviation="5" result="blur"/>
+    <feFlood flood-color="#00f0ff" flood-opacity="0.85"/>
+    <feComposite in2="blur" operator="in"/>
+    <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+
+  <filter id="glow-purple" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="3.5" result="blur"/>
+    <feFlood flood-color="#8b5cf6" flood-opacity="0.8"/>
+    <feComposite in2="blur" operator="in"/>
+    <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+
+  <filter id="glow-gold" x="-60%" y="-60%" width="220%" height="220%">
+    <feGaussianBlur stdDeviation="4.5" result="blur"/>
+    <feFlood flood-color="#ffd166" flood-opacity="0.9"/>
+    <feComposite in2="blur" operator="in"/>
+    <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+
+  <filter id="glow-magenta" x="-70%" y="-70%" width="240%" height="240%">
+    <feGaussianBlur stdDeviation="5.5" result="blur"/>
+    <feFlood flood-color="#ff2e88" flood-opacity="0.95"/>
+    <feComposite in2="blur" operator="in"/>
+    <feMerge><feMergeNode/><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+
+  <filter id="glow-amber" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="3" result="blur"/>
+    <feFlood flood-color="#ffb703" flood-opacity="0.7"/>
+    <feComposite in2="blur" operator="in"/>
+    <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+
+  <marker id="arrow-cyan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 Z" fill="#00f0ff" opacity="0.8"/>
+  </marker>
+
+  <marker id="arrow-magenta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 Z" fill="#ff2e88"/>
+  </marker>
+
+  <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 Z" fill="#8b5cf6" opacity="0.9"/>
+  </marker>
+
+  <linearGradient id="heracles-special" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#ff2e88" stop-opacity="0.4"/>
+    <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0.3"/>
+  </linearGradient>
+
+  <pattern id="grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(0, 240, 255, 0.04)" stroke-width="0.5"/>
+  </pattern>
+
+</defs>
+
+<!-- Background grid -->
+<rect width="1780" height="1000" fill="url(#grid-pattern)"/>
+
+<!-- Phase zones -->
+<g class="phase-band">
+  <rect x="20" y="60" width="180" height="860"/>
+  <text class="phase-label" x="110" y="92">PHASE 0</text>
+  <text class="phase-sublabel" x="110" y="110">GENESIS</text>
+  <text class="phase-sublabel" x="110" y="124">RAB 22 APR</text>
+</g>
+
+<g class="phase-band even">
+  <rect x="200" y="60" width="260" height="860"/>
+  <text class="phase-label" x="330" y="92">PHASE 1</text>
+  <text class="phase-sublabel" x="330" y="110">FOUNDATION</text>
+  <text class="phase-sublabel" x="330" y="124">RAB SORE</text>
+</g>
+
+<g class="phase-band">
+  <rect x="460" y="60" width="260" height="860"/>
+  <text class="phase-label" x="590" y="92">PHASE 2</text>
+  <text class="phase-sublabel" x="590" y="110">BUILDER CORE</text>
+  <text class="phase-sublabel" x="590" y="124">KAM 23 APR</text>
+</g>
+
+<g class="phase-band even">
+  <rect x="720" y="60" width="260" height="860"/>
+  <text class="phase-label" x="850" y="92">PHASE 3a</text>
+  <text class="phase-sublabel" x="850" y="110">FEATURES PILLAR</text>
+  <text class="phase-sublabel" x="850" y="124">JUM 24 APR AM</text>
+</g>
+
+<g class="phase-band">
+  <rect x="980" y="60" width="260" height="860"/>
+  <text class="phase-label" x="1110" y="92">PHASE 3b</text>
+  <text class="phase-sublabel" x="1110" y="110">FEATURES BUILDER</text>
+  <text class="phase-sublabel" x="1110" y="124">JUM 24 SORE</text>
+</g>
+
+<g class="phase-band even">
+  <rect x="1240" y="60" width="200" height="860"/>
+  <text class="phase-label" x="1340" y="92">PHASE 4</text>
+  <text class="phase-sublabel" x="1340" y="110">POLISH</text>
+  <text class="phase-sublabel" x="1340" y="124">SAB 25 APR</text>
+</g>
+
+<g class="phase-band">
+  <rect x="1440" y="60" width="140" height="860"/>
+  <text class="phase-label" x="1510" y="92">PHASE 5</text>
+  <text class="phase-sublabel" x="1510" y="110">QA</text>
+  <text class="phase-sublabel" x="1510" y="124">MIN 26 APR</text>
+</g>
+
+<g class="phase-band even">
+  <rect x="1580" y="60" width="180" height="860"/>
+  <text class="phase-label" x="1670" y="92">PHASE 6</text>
+  <text class="phase-sublabel" x="1670" y="110">DEMO + SUBMIT</text>
+  <text class="phase-sublabel" x="1670" y="124">SEN 27 07:00 WIB</text>
+</g>
+
+<!-- Parallel fork brackets and labels -->
+<!-- P1 fork (Pythia contracts split into 5 Leads) -->
+<g class="fork-group">
+  <path class="fork-bracket" d="M 180 140 L 200 140 M 200 140 L 200 720 M 200 720 L 180 720"/>
+  <text class="fork-label" x="172" y="140" text-anchor="end">P1</text>
+  <text class="fork-label" x="172" y="158" text-anchor="end">5 PARALLEL</text>
+</g>
+
+<!-- P2 fork -->
+<g class="fork-group">
+  <path class="fork-bracket" d="M 720 160 L 740 160 M 720 720 L 740 720" transform="translate(-280, 0)"/>
+  <text class="fork-label" x="460" y="760" text-anchor="middle">P2: 5 PARALLEL</text>
+</g>
+
+<!-- P3a fork -->
+<g class="fork-group">
+  <text class="fork-label" x="850" y="780" text-anchor="middle">P3a: 6 PARALLEL</text>
+</g>
+
+<!-- P3b fork -->
+<g class="fork-group">
+  <text class="fork-label" x="1110" y="780" text-anchor="middle">P3b: 5 PARALLEL</text>
+</g>
+
+<!-- P4 indicator -->
+<g class="fork-group">
+  <text class="fork-label" x="1340" y="780" text-anchor="middle">P4: SEQ</text>
+</g>
+
+<!-- ============ ARROWS (DEPENDENCY EDGES) ============ -->
+<!-- Order: draw edges first so nodes render on top -->
+<g id="edges">
+
+<!-- Phase 0 Genesis to P1 Leads (pythia contract fan-out) -->
+<path class="edge fork" d="M 130 450 Q 165 450 200 220" marker-end="url(#arrow-purple)" data-src="pythia" data-dst="athena"/>
+<path class="edge fork" d="M 130 450 Q 165 450 200 340" marker-end="url(#arrow-purple)" data-src="pythia" data-dst="demeter"/>
+<path class="edge fork" d="M 130 450 Q 165 450 200 460" marker-end="url(#arrow-purple)" data-src="pythia" data-dst="tyche"/>
+<path class="edge fork" d="M 130 450 Q 165 450 200 580" marker-end="url(#arrow-purple)" data-src="pythia" data-dst="hecate"/>
+<path class="edge fork" d="M 130 450 Q 165 450 200 700" marker-end="url(#arrow-purple)" data-src="pythia" data-dst="proteus"/>
+
+<!-- P1 Leads converge to Apollo -->
+<path class="edge" d="M 368 220 Q 480 200 552 200" marker-end="url(#arrow-cyan)" data-src="athena" data-dst="apollo"/>
+<path class="edge" d="M 368 340 Q 470 280 552 210" marker-end="url(#arrow-cyan)" data-src="demeter" data-dst="apollo"/>
+<path class="edge" d="M 368 460 Q 460 340 552 220" marker-end="url(#arrow-cyan)" data-src="tyche" data-dst="apollo"/>
+<path class="edge" d="M 368 580 Q 470 420 552 230" marker-end="url(#arrow-cyan)" data-src="hecate" data-dst="apollo"/>
+<path class="edge" d="M 368 700 Q 480 500 552 240" marker-end="url(#arrow-cyan)" data-src="proteus" data-dst="apollo"/>
+
+<!-- Athena to Builder P2 Workers -->
+<path class="edge" d="M 368 236 Q 470 320 552 320" marker-end="url(#arrow-cyan)" data-src="athena" data-dst="erato"/>
+<path class="edge" d="M 368 236 Q 470 380 552 440" marker-end="url(#arrow-cyan)" data-src="athena" data-dst="helios"/>
+<path class="edge" d="M 368 236 Q 470 440 552 560" marker-end="url(#arrow-cyan)" data-src="athena" data-dst="cassandra"/>
+<path class="edge" d="M 368 236 Q 460 500 552 680" marker-end="url(#arrow-cyan)" data-src="athena" data-dst="heracles"/>
+
+<!-- Apollo to Erato (UI) -->
+<path class="edge" d="M 608 220 Q 610 270 608 300" marker-end="url(#arrow-cyan)" data-src="apollo" data-dst="erato"/>
+
+<!-- Tyche to Heracles (metering link) -->
+<path class="edge" d="M 368 480 Q 470 600 552 680" marker-end="url(#arrow-cyan)" data-src="tyche" data-dst="heracles"/>
+
+<!-- Hecate to Heracles (identity link) -->
+<path class="edge" d="M 368 600 Q 460 660 552 680" marker-end="url(#arrow-cyan)" data-src="hecate" data-dst="heracles"/>
+
+<!-- Cassandra RE-SIMULATION LOOP back to Apollo (magenta dashed) -->
+<path class="edge loop" d="M 620 560 C 700 540, 700 220, 620 200" marker-end="url(#arrow-magenta)" data-src="cassandra" data-dst="apollo" data-loop="true"/>
+
+<!-- Demeter to P3a MP Workers -->
+<path class="edge" d="M 368 340 Q 620 220 812 200" marker-end="url(#arrow-cyan)" data-src="demeter" data-dst="eos"/>
+<path class="edge" d="M 368 340 Q 620 280 812 280" marker-end="url(#arrow-cyan)" data-src="demeter" data-dst="artemis"/>
+<path class="edge" d="M 368 340 Q 620 360 812 360" marker-end="url(#arrow-cyan)" data-src="demeter" data-dst="coeus"/>
+
+<!-- Tyche to P3a BK Workers -->
+<path class="edge" d="M 368 460 Q 620 480 812 500" marker-end="url(#arrow-cyan)" data-src="tyche" data-dst="dike"/>
+<path class="edge" d="M 368 460 Q 620 560 812 580" marker-end="url(#arrow-cyan)" data-src="tyche" data-dst="rhea"/>
+
+<!-- Hecate to P3a Reg Worker -->
+<path class="edge" d="M 368 580 Q 620 620 812 660" marker-end="url(#arrow-cyan)" data-src="hecate" data-dst="phoebe"/>
+
+<!-- Apollo to P3b Urania (Blueprint Moment) -->
+<path class="edge" d="M 620 200 Q 860 200 1072 220" marker-end="url(#arrow-cyan)" data-src="apollo" data-dst="urania"/>
+
+<!-- Helios to Urania (reuse visualization primitives) -->
+<path class="edge" d="M 620 430 Q 840 340 1072 230" marker-end="url(#arrow-cyan)" data-src="helios" data-dst="urania"/>
+
+<!-- Athena to Dionysus (via pipeline topology) -->
+<path class="edge" d="M 348 232 Q 700 220 900 300 Q 990 330 1072 340" marker-end="url(#arrow-cyan)" data-src="athena" data-dst="dionysus"/>
+
+<!-- Heracles to Dionysus (MA lane in Lumio topology) -->
+<path class="edge" d="M 628 670 Q 870 560 1072 350" marker-end="url(#arrow-cyan)" data-src="heracles" data-dst="dionysus"/>
+
+<!-- Thalia has no hard dependencies (parallel) - draw entry from Phase 0 gentle -->
+<path class="edge" d="M 130 470 Q 500 820 1072 460" marker-end="url(#arrow-cyan)" data-src="pythia" data-dst="thalia" opacity="0.35"/>
+
+<!-- Proteus to Protocol Workers -->
+<path class="edge" d="M 368 700 Q 720 680 1072 580" marker-end="url(#arrow-cyan)" data-src="proteus" data-dst="triton"/>
+<path class="edge" d="M 368 700 Q 720 720 1072 700" marker-end="url(#arrow-cyan)" data-src="proteus" data-dst="morpheus"/>
+
+<!-- Erato to Morpheus (ModelStrategySelector plug-in) -->
+<path class="edge" d="M 620 320 Q 860 600 1072 700" marker-end="url(#arrow-cyan)" data-src="erato" data-dst="morpheus"/>
+
+<!-- Thalia to Harmonia (worlds palette ingestion) -->
+<path class="edge" d="M 1148 460 Q 1260 460 1310 460" marker-end="url(#arrow-cyan)" data-src="thalia" data-dst="harmonia"/>
+
+<!-- All P3 soft fan-in to Harmonia (subtle edges) -->
+<path class="edge fade" d="M 1148 220 Q 1260 340 1310 446" data-src="urania" data-dst="harmonia"/>
+<path class="edge fade" d="M 1148 340 Q 1260 400 1310 450" data-src="dionysus" data-dst="harmonia"/>
+<path class="edge fade" d="M 1148 580 Q 1260 520 1310 466" data-src="triton" data-dst="harmonia"/>
+<path class="edge fade" d="M 1148 700 Q 1260 580 1310 470" data-src="morpheus" data-dst="harmonia"/>
+<path class="edge fade" d="M 888 200 Q 1120 320 1310 446" data-src="eos" data-dst="harmonia"/>
+<path class="edge fade" d="M 888 280 Q 1120 360 1310 450" data-src="artemis" data-dst="harmonia"/>
+<path class="edge fade" d="M 888 360 Q 1120 400 1310 454" data-src="coeus" data-dst="harmonia"/>
+<path class="edge fade" d="M 888 500 Q 1120 480 1310 460" data-src="dike" data-dst="harmonia"/>
+<path class="edge fade" d="M 888 580 Q 1120 520 1310 466" data-src="rhea" data-dst="harmonia"/>
+<path class="edge fade" d="M 888 660 Q 1120 560 1310 470" data-src="phoebe" data-dst="harmonia"/>
+
+<!-- Harmonia to Phase 5 QA (Nemea review) -->
+<path class="edge" d="M 1370 460 Q 1430 460 1470 460" marker-end="url(#arrow-cyan)" data-src="harmonia" data-dst="nemea"/>
+
+<!-- Phase 5 QA to Phase 6 Submit -->
+<path class="edge" d="M 1550 460 Q 1600 460 1630 460" marker-end="url(#arrow-cyan)" data-src="nemea" data-dst="submit"/>
+
+</g>
+
+<!-- ============ AGENT NODES ============ -->
+
+<!-- Phase 0 Genesis marker (Pythia contract source) -->
+<g class="agent-group tier-worker" data-agent="pythia" transform="translate(110, 450)" style="opacity: 0.75">
+  <rect class="agent-node" x="-36" y="-22" width="72" height="44" rx="3" stroke-dasharray="3 2"/>
+  <text class="agent-label" y="-30" font-size="11">PYTHIA</text>
+  <text class="agent-label" y="2" font-size="10">CONTRACTS</text>
+  <text class="agent-model" y="36">DEV SPECIALIST</text>
+</g>
+
+<!-- Phase 1 Leads -->
+<g class="agent-group tier-lead" data-agent="athena" transform="translate(330, 220)">
+  <circle class="agent-node" r="30"/>
+  <text class="agent-label" y="54">ATHENA</text>
+  <text class="agent-model" y="70">BUILDER LEAD . OPUS 4.7</text>
+</g>
+
+<g class="agent-group tier-lead" data-agent="demeter" transform="translate(330, 340)">
+  <circle class="agent-node" r="30"/>
+  <text class="agent-label" y="54">DEMETER</text>
+  <text class="agent-model" y="70">MARKETPLACE . OPUS 4.7</text>
+</g>
+
+<g class="agent-group tier-lead" data-agent="tyche" transform="translate(330, 460)">
+  <circle class="agent-node" r="30"/>
+  <text class="agent-label" y="54">TYCHE</text>
+  <text class="agent-model" y="70">BANKING . OPUS 4.7</text>
+</g>
+
+<g class="agent-group tier-lead" data-agent="hecate" transform="translate(330, 580)">
+  <circle class="agent-node" r="30"/>
+  <text class="agent-label" y="54">HECATE</text>
+  <text class="agent-model" y="70">REGISTRY . OPUS 4.7</text>
+</g>
+
+<g class="agent-group tier-lead" data-agent="proteus" transform="translate(330, 700)">
+  <circle class="agent-node" r="30"/>
+  <text class="agent-label" y="54">PROTEUS</text>
+  <text class="agent-model" y="70">PROTOCOL . OPUS 4.7</text>
+</g>
+
+<!-- Phase 2 Core Builder -->
+<g class="agent-group tier-advisor" data-agent="apollo" transform="translate(590, 200)">
+  <circle class="agent-node" r="36"/>
+  <text class="agent-label" y="60" font-size="14">APOLLO</text>
+  <text class="agent-model" y="76">ADVISOR . OPUS 4.7</text>
+</g>
+
+<g class="agent-group tier-worker" data-agent="erato" transform="translate(590, 320)">
+  <circle class="agent-node" r="26"/>
+  <text class="agent-label" y="50">ERATO</text>
+  <text class="agent-model" y="66">ADVISOR UI . OPUS 4.7</text>
+</g>
+
+<g class="agent-group tier-worker" data-agent="helios" transform="translate(590, 440)">
+  <circle class="agent-node" r="26"/>
+  <text class="agent-label" y="50">HELIOS</text>
+  <text class="agent-model" y="66">PIPELINE VIZ . OPUS 4.7</text>
+</g>
+
+<g class="agent-group tier-exception" data-agent="cassandra" transform="translate(590, 560)">
+  <circle class="agent-node" r="26"/>
+  <text class="agent-label" y="50">CASSANDRA</text>
+  <text class="agent-model" y="66">PREDICTION . SONNET 4.6</text>
+</g>
+
+<g class="agent-group tier-ma" data-agent="heracles" transform="translate(590, 680)">
+  <circle class="agent-node" r="32"/>
+  <circle r="42" fill="none" stroke="#ff2e88" stroke-width="0.8" stroke-opacity="0.35" stroke-dasharray="2 3">
+    <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="22s" repeatCount="indefinite"/>
+  </circle>
+  <text class="agent-label" y="58" font-size="14">HERACLES</text>
+  <text class="agent-model" y="74">MA LANE . OPUS 4.7</text>
+  <text class="agent-model" y="88" fill="#ff2e88" font-weight="700">[ $5K PRIZE TARGET ]</text>
+</g>
+
+<!-- Phase 3a Pillar Workers -->
+<g class="agent-group tier-worker" data-agent="eos" transform="translate(850, 200)">
+  <circle class="agent-node" r="24"/>
+  <text class="agent-label" y="46">EOS</text>
+  <text class="agent-model" y="62">MP LISTING . OPUS 4.7</text>
+</g>
+
+<g class="agent-group tier-worker" data-agent="artemis" transform="translate(850, 280)">
+  <circle class="agent-node" r="24"/>
+  <text class="agent-label" y="46">ARTEMIS</text>
+  <text class="agent-model" y="62">MP BROWSE . OPUS 4.7</text>
+</g>
+
+<g class="agent-group tier-worker" data-agent="coeus" transform="translate(850, 360)">
+  <circle class="agent-node" r="24"/>
+  <text class="agent-label" y="46">COEUS</text>
+  <text class="agent-model" y="62">MP SEARCH . OPUS 4.7</text>
+</g>
+
+<g class="agent-group tier-worker" data-agent="dike" transform="translate(850, 500)">
+  <circle class="agent-node" r="24"/>
+  <text class="agent-label" y="46">DIKE</text>
+  <text class="agent-model" y="62">BK WALLET . OPUS 4.7</text>
+</g>
+
+<g class="agent-group tier-worker" data-agent="rhea" transform="translate(850, 580)">
+  <circle class="agent-node" r="24"/>
+  <text class="agent-label" y="46">RHEA</text>
+  <text class="agent-model" y="62">BK STREAM . OPUS 4.7</text>
+</g>
+
+<g class="agent-group tier-worker" data-agent="phoebe" transform="translate(850, 660)">
+  <circle class="agent-node" r="24"/>
+  <text class="agent-label" y="46">PHOEBE</text>
+  <text class="agent-model" y="62">REG IDENTITY . OPUS 4.7</text>
+</g>
+
+<!-- Phase 3b Builder + Protocol Workers -->
+<g class="agent-group tier-worker" data-agent="urania" transform="translate(1110, 220)">
+  <circle class="agent-node" r="26"/>
+  <text class="agent-label" y="50">URANIA</text>
+  <text class="agent-model" y="66">BLUEPRINT . OPUS 4.7</text>
+</g>
+
+<g class="agent-group tier-worker" data-agent="dionysus" transform="translate(1110, 340)">
+  <circle class="agent-node" r="26"/>
+  <text class="agent-label" y="50">DIONYSUS</text>
+  <text class="agent-model" y="66">LUMIO BAKE . OPUS 4.7</text>
+</g>
+
+<g class="agent-group tier-worker" data-agent="thalia" transform="translate(1110, 460)">
+  <circle class="agent-node" r="26"/>
+  <text class="agent-label" y="50">THALIA</text>
+  <text class="agent-model" y="66">2D WORLDS . OPUS 4.7</text>
+</g>
+
+<g class="agent-group tier-worker" data-agent="triton" transform="translate(1110, 580)">
+  <circle class="agent-node" r="24"/>
+  <text class="agent-label" y="46">TRITON</text>
+  <text class="agent-model" y="62">PR TRANSLATE . OPUS 4.7</text>
+</g>
+
+<g class="agent-group tier-worker" data-agent="morpheus" transform="translate(1110, 700)">
+  <circle class="agent-node" r="24"/>
+  <text class="agent-label" y="46">MORPHEUS</text>
+  <text class="agent-model" y="62">PR VENDOR . OPUS 4.7</text>
+</g>
+
+<!-- Phase 4 Harmonia -->
+<g class="agent-group tier-worker" data-agent="harmonia" transform="translate(1340, 460)">
+  <circle class="agent-node" r="28"/>
+  <text class="agent-label" y="52">HARMONIA</text>
+  <text class="agent-model" y="68">AESTHETIC . OPUS 4.7</text>
+</g>
+
+<!-- Phase 5 Nemea QA (development specialist, ghost indicator) -->
+<g class="agent-group" data-agent="nemea" transform="translate(1510, 460)" style="opacity: 0.68">
+  <rect class="agent-node" x="-32" y="-20" width="64" height="40" rx="3" fill="rgba(139, 92, 246, 0.08)" stroke="#8b5cf6" stroke-width="1.2" stroke-dasharray="3 2"/>
+  <text class="agent-label" y="-28" font-size="11">NEMEA</text>
+  <text class="agent-label" y="4" font-size="10">QA SWEEP</text>
+  <text class="agent-model" y="36">DEV SPECIALIST</text>
+</g>
+
+<!-- Phase 6 Submit milestone -->
+<g class="agent-group" data-agent="submit" transform="translate(1670, 460)">
+  <polygon class="agent-node" points="0,-34 29,0 0,34 -29,0" fill="rgba(255, 46, 136, 0.15)" stroke="#ff2e88" stroke-width="2" filter="url(#glow-magenta)"/>
+  <text class="agent-label" y="4" font-size="12" fill="#ff2e88" font-weight="900">SUBMIT</text>
+  <text class="agent-model" y="58" fill="#ff2e88">27 APR 07:00 WIB</text>
+  <text class="agent-model" y="72">$500 CREDIT SPENT</text>
+</g>
+
+<!-- Timeline progression arrow at bottom -->
+<g class="timeline-arrow" transform="translate(0, 880)">
+  <line x1="40" y1="0" x2="1740" y2="0" stroke="#00f0ff" stroke-opacity="0.4" stroke-width="1.5"/>
+  <polygon points="1740,0 1730,-5 1730,5" fill="#00f0ff" opacity="0.6"/>
+  <line class="timeline-tick" x1="110" y1="-5" x2="110" y2="5"/>
+  <line class="timeline-tick" x1="330" y1="-5" x2="330" y2="5"/>
+  <line class="timeline-tick" x1="590" y1="-5" x2="590" y2="5"/>
+  <line class="timeline-tick" x1="850" y1="-5" x2="850" y2="5"/>
+  <line class="timeline-tick" x1="1110" y1="-5" x2="1110" y2="5"/>
+  <line class="timeline-tick" x1="1340" y1="-5" x2="1340" y2="5"/>
+  <line class="timeline-tick" x1="1510" y1="-5" x2="1510" y2="5"/>
+  <line class="timeline-tick" x1="1670" y1="-5" x2="1670" y2="5"/>
+  <text class="timeline-text" x="110" y="20">P0 GENESIS</text>
+  <text class="timeline-text" x="330" y="20">P1 FOUNDATION</text>
+  <text class="timeline-text" x="590" y="20">P2 BUILDER</text>
+  <text class="timeline-text" x="850" y="20">P3a PILLAR</text>
+  <text class="timeline-text" x="1110" y="20">P3b BUILDER</text>
+  <text class="timeline-text" x="1340" y="20">P4 POLISH</text>
+  <text class="timeline-text" x="1510" y="20">P5 QA</text>
+  <text class="timeline-text" x="1670" y="20">P6 SUBMIT</text>
+  <text class="timeline-text" x="890" y="44" fill="#00f0ff" opacity="0.6" font-weight="700">&gt;&gt;&gt; WALLCLOCK TIMELINE: 5 DAYS, 4-6 PARALLEL TERMINALS, 95% OPUS 4.7 UTILIZATION &gt;&gt;&gt;</text>
+</g>
+
+<!-- Cassandra loop annotation -->
+<text x="720" y="395" font-family="'Orbitron', sans-serif" font-size="10" fill="#ff2e88" font-weight="700" letter-spacing="0.12em" opacity="0.85">RE-SIM LOOP</text>
+<text x="720" y="410" font-family="'Share Tech Mono', monospace" font-size="9" fill="#ff2e88" opacity="0.7">per specialist</text>
+<text x="720" y="424" font-family="'Share Tech Mono', monospace" font-size="9" fill="#ff2e88" opacity="0.7">completion</text>
+
+</svg>
+</div>
+
+<!-- Inspector Panel (inline HUD readout, diagram never obstructed) -->
+<section class="inspector" id="inspector">
+  <div class="inspector-head">
+    <div class="inspector-head-title">INSPECTOR // METIS M3</div>
+    <div class="inspector-head-status" id="insp-status">[ SYSTEM READY // AWAITING TARGET ]</div>
+  </div>
+  <div class="inspector-content" id="inspector-content">
+    <!-- filled dynamically by JS on load -->
+  </div>
+</section>
+
+<!-- Legend -->
+<div class="legend-block">
+  <div class="legend-section">
+    <h3>TIER CODING</h3>
+    <div class="legend-row"><span class="dot advisor"></span> ADVISOR (1) . GOLD GLOW . OPUS 4.7</div>
+    <div class="legend-row"><span class="dot lead"></span> LEAD (5) . PURPLE GLOW . OPUS 4.7</div>
+    <div class="legend-row"><span class="dot worker"></span> WORKER (15) . CYAN GLOW . OPUS 4.7</div>
+    <div class="legend-row"><span class="dot ma"></span> MA LANE (1) . MAGENTA GLOW . $5K PRIZE TARGET</div>
+    <div class="legend-row"><span class="dot exception"></span> SONNET EXCEPTION (1) . CASSANDRA . DASHED</div>
+  </div>
+
+  <div class="legend-section">
+    <h3>EDGE SEMANTICS</h3>
+    <div class="legend-row"><span class="swatch cyan"></span> DEPENDENCY / HANDOFF</div>
+    <div class="legend-row"><span class="swatch purple"></span> PARALLEL FORK / PYTHIA FAN-OUT</div>
+    <div class="legend-row"><span class="swatch dashed-magenta"></span> RE-SIMULATION LOOP (CASSANDRA to APOLLO)</div>
+    <div class="legend-row"><span class="swatch cyan" style="opacity: 0.3;"></span> SOFT CONVERGENCE (P3 to HARMONIA)</div>
+  </div>
+
+  <div class="legend-section">
+    <h3>PHASE FLOW</h3>
+    <div class="legend-row">P0 GENESIS . Pythia contracts + Hephaestus prompts</div>
+    <div class="legend-row">P1 FOUNDATION . 5 Leads parallel (5 terminals)</div>
+    <div class="legend-row">P2 BUILDER CORE . Apollo + 4 Workers (5 terminals)</div>
+    <div class="legend-row">P3a FEATURES . 6 pillar Workers (6 terminals)</div>
+    <div class="legend-row">P3b FEATURES . 5 Workers (5 terminals)</div>
+    <div class="legend-row">P4 POLISH . Harmonia + optional Poseidon 3D</div>
+    <div class="legend-row">P5 QA . Nemea regression + Opus computer use</div>
+    <div class="legend-row">P6 SUBMIT . 27 Apr 07:00 WIB</div>
+  </div>
+
+  <div class="legend-section">
+    <h3>BUDGET ALLOCATION</h3>
+    <div class="legend-row">CONSTRUCTION . ~$5-6 buffered</div>
+    <div class="legend-row">MA LANE CAP . $150 of $500</div>
+    <div class="legend-row">LUMIO BAKE . $36 single run</div>
+    <div class="legend-row">CASSANDRA SIM . ~$20 dev tuning</div>
+    <div class="legend-row">FREE RESERVE . ~$88</div>
+    <div class="legend-row" style="color: var(--cyan); margin-top: 8px;">HOVER ANY NODE FOR FULL SPEC</div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <div class="stamp">NERIUM :: M3 AGENT_FLOW_DIAGRAM :: METIS v1.0</div>
+  <div>GENERATED 2026-04-22 . CEREBRAL VALLEY + ANTHROPIC BUILT-WITH-OPUS-4.7 HACKATHON</div>
+  <div class="stamp">HARD CONSTRAINTS: NO EM DASH . NO EMOJI . GREEK FRESH POOL ONLY</div>
+</footer>
+
+<script>
+(function() {
+  'use strict';
+
+  // Agent data: full spec per agent for inspector rendering
+  const AGENT_DATA = {
+    pythia: {
+      name: "PYTHIA",
+      tier: "worker",
+      tierLabel: "DEVELOPMENT SPECIALIST",
+      role: "Modular contract designer, produces cross-agent boundary schemas before parallel execution begins.",
+      model: "Claude Code specialist (dev-side, not in product roster)",
+      phase: "Phase 0 Genesis",
+      deps: "HACKATHON_HANDOFF_V1_TO_V2.md + NarasiGhaisan.md + NERIUM_PRD.pdf + M2 NERIUM_AGENT_STRUCTURE.md",
+      outputs: "All contract files under docs/contracts/ consumed by every Lead and Worker"
+    },
+    apollo: {
+      name: "APOLLO",
+      tier: "advisor",
+      tierLabel: "ADVISOR / HERO",
+      role: "User-facing Advisor character, single touchpoint orchestrating cross-pillar flow from user intent to final build.",
+      model: "Opus 4.7",
+      phase: "Phase 2 (blocks on all 5 Leads)",
+      deps: "All 5 Lead outputs + Prediction surface contract + Advisor interaction contract",
+      outputs: "app/advisor/apollo.ts + apollo.prompts.ts + apollo.config.json + ADR log"
+    },
+    athena: {
+      name: "ATHENA",
+      tier: "lead",
+      tierLabel: "BUILDER LEAD",
+      role: "Pipeline strategy + BuilderSpecialistExecutor interface + internal orchestration contracts for the hero pillar.",
+      model: "Opus 4.7",
+      phase: "Phase 1 (parallel P1)",
+      deps: "Pythia builder_specialist_executor contract + event_bus contract + M1 research",
+      outputs: "athena.output.md + BuilderSpecialistExecutor.ts abstract + pipeline_topology.lumio.json + handoff_events.ts"
+    },
+    demeter: {
+      name: "DEMETER",
+      tier: "lead",
+      tierLabel: "MARKETPLACE LEAD",
+      role: "Listing schema + browse taxonomy + search ranking contract + living-template parameter architecture.",
+      model: "Opus 4.7",
+      phase: "Phase 1 (parallel P1)",
+      deps: "Pythia listing contract + search ranking contract",
+      outputs: "demeter.output.md + listing.schema.ts + categories.json + ranking_weights.json"
+    },
+    tyche: {
+      name: "TYCHE",
+      tier: "lead",
+      tierLabel: "BANKING LEAD",
+      role: "Usage-based billing (kaya listrik) + transaction routing + wallet state model + cost meter contract.",
+      model: "Opus 4.7",
+      phase: "Phase 1 (parallel P1)",
+      deps: "Pythia billing_meter contract + transaction_event contract",
+      outputs: "tyche.output.md + wallet.schema.ts + tier_model.json + meter_contract.ts"
+    },
+    hecate: {
+      name: "HECATE",
+      tier: "lead",
+      tierLabel: "REGISTRY LEAD",
+      role: "Agent identity schema + trust score formula + audit trail event model.",
+      model: "Opus 4.7",
+      phase: "Phase 1 (parallel P1)",
+      deps: "Pythia agent_identity contract + trust_score contract",
+      outputs: "hecate.output.md + identity.schema.ts + trust_formula.ts + audit_contract.ts"
+    },
+    proteus: {
+      name: "PROTEUS",
+      tier: "lead",
+      tierLabel: "PROTOCOL LEAD",
+      role: "Canonical IR + per-vendor adapter interface + cross-model translation spec preserving per-model uniqueness.",
+      model: "Opus 4.7",
+      phase: "Phase 1 (parallel P1)",
+      deps: "Pythia protocol_adapter contract + agent_intent contract",
+      outputs: "proteus.output.md + agent_intent.ts + VendorAdapter.ts + anthropic_adapter.ts + gemini_adapter.mock.ts"
+    },
+    cassandra: {
+      name: "CASSANDRA",
+      tier: "exception",
+      tierLabel: "PREDICTION LAYER [SONNET EXCEPTION]",
+      role: "High-volume Monte Carlo-inspired simulation specialist, 6-step continuous re-simulation engine, re-runs on every specialist completion.",
+      model: "Sonnet 4.6 (only non-Opus agent in roster, Opus cost-prohibitive at simulation scale)",
+      phase: "Phase 2 (parallel P2, blocks on Athena)",
+      deps: "Pythia prediction_layer_surface + simulation_event contracts + Athena pipeline_topology.lumio.json + handoff_events.ts",
+      outputs: "cassandra.ts + prompt_template.ts + confidence_formula.ts + ADR log"
+    },
+    erato: {
+      name: "ERATO",
+      tier: "worker",
+      tierLabel: "ADVISOR UI WORKER",
+      role: "Chat surface where user interacts with Apollo, enforces 3-sentence turn brevity + 1-2 question cap per NarasiGhaisan Section 13.",
+      model: "Opus 4.7 (reviewable candidate)",
+      phase: "Phase 2 (parallel P2, blocks on Apollo)",
+      deps: "Pythia advisor_ui contract + apollo.ts + cassandra.ts (warning display) + Harmonia tokens (optional P4)",
+      outputs: "AdvisorChat.tsx + ModelStrategySelector.tsx + PredictionWarning.tsx + styles.css"
+    },
+    helios: {
+      name: "HELIOS",
+      tier: "worker",
+      tierLabel: "LIVE PIPELINE VIZ",
+      role: "Real-time agent activity visualizer, multiplexes SSE + WebSocket streams from MA plus direct SDK into one view, Heracles MA lane prominent.",
+      model: "Opus 4.7",
+      phase: "Phase 2 (parallel P2, blocks on Athena)",
+      deps: "Pythia pipeline_visualizer contract + Athena handoff_events.ts + Cassandra cassandra.ts + M1 research",
+      outputs: "PipelineCanvas.tsx + AgentNode.tsx + ToolUseTicker.tsx + MAConsoleDeepLink.tsx + stream_subscriber.ts"
+    },
+    heracles: {
+      name: "HERACLES",
+      tier: "ma",
+      tierLabel: "MA INTEGRATION ENGINEER [$5K PRIZE TARGET]",
+      role: "AnthropicManagedExecutor implementation + nerium-integration-engineer MA agent definition + live autonomous PR demo path. THE flagship lane.",
+      model: "Opus 4.7 (both dev-side and runtime)",
+      phase: "Phase 2 (parallel P2, blocks on Athena + Hecate + Tyche)",
+      deps: "M1 research + Pythia managed_agent_executor contract + Athena interface + Hecate identity.schema.ts + Tyche meter_contract.ts",
+      outputs: "AnthropicManagedExecutor.ts + ma_agent_definition.json + ma_environment.json + ma_session_spawner.ts + ma_sse_bridge.ts + ma_files_api_client.ts + Day-1 research-preview form reminder doc"
+    },
+    urania: {
+      name: "URANIA",
+      tier: "worker",
+      tierLabel: "BLUEPRINT MOMENT VIZ",
+      role: "Cinematic demo reveal at minute 1:30-2:10, pulls back to show underlying 22-agent DAG, Heracles MA highlighted, kills Claude-Code-alone-cukup mispersepsi.",
+      model: "Opus 4.7 (reviewable candidate, demo-critical)",
+      phase: "Phase 3b (parallel P3b, blocks on Apollo + Helios + M3 diagram)",
+      deps: "Pythia blueprint_moment contract + M3 agent_flow_diagram.html reference + Helios components + Apollo state",
+      outputs: "BlueprintReveal.tsx + camera_pullback.ts + narration_overlay.ts + ma_highlight.tsx"
+    },
+    dionysus: {
+      name: "DIONYSUS",
+      tier: "worker",
+      tierLabel: "LUMIO DEMO EXECUTOR",
+      role: "Single end-to-end Lumio Builder bake (10-12 specialists) with full instrumentation, produces replay-able trace for demo video.",
+      model: "Opus 4.7 (reviewable candidate, cost-sensitive coordination)",
+      phase: "Phase 3b (parallel P3b, blocks on Athena + Heracles)",
+      deps: "Pythia lumio_demo_cache contract + Athena pipeline_topology + Heracles AnthropicManagedExecutor",
+      outputs: "cache/lumio_run_2026_04_24.json + lumio_artifacts/ + lumio_final/index.html + signup.html + LumioReplay.tsx"
+    },
+    thalia: {
+      name: "THALIA",
+      tier: "worker",
+      tierLabel: "2D PIXEL WORLDS",
+      role: "3-world aesthetic visualization: Medieval Desert, Cyberpunk Shanghai (brand default), Steampunk Victorian. CC0 assets + Claude Design overlays.",
+      model: "Opus 4.7",
+      phase: "Phase 3b (parallel P3b, no hard deps)",
+      deps: "Pythia world_aesthetic + sprite_atlas contracts + Helios PipelineCanvas shape reference",
+      outputs: "worlds/medieval_desert/ + worlds/cyberpunk_shanghai/ + worlds/steampunk_victorian/ + WorldSwitcher.tsx + ConstructionAnimation.ts"
+    },
+    eos: {
+      name: "EOS",
+      tier: "worker",
+      tierLabel: "MARKETPLACE LISTING FLOW",
+      role: "Creator submission form + preview card + publish confirmation + pricing-tier selection + living-template parameter definition UI.",
+      model: "Opus 4.7 (reviewable candidate)",
+      phase: "Phase 3a (parallel P3a, blocks on Demeter)",
+      deps: "Pythia listing_submission contract + Demeter listing.schema.ts",
+      outputs: "SubmissionForm.tsx + PreviewCard.tsx + PublishConfirm.tsx + validation.ts"
+    },
+    artemis: {
+      name: "ARTEMIS",
+      tier: "worker",
+      tierLabel: "MARKETPLACE BROWSE",
+      role: "Buyer browse UI with taxonomy navigation + vendor filter + featured-agent curation.",
+      model: "Opus 4.7 (reviewable candidate)",
+      phase: "Phase 3a (parallel P3a, blocks on Demeter)",
+      deps: "Pythia browse_ui contract + Demeter listing.schema.ts + categories.json",
+      outputs: "BrowseCanvas.tsx + CategoryNav.tsx + VendorFilter.tsx + FeaturedAgents.tsx"
+    },
+    coeus: {
+      name: "COEUS",
+      tier: "worker",
+      tierLabel: "MARKETPLACE SEARCH + LIVING TEMPLATE",
+      role: "Semantic search + living-template customization chat (ubah agent pertanian cabai jadi anggur), delegates remix back to Apollo.",
+      model: "Opus 4.7 (mini-Apollo conversational flow)",
+      phase: "Phase 3a (parallel P3a, blocks on Demeter)",
+      deps: "Pythia search_ui + living_template_customize contracts + Demeter listing.schema.ts + ranking_weights.json",
+      outputs: "SearchBar.tsx + ResultList.tsx + LivingTemplateChat.tsx + semantic_embedder.ts"
+    },
+    dike: {
+      name: "DIKE",
+      tier: "worker",
+      tierLabel: "BANKING WALLET + METER",
+      role: "Wallet card + earnings dashboard + LIVE cost meter ticking during Builder runs (reinforces kaya listrik framing).",
+      model: "Opus 4.7 (reviewable candidate, demo-critical surface)",
+      phase: "Phase 3a (parallel P3a, blocks on Tyche)",
+      deps: "Pythia wallet_ui + cost_meter contracts + Tyche wallet.schema.ts + meter_contract.ts",
+      outputs: "WalletCard.tsx + EarningsDashboard.tsx + LiveCostMeter.tsx + cost_ticker.ts"
+    },
+    rhea: {
+      name: "RHEA",
+      tier: "worker",
+      tierLabel: "BANKING TRANSACTION STREAM [STRONGEST REVIEWABLE]",
+      role: "Mock pulsing transaction feed for background visual impact. Pure mock for hackathon. Creator A earned X. Buyer B bought Y.",
+      model: "Opus 4.7 (STRONGEST REVIEWABLE CANDIDATE, pure mock animation objectively simple scope)",
+      phase: "Phase 3a (parallel P3a, blocks on Tyche)",
+      deps: "Pythia transaction_stream contract + Tyche wallet.schema.ts",
+      outputs: "TransactionPulse.tsx + mock_generator.ts"
+    },
+    phoebe: {
+      name: "PHOEBE",
+      tier: "worker",
+      tierLabel: "REGISTRY IDENTITY CARD",
+      role: "Per-agent identity card rendered in Marketplace, Search, Apollo Advisor surfaces. Trust score badge + capabilities + audit expand.",
+      model: "Opus 4.7 (reviewable candidate)",
+      phase: "Phase 3a (parallel P3a, blocks on Hecate)",
+      deps: "Pythia identity_card contract + Hecate identity.schema.ts + trust_formula.ts",
+      outputs: "IdentityCard.tsx + TrustScoreBadge.tsx + AuditTrailExpand.tsx"
+    },
+    triton: {
+      name: "TRITON",
+      tier: "worker",
+      tierLabel: "PROTOCOL TRANSLATION DEMO",
+      role: "Side-by-side visual showing Claude XML native and Gemini native format preservation through Proteus canonical IR.",
+      model: "Opus 4.7 (reviewable candidate)",
+      phase: "Phase 3b (parallel P3b, blocks on Proteus)",
+      deps: "Pythia translation_demo contract + Proteus adapters",
+      outputs: "TranslationSplit.tsx + ClaudePanel.tsx + GeminiMockPanel.tsx"
+    },
+    morpheus: {
+      name: "MORPHEUS",
+      tier: "worker",
+      tierLabel: "PROTOCOL VENDOR ADAPTER UI",
+      role: "Multi-vendor choice panel with honest annotation (demo execution Anthropic only, multi-vendor unlock post-hackathon) per NarasiGhaisan Section 16.",
+      model: "Opus 4.7 (reviewable candidate, honest-tightrope UX)",
+      phase: "Phase 3b (parallel P3b, blocks on Proteus + Erato)",
+      deps: "Pythia vendor_adapter_ui contract + Proteus VendorAdapter.ts + Erato ModelStrategySelector.tsx",
+      outputs: "MultiVendorPanel.tsx + TaskAssignmentGrid.tsx + HonestAnnotation.tsx"
+    },
+    harmonia: {
+      name: "HARMONIA",
+      tier: "worker",
+      tierLabel: "AESTHETIC COORDINATOR",
+      role: "Cross-file design-token sweep across all Worker component outputs. Typography + color + animation timing + spacing unified.",
+      model: "Opus 4.7 (pattern-matching across 13+ files benefits from Opus)",
+      phase: "Phase 4 (blocks on Thalia + softly all P3 Workers)",
+      deps: "Pythia design_tokens contract + ALL prior Worker component outputs + Thalia worlds/*",
+      outputs: "design/tokens.ts + typography.css + animations.ts + diff-patched component files + ADR with diff summary"
+    },
+    nemea: {
+      name: "NEMEA",
+      tier: "worker",
+      tierLabel: "QA REGRESSION [DEV SPECIALIST]",
+      role: "End-to-end regression test + Opus 4.7 computer use visual review + critical-path fix triage. Not in product roster.",
+      model: "Claude Code dev-side specialist + Opus 4.7 computer use",
+      phase: "Phase 5 (after Harmonia)",
+      deps: "NERIUM_AGENT_STRUCTURE.md + Lumio demo cache + design tokens.ts",
+      outputs: "Bug report + fix commits + demo-path E2E walkthrough verification"
+    },
+    submit: {
+      name: "SUBMIT",
+      tier: "worker",
+      tierLabel: "HACKATHON MILESTONE",
+      role: "Demo video 3 min recording + README final + GitHub public push + Cerebral Valley submission form fill.",
+      model: "N/A",
+      phase: "Phase 6 (27 Apr 07:00 WIB)",
+      deps: "ALL prior phases + Nemea QA clearance + $500 credit spent tracker",
+      outputs: "Public GitHub repo MIT licensed + demo.mp4 + README.md + submission record"
+    }
+  };
+
+  // Dependency map for hover-highlight behavior
+  const DEPS = {
+    apollo: ["athena", "demeter", "tyche", "hecate", "proteus"],
+    athena: ["pythia"],
+    demeter: ["pythia"],
+    tyche: ["pythia"],
+    hecate: ["pythia"],
+    proteus: ["pythia"],
+    cassandra: ["athena"],
+    erato: ["apollo", "athena"],
+    helios: ["athena"],
+    heracles: ["athena", "hecate", "tyche"],
+    urania: ["apollo", "helios"],
+    dionysus: ["athena", "heracles"],
+    thalia: ["pythia"],
+    eos: ["demeter"],
+    artemis: ["demeter"],
+    coeus: ["demeter"],
+    dike: ["tyche"],
+    rhea: ["tyche"],
+    phoebe: ["hecate"],
+    triton: ["proteus"],
+    morpheus: ["proteus", "erato"],
+    harmonia: ["thalia", "urania", "dionysus", "triton", "morpheus", "eos", "artemis", "coeus", "dike", "rhea", "phoebe"],
+    nemea: ["harmonia"],
+    submit: ["nemea"]
+  };
+
+  // Inspector panel elements
+  const inspector = document.getElementById('inspector');
+  const inspectorContent = document.getElementById('inspector-content');
+  const inspStatus = document.getElementById('insp-status');
+
+  // Tier-specific chip class mapping
+  function tierChipClass(tier) {
+    if (tier === 'advisor') return 'chip-gold';
+    if (tier === 'lead') return 'chip-purple';
+    if (tier === 'ma') return 'chip-magenta';
+    if (tier === 'exception') return 'chip-amber';
+    return '';
+  }
+
+  // Default state renderer (welcome stats grid)
+  function renderInspectorDefault() {
+    inspector.className = 'inspector';
+    inspStatus.innerHTML = '[ SYSTEM READY // AWAITING TARGET ]';
+    // Trigger glitch-in for default too
+    inspectorContent.classList.remove('glitching');
+    void inspectorContent.offsetWidth;
+    inspectorContent.classList.add('glitching');
+    inspectorContent.innerHTML = `
+      <div class="inspector-default">
+        <div class="stat-grid">
+          <div class="stat-block"><div class="stat-value">22</div><div class="stat-label">AGENTS ROSTER</div></div>
+          <div class="stat-block accent-gold"><div class="stat-value">95%</div><div class="stat-label">OPUS 4.7 UTILIZATION</div></div>
+          <div class="stat-block accent-purple"><div class="stat-value">5</div><div class="stat-label">PILLAR LEADS</div></div>
+          <div class="stat-block"><div class="stat-value">16</div><div class="stat-label">WORKERS</div></div>
+          <div class="stat-block accent-magenta"><div class="stat-value">$5K</div><div class="stat-label">MA PRIZE TARGET</div></div>
+          <div class="stat-block"><div class="stat-value">7</div><div class="stat-label">PHASES TO SHIP</div></div>
+          <div class="stat-block"><div class="stat-value">$500</div><div class="stat-label">CREDIT BUDGET</div></div>
+          <div class="stat-block accent-magenta"><div class="stat-value">27 APR</div><div class="stat-label">SUBMIT 07:00 WIB</div></div>
+        </div>
+        <div class="inspector-hint">[ HOVER OR CLICK ANY AGENT NODE TO INSPECT // CLICK EMPTY AREA TO RESET ]</div>
+      </div>
+    `;
+  }
+
+  // Agent detail renderer (with glitch-in transition)
+  function renderInspectorAgent(agentId) {
+    const data = AGENT_DATA[agentId];
+    if (!data) return;
+
+    inspector.className = 'inspector tier-' + data.tier;
+    inspStatus.innerHTML = '<span class="locked-indicator">LOCKED ON // ' + data.name + '</span>';
+
+    // Force reflow then trigger glitch animation
+    inspectorContent.classList.remove('glitching');
+    void inspectorContent.offsetWidth;
+    inspectorContent.classList.add('glitching');
+
+    // Extract primary model label (short form for chip)
+    const modelShort = data.model.split('(')[0].trim().replace(/,\s*$/, '');
+    const phaseShort = data.phase.split('(')[0].trim();
+
+    inspectorContent.innerHTML = `
+      <div class="inspector-body">
+        <div class="inspector-left">
+          <div class="inspector-name">${data.name}</div>
+          <div class="inspector-tier">${data.tierLabel}</div>
+          <div class="inspector-meta-chips">
+            <div class="chip ${tierChipClass(data.tier)}">${modelShort}</div>
+            <div class="chip">${phaseShort}</div>
+          </div>
+        </div>
+        <div class="inspector-right">
+          <div class="insp-row"><div class="insp-key">ROLE</div><div class="insp-val">${data.role}</div></div>
+          <div class="insp-row"><div class="insp-key">MODEL</div><div class="insp-val">${data.model}</div></div>
+          <div class="insp-row"><div class="insp-key">PHASE</div><div class="insp-val">${data.phase}</div></div>
+          <div class="insp-row"><div class="insp-key">INPUTS</div><div class="insp-val">${data.deps}</div></div>
+          <div class="insp-row"><div class="insp-key">OUTPUTS</div><div class="insp-val">${data.outputs}</div></div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Highlight dependency chain on hover (unchanged from prior)
+  function highlightChain(agentId) {
+    const allNodes = document.querySelectorAll('.agent-group');
+    const allEdges = document.querySelectorAll('.edge');
+
+    const chain = new Set([agentId]);
+    const walkUp = (id) => {
+      const deps = DEPS[id] || [];
+      deps.forEach(d => {
+        if (!chain.has(d)) {
+          chain.add(d);
+          walkUp(d);
+        }
+      });
+    };
+    walkUp(agentId);
+
+    const downstream = new Set();
+    const walkDown = (id) => {
+      Object.entries(DEPS).forEach(([child, parents]) => {
+        if (parents.includes(id) && !downstream.has(child)) {
+          downstream.add(child);
+          walkDown(child);
+        }
+      });
+    };
+    walkDown(agentId);
+    downstream.forEach(d => chain.add(d));
+
+    allNodes.forEach(n => {
+      const nid = n.getAttribute('data-agent');
+      if (chain.has(nid)) {
+        n.classList.remove('dimmed');
+        if (nid === agentId) n.classList.add('highlighted');
+      } else {
+        n.classList.add('dimmed');
+      }
+    });
+
+    allEdges.forEach(e => {
+      const src = e.getAttribute('data-src');
+      const dst = e.getAttribute('data-dst');
+      if (chain.has(src) && chain.has(dst)) {
+        e.classList.add('highlighted');
+        e.classList.remove('fade');
+      } else {
+        e.classList.add('fade');
+      }
+    });
+  }
+
+  function clearHighlight() {
+    document.querySelectorAll('.agent-group').forEach(n => {
+      n.classList.remove('dimmed', 'highlighted');
+    });
+    document.querySelectorAll('.edge').forEach(e => {
+      e.classList.remove('highlighted');
+      const src = e.getAttribute('data-src');
+      const dst = e.getAttribute('data-dst');
+      const isSoftHarmonia = dst === 'harmonia' && src !== 'thalia';
+      if (isSoftHarmonia) {
+        e.classList.add('fade');
+      } else {
+        e.classList.remove('fade');
+      }
+    });
+  }
+
+  // Bind all agent groups
+  let currentHoveredAgent = null;
+
+  document.querySelectorAll('.agent-group').forEach(group => {
+    const agentId = group.getAttribute('data-agent');
+    if (!agentId) return;
+
+    group.addEventListener('mouseenter', () => {
+      if (currentHoveredAgent !== agentId) {
+        currentHoveredAgent = agentId;
+        renderInspectorAgent(agentId);
+        highlightChain(agentId);
+      }
+    });
+
+    group.addEventListener('mouseleave', () => {
+      // Clear chain highlight when cursor leaves, but keep inspector on last hovered
+      clearHighlight();
+    });
+
+    // Touch/click: same as hover
+    group.addEventListener('click', (e) => {
+      e.stopPropagation();
+      currentHoveredAgent = agentId;
+      renderInspectorAgent(agentId);
+      highlightChain(agentId);
+    });
+  });
+
+  // Click outside agent: reset inspector to default state
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.agent-group')) {
+      currentHoveredAgent = null;
+      renderInspectorDefault();
+      clearHighlight();
+    }
+  });
+
+  // Initial state: render default stats grid + apply soft-fade to P3-to-Harmonia edges
+  renderInspectorDefault();
+  clearHighlight();
+
+  // Entrance animation: stagger agent nodes fade in (opacity only, SVG transform attribute untouched)
+  const allGroups = document.querySelectorAll('.agent-group');
+  allGroups.forEach((g, idx) => {
+    g.style.opacity = '0';
+    setTimeout(() => {
+      g.style.transition = 'opacity 400ms ease';
+      g.style.opacity = '';
+    }, 80 + idx * 40);
+  });
+
+})();
+</script>
+
+</body>
+</html>

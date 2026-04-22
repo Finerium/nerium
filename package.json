@@ -1,0 +1,41 @@
+{
+  "name": "nerium",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "description": "Infrastructure for the AI agent economy. Built with Opus 4.7.",
+  "author": "Ghaisan Khoirul Badruzaman (Finerium)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Finerium/nerium.git"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest",
+    "framer-motion": "^11.0.0",
+    "gsap": "^3.12.0",
+    "howler": "^2.2.4",
+    "next": "^15.0.0",
+    "pixi.js": "^8.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "three": "0.128.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/howler": "^2.2.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/three": "0.128.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^15.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.6.0"
+  }
+}
