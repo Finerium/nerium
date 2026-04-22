@@ -1,0 +1,39 @@
+{
+  "$schema_version": "0.1.0",
+  "contract_reference": "docs/contracts/billing_meter.contract.md v0.1.0",
+  "currency_conversion": {
+    "usd_to_idr_static": 16200,
+    "sourced": "2026-04 hackathon static rate per Ghaisan Decision 1"
+  },
+  "execution_unit_canonical": "token",
+  "tiers": [
+    {
+      "tier": "free",
+      "per_unit_usd": 0.0,
+      "per_unit_idr": 0.0,
+      "included_units": 10000,
+      "description": "Sandbox evaluation. Hard cap at 10000 tokens per session. Preview specialists only, no production specialist dispatch. Maps to approximately zero dollars per Builder run."
+    },
+    {
+      "tier": "cheap",
+      "per_unit_usd": 0.000005,
+      "per_unit_idr": 0.081,
+      "included_units": 100000,
+      "description": "Sonnet-heavy routing with Opus limited to architectural decisions only. Target run cost under 5 USD per Builder run. Matches non-technical user entry point, parity with marketplace cheap listings."
+    },
+    {
+      "tier": "mid",
+      "per_unit_usd": 0.000012,
+      "per_unit_idr": 0.1944,
+      "included_units": 500000,
+      "description": "Balanced routing across Opus for lead specialists and Sonnet for worker specialists. Target run cost 5 to 50 USD per Builder run. Recommended default for production-grade landing pages and internal tools."
+    },
+    {
+      "tier": "premium",
+      "per_unit_usd": 0.000025,
+      "per_unit_idr": 0.405,
+      "included_units": 2000000,
+      "description": "Opus 4.7 across all specialists end to end. Target run cost above 50 USD per Builder run, scaling to Tokopedia-tier output at 500 to 2500 USD per run per NarasiGhaisan Section 4. Premium quality bar with full orchestration depth."
+    }
+  ]
+}
