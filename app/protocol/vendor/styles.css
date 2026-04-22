@@ -1,0 +1,409 @@
+/*
+ * Vendor adapter UI scoped styles (Morpheus P3b).
+ *
+ * Consumes the --advisor-* CSS custom properties declared on .advisor-root by
+ * Erato (app/advisor/ui/styles.css). This file adds no new palette tokens, so
+ * Harmonia P4 design_tokens sweep can retheme both advisor and vendor layers
+ * through a single token swap. All selectors prefixed morpheus-*.
+ *
+ * Honest-claim visibility (morpheus.md hard_constraint): .morpheus-annotation
+ * uses a minimum font-size of 12px, role="note" semantics, and a contrast
+ * ratio against --advisor-bg that meets WCAG AA via --advisor-warn-advisory
+ * (amber #f4c36a on near-black #06060c approximates 9.4:1 foreground text,
+ * 4.8:1 for the smaller label span; both above the 4.5:1 AA threshold for
+ * normal text).
+ */
+
+.morpheus-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--advisor-space-3, 12px);
+  color: var(--advisor-fg, #e7f2ff);
+  background: var(--advisor-bg-elevated, #0f1020);
+  border: 1px solid var(--advisor-border, rgba(0, 240, 255, 0.18));
+  border-radius: var(--advisor-radius-md, 12px);
+  padding: var(--advisor-space-3, 12px);
+  font-family: var(--advisor-font-body, sans-serif);
+}
+
+.morpheus-panel[data-read-only="true"] {
+  opacity: 0.85;
+}
+
+.morpheus-panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--advisor-space-1, 4px);
+}
+
+.morpheus-panel-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.morpheus-panel-eyebrow {
+  font-family: var(--advisor-font-mono, monospace);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--advisor-fg-muted, #94a3c4);
+  font-size: 10px;
+}
+
+.morpheus-panel-heading {
+  margin: 0;
+  font-family: var(--advisor-font-display, sans-serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--advisor-accent-cyan, #00f0ff);
+  letter-spacing: 0.02em;
+}
+
+.morpheus-panel-subheading {
+  margin: 0;
+  color: var(--advisor-fg-muted, #94a3c4);
+  font-size: 12px;
+  line-height: 1.45;
+  max-width: 60ch;
+}
+
+/* ---------- Honest annotation banner ---------- */
+
+.morpheus-annotation {
+  display: flex;
+  align-items: center;
+  gap: var(--advisor-space-2, 8px);
+  padding: var(--advisor-space-2, 8px) var(--advisor-space-3, 12px);
+  border: 1px solid var(--advisor-warn-advisory, #f4c36a);
+  border-radius: var(--advisor-radius-md, 12px);
+  background: linear-gradient(
+    135deg,
+    rgba(244, 195, 106, 0.12),
+    rgba(244, 195, 106, 0.04)
+  );
+  color: var(--advisor-warn-advisory, #f4c36a);
+  font-family: var(--advisor-font-body, sans-serif);
+  font-size: 12px;
+  line-height: 1.4;
+  min-height: 36px;
+}
+
+.morpheus-annotation[data-severity="info"] {
+  border-color: var(--advisor-accent-cyan, #00f0ff);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 240, 255, 0.08),
+    rgba(0, 240, 255, 0.02)
+  );
+  color: var(--advisor-accent-cyan, #00f0ff);
+}
+
+.morpheus-annotation-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  color: currentColor;
+}
+
+.morpheus-annotation-label {
+  font-family: var(--advisor-font-mono, monospace);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.morpheus-annotation-text {
+  font-size: 12px;
+  color: var(--advisor-fg, #e7f2ff);
+  flex: 1 1 auto;
+}
+
+/* ---------- Grid ---------- */
+
+.morpheus-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid var(--advisor-border, rgba(0, 240, 255, 0.18));
+  border-radius: var(--advisor-radius-md, 12px);
+  padding: var(--advisor-space-2, 8px);
+  background: var(--advisor-bg, #06060c);
+}
+
+.morpheus-grid-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.2fr) repeat(
+      auto-fit,
+      minmax(120px, 1fr)
+    );
+  gap: var(--advisor-space-1, 4px);
+  align-items: stretch;
+}
+
+.morpheus-grid-row-header {
+  padding-bottom: var(--advisor-space-1, 4px);
+  border-bottom: 1px solid var(--advisor-border, rgba(0, 240, 255, 0.18));
+  margin-bottom: var(--advisor-space-1, 4px);
+}
+
+.morpheus-grid-header-cell,
+.morpheus-grid-task-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6px 10px;
+  font-family: var(--advisor-font-mono, monospace);
+  font-size: 11px;
+  color: var(--advisor-fg-muted, #94a3c4);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.morpheus-grid-task-cell {
+  color: var(--advisor-fg, #e7f2ff);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-family: var(--advisor-font-body, sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.morpheus-vendor-name {
+  color: var(--advisor-fg, #e7f2ff);
+  font-family: var(--advisor-font-display, sans-serif);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.morpheus-vendor-status {
+  font-size: 10px;
+  margin-top: 2px;
+  color: var(--advisor-success, #43f5b4);
+  text-transform: lowercase;
+  letter-spacing: 0.12em;
+}
+
+.morpheus-vendor-status[data-mock="true"] {
+  color: var(--advisor-warn-advisory, #f4c36a);
+}
+
+.morpheus-grid-cell {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-start;
+  background: var(--advisor-bg-elevated, #0f1020);
+  color: var(--advisor-fg-muted, #94a3c4);
+  border: 1px solid var(--advisor-border, rgba(0, 240, 255, 0.18));
+  border-radius: var(--advisor-radius-sm, 6px);
+  padding: 8px 10px;
+  font-family: var(--advisor-font-body, sans-serif);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background var(--advisor-transition-fast, 120ms ease),
+    color var(--advisor-transition-fast, 120ms ease),
+    border-color var(--advisor-transition-fast, 120ms ease);
+  min-height: 36px;
+  text-align: left;
+}
+
+.morpheus-grid-cell:hover:not(:disabled) {
+  color: var(--advisor-fg, #e7f2ff);
+  background: var(--advisor-bg-subtle, rgba(0, 240, 255, 0.04));
+  border-color: var(--advisor-border-strong, rgba(0, 240, 255, 0.42));
+}
+
+.morpheus-grid-cell:focus-visible {
+  outline: 2px solid var(--advisor-accent-cyan, #00f0ff);
+  outline-offset: 2px;
+}
+
+.morpheus-grid-cell:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.morpheus-grid-cell[data-selected="true"] {
+  color: var(--advisor-bg, #06060c);
+  background: var(--advisor-accent-cyan, #00f0ff);
+  border-color: var(--advisor-accent-cyan, #00f0ff);
+  font-weight: 600;
+}
+
+.morpheus-grid-cell[data-selected="true"][data-mock="true"] {
+  background: var(--advisor-warn-advisory, #f4c36a);
+  border-color: var(--advisor-warn-advisory, #f4c36a);
+  color: var(--advisor-bg, #06060c);
+}
+
+.morpheus-grid-cell-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: 0 0 8px;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.18);
+}
+
+.morpheus-grid-cell[data-selected="false"] .morpheus-grid-cell-dot {
+  background: var(--advisor-border-strong, rgba(0, 240, 255, 0.42));
+  box-shadow: none;
+}
+
+.morpheus-grid-cell-label {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-family: var(--advisor-font-mono, monospace);
+}
+
+.morpheus-grid-cell-warn {
+  font-size: 10px;
+  color: var(--advisor-warn-review, #ff9a3c);
+  margin-left: auto;
+  font-family: var(--advisor-font-mono, monospace);
+  text-transform: lowercase;
+  letter-spacing: 0.08em;
+}
+
+.morpheus-grid-cell[data-capability-warn="true"] {
+  border-style: dashed;
+}
+
+.morpheus-grid-empty,
+.morpheus-grid-prompt {
+  margin: var(--advisor-space-2, 8px) 0 0;
+  font-size: 12px;
+  color: var(--advisor-fg-muted, #94a3c4);
+  font-family: var(--advisor-font-mono, monospace);
+}
+
+/* ---------- Summary ---------- */
+
+.morpheus-panel-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--advisor-space-2, 8px);
+  padding-top: var(--advisor-space-2, 8px);
+  border-top: 1px solid var(--advisor-border, rgba(0, 240, 255, 0.18));
+}
+
+.morpheus-panel-summary-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--advisor-space-2, 8px);
+  margin: 0;
+}
+
+.morpheus-panel-summary-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: var(--advisor-radius-sm, 6px);
+  background: var(--advisor-bg-subtle, rgba(0, 240, 255, 0.04));
+  border: 1px solid var(--advisor-border, rgba(0, 240, 255, 0.18));
+}
+
+.morpheus-panel-summary-metric dt {
+  font-family: var(--advisor-font-mono, monospace);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--advisor-fg-muted, #94a3c4);
+  margin: 0;
+}
+
+.morpheus-panel-summary-metric dd {
+  margin: 0;
+  font-family: var(--advisor-font-display, sans-serif);
+  font-size: 18px;
+  color: var(--advisor-fg, #e7f2ff);
+}
+
+.morpheus-panel-summary-metric[data-variant="mock"] dd {
+  color: var(--advisor-warn-advisory, #f4c36a);
+}
+
+.morpheus-panel-summary-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.morpheus-panel-summary-row {
+  display: flex;
+  align-items: center;
+  gap: var(--advisor-space-2, 8px);
+  padding: 6px 10px;
+  border-radius: var(--advisor-radius-sm, 6px);
+  background: var(--advisor-bg, #06060c);
+  border: 1px solid var(--advisor-border, rgba(0, 240, 255, 0.18));
+  font-size: 12px;
+}
+
+.morpheus-panel-summary-task {
+  color: var(--advisor-fg, #e7f2ff);
+  flex: 1 1 auto;
+}
+
+.morpheus-panel-summary-arrow {
+  color: var(--advisor-fg-muted, #94a3c4);
+  font-family: var(--advisor-font-mono, monospace);
+  font-size: 11px;
+}
+
+.morpheus-panel-summary-vendor {
+  font-family: var(--advisor-font-display, sans-serif);
+  color: var(--advisor-accent-cyan, #00f0ff);
+}
+
+.morpheus-panel-summary-vendor[data-mock="true"] {
+  color: var(--advisor-warn-advisory, #f4c36a);
+}
+
+.morpheus-panel-summary-badge {
+  font-family: var(--advisor-font-mono, monospace);
+  font-size: 10px;
+  text-transform: lowercase;
+  letter-spacing: 0.12em;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(244, 195, 106, 0.18);
+  color: var(--advisor-warn-advisory, #f4c36a);
+  border: 1px solid var(--advisor-warn-advisory, #f4c36a);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 640px) {
+  .morpheus-grid-row {
+    grid-template-columns: 1fr;
+  }
+
+  .morpheus-grid-row-header {
+    display: none;
+  }
+
+  .morpheus-grid-cell {
+    justify-content: space-between;
+  }
+
+  .morpheus-grid-cell::before {
+    content: attr(aria-label);
+    font-family: var(--advisor-font-mono, monospace);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--advisor-fg-muted, #94a3c4);
+    margin-right: auto;
+  }
+}
