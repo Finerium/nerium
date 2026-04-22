@@ -36,3 +36,9 @@ venv/
 
 # Claude Code local
 .claude/local/
+
+# Next.js auto-generated
+next-env.d.ts
+
+# Playwright MCP session artifacts
+.playwright-mcp/

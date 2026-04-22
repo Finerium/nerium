@@ -1,0 +1,44 @@
+/*
+ * globals.css
+ *
+ * Nemea Phase 5 QA emergency harness (2026-04-22). Loads Tailwind v4 and
+ * declares the canonical design token palette for Worker components that
+ * use Tailwind utility classes (`bg-background`, `text-foreground`,
+ * `border-border`, `bg-warning`, `text-critical`, `rounded-pill`, etc).
+ *
+ * The `@theme` values below seed the cyberpunk_shanghai palette as a safe
+ * SSR-visible fallback. At runtime `theme_runtime.applyWorld` writes CSS
+ * custom properties of the same name onto `document.documentElement`, which
+ * win cascade specificity over `@theme`-emitted `:root` declarations, so
+ * switching worlds through `WorldSwitcher` re-themes every Tailwind-styled
+ * surface without a remount.
+ */
+
+@import "tailwindcss";
+
+@theme {
+  --color-primary: oklch(0.830 0.150 200.0);
+  --color-secondary: oklch(0.660 0.270 5.0);
+  --color-accent: oklch(0.620 0.220 295.0);
+  --color-background: oklch(0.100 0.020 270.0);
+  --color-foreground: oklch(0.940 0.020 265.0);
+  --color-muted: oklch(0.580 0.030 275.0);
+  --color-success: oklch(0.780 0.220 150.0);
+  --color-warning: oklch(0.820 0.170 80.0);
+  --color-critical: oklch(0.620 0.280 15.0);
+  --color-border: oklch(0.320 0.070 290.0);
+  --color-ring: oklch(0.830 0.150 200.0);
+
+  --radius-sm: 0.125rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.625rem;
+  --radius-pill: 9999px;
+
+  --font-sans:
+    'Inter', system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-serif:
+    'Orbitron', 'Exo 2', 'Rajdhani', 'Inter', system-ui, sans-serif;
+  --font-mono:
+    'Share Tech Mono', 'JetBrains Mono', 'Courier New', monospace;
+}
