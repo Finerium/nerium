@@ -415,7 +415,12 @@
 }
 
 .advisor-submit:hover:not(:disabled) {
-  background: #66f5ff;
+  /*
+   * Lighten the active-world accent instead of hardcoding cyberpunk cyan.
+   * Keeps hover feedback readable under medieval_desert and
+   * steampunk_victorian where --advisor-accent-cyan carries a warm hue.
+   */
+  background: color-mix(in oklch, var(--advisor-accent-cyan) 82%, white);
 }
 
 .advisor-submit:active:not(:disabled) {
@@ -630,8 +635,8 @@
 }
 
 .advisor-warning-btn[data-variant="primary"]:hover {
-  background: #66f5ff;
-  border-color: #66f5ff;
+  background: color-mix(in oklch, var(--advisor-accent-cyan) 82%, white);
+  border-color: color-mix(in oklch, var(--advisor-accent-cyan) 82%, white);
 }
 
 /* ---------- Responsive tuning ---------- */

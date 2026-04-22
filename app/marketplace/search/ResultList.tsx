@@ -69,7 +69,8 @@ const MODE_BADGE_KEYWORD: CSSProperties = {
   gap: '0.25rem',
   padding: '0.125rem 0.5rem',
   borderRadius: '999px',
-  border: '1px solid rgba(148, 163, 196, 0.4)',
+  border:
+    '1px solid color-mix(in oklch, var(--advisor-fg-muted, #94a3c4) 40%, transparent)',
   color: 'var(--advisor-fg-muted, #94a3c4)',
   background: 'transparent',
   fontSize: '10px',
@@ -79,7 +80,8 @@ const MODE_BADGE_KEYWORD: CSSProperties = {
 
 const MODE_BADGE_SEMANTIC: CSSProperties = {
   ...MODE_BADGE_KEYWORD,
-  borderColor: 'rgba(0, 240, 255, 0.45)',
+  borderColor:
+    'color-mix(in oklch, var(--advisor-accent-cyan, #00f0ff) 45%, transparent)',
   color: 'var(--advisor-accent-cyan, #00f0ff)',
 };
 
@@ -159,8 +161,10 @@ const TAG: CSSProperties = {
   alignItems: 'center',
   padding: '0.125rem 0.5rem',
   borderRadius: '999px',
-  background: 'rgba(139, 92, 246, 0.15)',
-  border: '1px solid rgba(139, 92, 246, 0.4)',
+  background:
+    'color-mix(in oklch, var(--advisor-accent-violet, #8b5cf6) 15%, transparent)',
+  border:
+    '1px solid color-mix(in oklch, var(--advisor-accent-violet, #8b5cf6) 40%, transparent)',
   color: 'var(--advisor-fg, #e7f2ff)',
   fontSize: '10px',
   letterSpacing: '0.04em',
@@ -171,7 +175,8 @@ const CONFIDENCE_TRACK: CSSProperties = {
   position: 'relative',
   height: '4px',
   borderRadius: '999px',
-  background: 'rgba(148, 163, 196, 0.16)',
+  background:
+    'color-mix(in oklch, var(--advisor-fg-muted, #94a3c4) 16%, transparent)',
   overflow: 'hidden',
   flex: '1 1 auto',
 };
@@ -268,23 +273,27 @@ const EMPTY_STATE: CSSProperties = {
 function priceBadgeStyle(tier: PricingTier): CSSProperties {
   const palette: Record<PricingTier, { bg: string; border: string; fg: string }> = {
     free: {
-      bg: 'rgba(67, 245, 180, 0.12)',
-      border: 'rgba(67, 245, 180, 0.45)',
+      bg: 'color-mix(in oklch, var(--advisor-success, #43f5b4) 12%, transparent)',
+      border:
+        'color-mix(in oklch, var(--advisor-success, #43f5b4) 45%, transparent)',
       fg: 'var(--advisor-success, #43f5b4)',
     },
     cheap: {
-      bg: 'rgba(139, 92, 246, 0.12)',
-      border: 'rgba(139, 92, 246, 0.45)',
+      bg: 'color-mix(in oklch, var(--advisor-accent-violet, #8b5cf6) 12%, transparent)',
+      border:
+        'color-mix(in oklch, var(--advisor-accent-violet, #8b5cf6) 45%, transparent)',
       fg: 'var(--advisor-accent-violet, #8b5cf6)',
     },
     mid: {
-      bg: 'rgba(0, 240, 255, 0.1)',
-      border: 'rgba(0, 240, 255, 0.4)',
+      bg: 'color-mix(in oklch, var(--advisor-accent-cyan, #00f0ff) 10%, transparent)',
+      border:
+        'color-mix(in oklch, var(--advisor-accent-cyan, #00f0ff) 40%, transparent)',
       fg: 'var(--advisor-accent-cyan, #00f0ff)',
     },
     premium: {
-      bg: 'rgba(255, 46, 136, 0.12)',
-      border: 'rgba(255, 46, 136, 0.45)',
+      bg: 'color-mix(in oklch, var(--advisor-accent-magenta, #ff2e88) 12%, transparent)',
+      border:
+        'color-mix(in oklch, var(--advisor-accent-magenta, #ff2e88) 45%, transparent)',
       fg: 'var(--advisor-accent-magenta, #ff2e88)',
     },
   };
