@@ -1,0 +1,30 @@
+{
+  "$schema_version": "0.1.0",
+  "contract_ref": "docs/contracts/search_ranking.contract.md v0.1.0",
+  "owner_agent": "demeter",
+  "weights_version": "0.1.0",
+  "generated_at": "2026-04-22",
+  "invariant": "Shipped signal weights sum to exactly 1.0. Implementation normalizes at runtime if future overrides break the invariant.",
+  "weights": {
+    "semantic_similarity": 0.55,
+    "trust_score": 0.25,
+    "popularity": 0.10,
+    "recency": 0.05,
+    "pricing_tier_affinity": 0.05
+  },
+  "rationale": {
+    "semantic_similarity": "Dominant signal because query intent match is the primary user expectation in a cross-vendor catalog where titles and descriptions vary.",
+    "trust_score": "Second-highest because buyers in a fragmented market need signal they can depend on; per Section 5 NarasiGhaisan this is the trust unlock versus ad-hoc Twitter DM sales.",
+    "popularity": "Moderate weight; avoids cold-start suppression while still letting newcomers surface via semantic match.",
+    "recency": "Low weight; freshness matters for novelty rails but should not dominate core ranking.",
+    "pricing_tier_affinity": "Low weight; soft match to user's declared tier preference, does not hard-filter."
+  },
+  "tie_breakers": [
+    "recency_normalized descending",
+    "listing_id lexicographic ascending"
+  ],
+  "normalization": {
+    "strategy": "min_max_over_candidates",
+    "note": "Top candidate in the result set is rescaled to 1.0 so the UI can surface confidence bars without a global calibration step."
+  }
+}

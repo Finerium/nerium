@@ -1,0 +1,165 @@
+{
+  "$schema_version": "0.1.0",
+  "contract_ref": "docs/contracts/marketplace_listing.contract.md v0.1.0 Section 4",
+  "owner_agent": "demeter",
+  "generated_at": "2026-04-22",
+  "notes": "Taxonomy depth is capped at two levels (category then subcategory) per soft guidance. Verticals, vendors, pricing bands are the three facets Artemis renders on browse.",
+  "verticals": [
+    {
+      "key": "dev_tools",
+      "label": "Developer Tools",
+      "subcategories": [
+        { "key": "code_generation", "label": "Code Generation" },
+        { "key": "code_review", "label": "Code Review" },
+        { "key": "refactoring", "label": "Refactoring" },
+        { "key": "devops_automation", "label": "DevOps Automation" }
+      ]
+    },
+    {
+      "key": "finance",
+      "label": "Finance",
+      "subcategories": [
+        { "key": "trading_signal", "label": "Trading Signal" },
+        { "key": "portfolio_analysis", "label": "Portfolio Analysis" },
+        { "key": "accounting_automation", "label": "Accounting Automation" },
+        { "key": "risk_modeling", "label": "Risk Modeling" }
+      ]
+    },
+    {
+      "key": "customer_support",
+      "label": "Customer Support",
+      "subcategories": [
+        { "key": "ticket_triage", "label": "Ticket Triage" },
+        { "key": "chat_autoresponder", "label": "Chat Autoresponder" },
+        { "key": "knowledge_base_search", "label": "Knowledge Base Search" }
+      ]
+    },
+    {
+      "key": "creative",
+      "label": "Creative",
+      "subcategories": [
+        { "key": "marketing_copy", "label": "Marketing Copy" },
+        { "key": "design_asset", "label": "Design Asset Generation" },
+        { "key": "video_generation", "label": "Video Generation" },
+        { "key": "audio_production", "label": "Audio Production" }
+      ]
+    },
+    {
+      "key": "education",
+      "label": "Education",
+      "subcategories": [
+        { "key": "tutoring", "label": "Tutoring" },
+        { "key": "curriculum_authoring", "label": "Curriculum Authoring" },
+        { "key": "grading_feedback", "label": "Grading and Feedback" }
+      ]
+    },
+    {
+      "key": "ops",
+      "label": "Operations",
+      "subcategories": [
+        { "key": "workflow_automation", "label": "Workflow Automation" },
+        { "key": "meeting_summarization", "label": "Meeting Summarization" },
+        { "key": "inbox_triage", "label": "Inbox Triage" }
+      ]
+    },
+    {
+      "key": "retail",
+      "label": "Retail and Hospitality",
+      "subcategories": [
+        { "key": "restaurant_automation", "label": "Restaurant Automation" },
+        { "key": "ecommerce_merchandising", "label": "E-commerce Merchandising" },
+        { "key": "inventory_forecast", "label": "Inventory Forecast" }
+      ]
+    },
+    {
+      "key": "healthcare",
+      "label": "Healthcare",
+      "subcategories": [
+        { "key": "clinical_note_drafting", "label": "Clinical Note Drafting" },
+        { "key": "patient_intake", "label": "Patient Intake" },
+        { "key": "literature_review", "label": "Literature Review" }
+      ]
+    },
+    {
+      "key": "legal",
+      "label": "Legal",
+      "subcategories": [
+        { "key": "contract_review", "label": "Contract Review" },
+        { "key": "research_memo", "label": "Research Memo" },
+        { "key": "compliance_check", "label": "Compliance Check" }
+      ]
+    },
+    {
+      "key": "agriculture",
+      "label": "Agriculture",
+      "subcategories": [
+        { "key": "crop_monitoring", "label": "Crop Monitoring" },
+        { "key": "yield_forecast", "label": "Yield Forecast" },
+        { "key": "supply_chain", "label": "Supply Chain" }
+      ]
+    },
+    {
+      "key": "research",
+      "label": "Research",
+      "subcategories": [
+        { "key": "literature_survey", "label": "Literature Survey" },
+        { "key": "data_extraction", "label": "Data Extraction" },
+        { "key": "synthesis_report", "label": "Synthesis Report" }
+      ]
+    },
+    {
+      "key": "other",
+      "label": "Other",
+      "subcategories": [
+        { "key": "uncategorized", "label": "Uncategorized" }
+      ]
+    }
+  ],
+  "vendors": [
+    { "key": "hand_coded", "label": "Hand Coded" },
+    { "key": "cursor", "label": "Cursor" },
+    { "key": "claude_code", "label": "Claude Code" },
+    { "key": "replit", "label": "Replit Agent" },
+    { "key": "bolt", "label": "Bolt" },
+    { "key": "lovable", "label": "Lovable" },
+    { "key": "claude_skills", "label": "Claude Skills" },
+    { "key": "gpt_store", "label": "GPT Store" },
+    { "key": "mcp_hub", "label": "MCP Hub" },
+    { "key": "huggingface_space", "label": "Hugging Face Space" },
+    { "key": "langchain_hub", "label": "LangChain Hub" },
+    { "key": "vercel_gallery", "label": "Vercel Agent Gallery" },
+    { "key": "cloudflare_marketplace", "label": "Cloudflare AI Marketplace" },
+    { "key": "nerium_builder", "label": "NERIUM Builder" },
+    { "key": "other", "label": "Other" }
+  ],
+  "pricing_bands": [
+    {
+      "key": "free",
+      "label": "Free",
+      "usage_hint_usd_per_task": { "low": 0, "high": 0 },
+      "description": "Open source or creator-subsidized; buyer pays zero per execution."
+    },
+    {
+      "key": "cheap",
+      "label": "Cheap",
+      "usage_hint_usd_per_task": { "low": 0.001, "high": 0.05 },
+      "description": "Low-cost automation tasks; ideal for high-volume narrow-scope agents."
+    },
+    {
+      "key": "mid",
+      "label": "Mid",
+      "usage_hint_usd_per_task": { "low": 0.05, "high": 0.5 },
+      "description": "Balanced quality and cost; default for most prosumer agents."
+    },
+    {
+      "key": "premium",
+      "label": "Premium",
+      "usage_hint_usd_per_task": { "low": 0.5, "high": 25.0 },
+      "description": "Deep reasoning, long context, or specialized domain expertise."
+    }
+  ],
+  "featured_default_policy": {
+    "mode": "trust_weighted",
+    "description": "Default sort for browse is trust-weighted; recency breaks ties. Curator-picked carousel runs as a separate non-ranked rail."
+  }
+}
