@@ -22,6 +22,7 @@ import type {
   StepCompletedPayload,
   HandoffPayload,
 } from '../../shared/events/pipeline_event';
+import type { ConfidenceMap, EarlyWarning } from '../prediction/schema';
 
 export type {
   PipelineEvent,
@@ -77,27 +78,18 @@ export interface BudgetWarningPayload {
 }
 
 // Emitted by Cassandra onto the same bus so Helios and Apollo see predictions
-// inline with pipeline events. Shape kept small here; full prediction shape
-// lives in simulation_event.contract.md.
+// inline with pipeline events. Payload shape conforms to
+// prediction_layer_surface.contract.md v0.1.0 Section 5, which is Owner-of-
+// topic authoritative (Cassandra). Reconciled per Cassandra ADR-004 and
+// Helios ADR-05 addendum: the earlier speculative flat shape (p50/p90 cost
+// and wallclock percentile forecast) was never wired and is deferred to a
+// future `pipeline.prediction.cost_forecast` topic.
 export interface PredictionEmittedPayload {
-  readonly pipeline_run_id: string;
-  readonly forecast_horizon_step: number;
-  readonly p50_cost_usd: number;
-  readonly p90_cost_usd: number;
-  readonly p50_wallclock_ms: number;
-  readonly p90_wallclock_ms: number;
-  readonly confidence: number; // 0 to 1
+  readonly confidence_map: ConfidenceMap;
 }
 
 export interface PredictionWarningPayload {
-  readonly pipeline_run_id: string;
-  readonly projected_overrun_dimension: 'tokens' | 'wallclock' | 'usd';
-  readonly projected_overrun_percent: number;
-  readonly recommendation:
-    | 'downshift_model_tier'
-    | 'trim_step'
-    | 'halt_and_ask_user'
-    | 'continue_monitor';
+  readonly warning: EarlyWarning;
 }
 
 // ---------- Discriminated union for ergonomic subscriber switch ----------
