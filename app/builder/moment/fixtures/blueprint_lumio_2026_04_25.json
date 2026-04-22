@@ -1,0 +1,70 @@
+{
+  "$schema_ref": "docs/contracts/blueprint_moment.contract.md v0.1.0",
+  "moment_id": "blueprint_lumio_2026_04_25",
+  "trigger": "auto_on_timestamp",
+  "trigger_timestamp_ms_into_demo": 90000,
+  "visible_node_set": "all_22",
+  "highlight_nodes": [
+    "heracles",
+    "apollo",
+    "athena",
+    "cassandra"
+  ],
+  "narration_overlay": [
+    {
+      "start_ms": 500,
+      "end_ms": 6500,
+      "text": "Zoom out. Builder barusan bangun Lumio."
+    },
+    {
+      "start_ms": 7500,
+      "end_ms": 15500,
+      "text": "22 agent. 21 Opus 4.7. 1 Sonnet. 9 fase."
+    },
+    {
+      "start_ms": 16500,
+      "end_ms": 25500,
+      "text": "Heracles magenta = Managed Agents, real git PR."
+    },
+    {
+      "start_ms": 26500,
+      "end_ms": 34500,
+      "text": "Claude Code solo gak orchestrate ini."
+    },
+    {
+      "start_ms": 35500,
+      "end_ms": 39500,
+      "text": "Prompting skill ga dibutuhin. Lu tinggal approve."
+    }
+  ],
+  "camera_sequence": [
+    {
+      "start_ms": 0,
+      "end_ms": 6500,
+      "zoom_from": 1.0,
+      "zoom_to": 1.0,
+      "ease": "linear"
+    },
+    {
+      "start_ms": 6500,
+      "end_ms": 18000,
+      "zoom_from": 1.0,
+      "zoom_to": 0.55,
+      "ease": "ease_in_out"
+    },
+    {
+      "start_ms": 18000,
+      "end_ms": 32000,
+      "zoom_from": 0.55,
+      "zoom_to": 0.22,
+      "ease": "cubic"
+    },
+    {
+      "start_ms": 32000,
+      "end_ms": 40000,
+      "zoom_from": 0.22,
+      "zoom_to": 0.22,
+      "ease": "linear"
+    }
+  ]
+}
