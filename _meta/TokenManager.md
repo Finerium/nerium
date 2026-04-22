@@ -19,6 +19,7 @@ After your session ends:
 | # | Date | Specialist | Role | Model | Input Tokens | Output Tokens | Total Tokens | Session USD | Running Total USD | Budget Remaining | Notes |
 |---|------|-----------|------|-------|--------------|---------------|--------------|-------------|-------------------|------------------|-------|
 | 1 | 2026-04-22 | Pythia | Contract designer, 32 files | Opus 4.7 | 40 direct / 4.29M cached | 105.2K | 105.24K direct / 4.29M cached | $6.41 | $6.41 | $493.59 | 32 contracts shipped, self-check 19/19 pass. Actual $6.41 via heavy prompt caching (4M cache read, 288K cache write, 40 direct input, 105K output). Cache optimization reduced cost significantly below pre-cache estimate ($10-12 raw). Haiku 2.7K input negligible background. API duration 23m 4s, wallclock 26m 32s, 4016 lines added 1 removed. |
+| 2 | 2026-04-22 | Hephaestus | Prompt authoring, 22 agent files | Opus 4.7 | 1.0K direct / 2.3M cached | 79.0K | 79.0K direct / 2.3M cached | $4.76 | $11.17 | $488.83 | 22 agent prompts shipped, self-check 19/19 pass. Heavy cache reuse (2.3M cache read + 261.8K cache write on Opus, 1K direct input, 79K output). Haiku 3.5K input background negligible ($0.0036). API duration 16m 47s, wallclock 17m 40s, 3364 lines added 0 removed. Zero halts, zero per-file ferry, single-session batch pattern per MedWatch V5 lesson honored. Commit 3b1734a. |
 
 ## Running Projection (V3 estimate, reference only)
 
