@@ -143,3 +143,12 @@ NERIUM built itself by running the manual workflow it automates, one last time, 
 This frame threads every submission surface: README, demo video narration, Twitter announcement, Discord post, final judge pitch. One frame, no dilution. The product's origin story IS the product's pitch, because the workflow that built NERIUM is literally what NERIUM Builder replaces.
 
 Ghaisan manually lived the 47-agent 9-phase 106-step pipeline for Investment AI IDX blueprint. He knows every handoff, every dependency, every failure mode. The hackathon build is the same pattern, one more time, and then Builder collapses the whole thing into a single conversational interface.
+
+## Daily Rhythm Lock
+
+**Claude Code activity window:** 07:00 WIB to 23:00 WIB daily. Hard stop at 23:00 WIB.
+
+**23:00 WIB freeze point:** Ghaisan spawn Ananke Claude Code session to compile day_N.md log from chat + session transcripts + TokenManager deltas. No new specialist spawn after 23:00, no Workers running past 23:00. If Worker in flight as 23:00 approach, halt at next natural checkpoint + commit + resume next morning.
+
+**Rationale:** Orchestration log continuity + budget tracking accuracy + Ghaisan rest buffer.
+
