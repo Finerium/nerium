@@ -59,3 +59,64 @@ export function formatOKLCH(color: OKLCHColor): string {
   }
   return `oklch(${lStr} ${cStr} ${hStr} / ${alpha.toFixed(3)})`;
 }
+
+// ---------- Full world descriptor shapes ----------
+//
+// Thalia P3b extension of the Early-Harmonia seed. Contract:
+// docs/contracts/world_aesthetic.contract.md v0.1.0 Section 3.
+//
+// Rationale: Early-Harmonia ships tokens.ts with the flat oklch string form
+// used by Tailwind v4 custom properties. WorldPalette below stores the same
+// values as OKLCHColor primitives so non-CSS consumers (Pixi.js sprite
+// tinting, Framer Motion color interpolation, procedural rendering) have
+// direct numeric access without parsing a CSS string.
+
+export interface WorldPalette {
+  primary: OKLCHColor;
+  secondary: OKLCHColor;
+  accent: OKLCHColor;
+  background: OKLCHColor;
+  foreground: OKLCHColor;
+  muted: OKLCHColor;
+  success: OKLCHColor;
+  warning: OKLCHColor;
+  critical: OKLCHColor;
+}
+
+export interface WorldTypography {
+  heading_font_family: string;
+  body_font_family: string;
+  mono_font_family: string;
+  heading_weight: number;
+  body_weight: number;
+  scale_ratio: number;
+}
+
+export type SilhouetteStyle =
+  | 'low_poly'
+  | 'pixel'
+  | 'line_engraving'
+  | 'neon_outline';
+
+export interface WorldMotif {
+  silhouette_style: SilhouetteStyle;
+  default_animation_duration_ms: number;
+  audio_theme_id?: string;
+  description: string;
+}
+
+export interface WorldDescriptor {
+  world_id: WorldId;
+  display_name: string;
+  palette: WorldPalette;
+  typography: WorldTypography;
+  motif: WorldMotif;
+  sprite_atlas_id: string;
+}
+
+export class UnknownWorldError extends Error {
+  constructor(world_id: string) {
+    super(`Unknown world_id: ${world_id}`);
+    this.name = 'UnknownWorldError';
+  }
+}

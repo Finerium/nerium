@@ -1,0 +1,123 @@
+{
+  "atlas_id": "steampunk_victorian_atlas_v1",
+  "world_id": "steampunk_victorian",
+  "image_path": "/assets/worlds/steampunk_victorian/atlas.png",
+  "image_format": "png",
+  "width_px": 64,
+  "height_px": 64,
+  "created_at": "2026-04-22T00:00:00.000Z",
+  "sprites": [
+    {
+      "sprite_id": "builder_floor_primary",
+      "kind": "tile",
+      "frame": { "x": 0, "y": 0, "w": 16, "h": 16 },
+      "tags": ["floor", "brass", "steampunk"],
+      "license": { "source": "opus_procedural", "license_id": "mit", "attribution_required": false }
+    },
+    {
+      "sprite_id": "builder_floor_secondary",
+      "kind": "tile",
+      "frame": { "x": 16, "y": 0, "w": 16, "h": 16 },
+      "tags": ["floor", "walnut", "steampunk"],
+      "license": { "source": "opus_procedural", "license_id": "mit", "attribution_required": false }
+    },
+    {
+      "sprite_id": "builder_wall_solid",
+      "kind": "tile",
+      "frame": { "x": 32, "y": 0, "w": 16, "h": 16 },
+      "tags": ["wall", "rivet", "steampunk"],
+      "license": { "source": "opus_procedural", "license_id": "mit", "attribution_required": false }
+    },
+    {
+      "sprite_id": "builder_wall_accent",
+      "kind": "tile",
+      "frame": { "x": 48, "y": 0, "w": 16, "h": 16 },
+      "tags": ["wall", "gauge", "steampunk"],
+      "license": { "source": "opus_procedural", "license_id": "mit", "attribution_required": false }
+    },
+    {
+      "sprite_id": "builder_corner_outer",
+      "kind": "tile",
+      "frame": { "x": 0, "y": 16, "w": 16, "h": 16 },
+      "tags": ["corner", "brass", "steampunk"],
+      "license": { "source": "opus_procedural", "license_id": "mit", "attribution_required": false }
+    },
+    {
+      "sprite_id": "builder_pillar",
+      "kind": "tile",
+      "frame": { "x": 16, "y": 16, "w": 16, "h": 16 },
+      "tags": ["pillar", "fluted", "steampunk"],
+      "license": { "source": "opus_procedural", "license_id": "mit", "attribution_required": false }
+    },
+    {
+      "sprite_id": "builder_arch_opening",
+      "kind": "tile",
+      "frame": { "x": 32, "y": 16, "w": 16, "h": 16 },
+      "tags": ["door", "arch", "steampunk"],
+      "license": { "source": "opus_procedural", "license_id": "mit", "attribution_required": false }
+    },
+    {
+      "sprite_id": "builder_feature_decor",
+      "kind": "prop",
+      "frame": { "x": 48, "y": 16, "w": 16, "h": 16 },
+      "tags": ["decor", "gear", "steampunk"],
+      "license": { "source": "opus_procedural", "license_id": "mit", "attribution_required": false }
+    },
+    {
+      "sprite_id": "ambient_on",
+      "kind": "prop",
+      "frame": { "x": 0, "y": 32, "w": 16, "h": 16 },
+      "tags": ["ambient", "gas_lamp", "on", "steampunk"],
+      "license": { "source": "opus_procedural", "license_id": "mit", "attribution_required": false }
+    },
+    {
+      "sprite_id": "ambient_off",
+      "kind": "prop",
+      "frame": { "x": 16, "y": 32, "w": 16, "h": 16 },
+      "tags": ["ambient", "gas_lamp", "off", "steampunk"],
+      "license": { "source": "opus_procedural", "license_id": "mit", "attribution_required": false }
+    },
+    {
+      "sprite_id": "ui_path_marker",
+      "kind": "ui_icon",
+      "frame": { "x": 32, "y": 32, "w": 16, "h": 16 },
+      "tags": ["path", "ui", "steampunk"],
+      "license": { "source": "opus_procedural", "license_id": "mit", "attribution_required": false }
+    },
+    {
+      "sprite_id": "ui_particle",
+      "kind": "ui_icon",
+      "frame": { "x": 48, "y": 32, "w": 16, "h": 16 },
+      "tags": ["particle", "steam", "steampunk"],
+      "license": { "source": "opus_procedural", "license_id": "mit", "attribution_required": false }
+    },
+    {
+      "sprite_id": "agent_node_idle",
+      "kind": "character",
+      "frame": { "x": 0, "y": 48, "w": 16, "h": 16 },
+      "tags": ["agent", "idle", "steampunk"],
+      "license": { "source": "opus_procedural", "license_id": "mit", "attribution_required": false }
+    },
+    {
+      "sprite_id": "agent_node_active",
+      "kind": "character",
+      "frame": { "x": 16, "y": 48, "w": 16, "h": 16 },
+      "tags": ["agent", "active", "steampunk"],
+      "license": { "source": "opus_procedural", "license_id": "mit", "attribution_required": false }
+    },
+    {
+      "sprite_id": "agent_node_completed",
+      "kind": "character",
+      "frame": { "x": 32, "y": 48, "w": 16, "h": 16 },
+      "tags": ["agent", "completed", "steampunk"],
+      "license": { "source": "opus_procedural", "license_id": "mit", "attribution_required": false }
+    },
+    {
+      "sprite_id": "ui_sigil_world",
+      "kind": "ui_icon",
+      "frame": { "x": 48, "y": 48, "w": 16, "h": 16 },
+      "tags": ["sigil", "ui", "steampunk"],
+      "license": { "source": "opus_procedural", "license_id": "mit", "attribution_required": false }
+    }
+  ]
+}
