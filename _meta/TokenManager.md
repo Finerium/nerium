@@ -18,7 +18,7 @@ After your session ends:
 
 | # | Date | Specialist | Role | Model | Input Tokens | Output Tokens | Total Tokens | Session USD | Running Total USD | Budget Remaining | Notes |
 |---|------|-----------|------|-------|--------------|---------------|--------------|-------------|-------------------|------------------|-------|
-| 1 | 2026-04-22 | Pythia | Contract designer, 32 files | Opus 4.7 | [run /cost to fill] | [run /cost to fill] | [run /cost to fill] | [run /cost to fill] | [run /cost to fill] | [run /cost to fill] | 32 contracts shipped, self-check 19/19 pass, handoff Hephaestus clean. Rough self-estimate before /cost verification: input ~180-240K (4 mandatory files plus ~6 batch tool-result echoes plus system prompt), output ~95-115K (32 contracts times ~2.8K avg plus verification + commit messages), raw cost ~$10-12 before prompt-caching discount. Replace placeholders with actual `/cost` output. |
+| 1 | 2026-04-22 | Pythia | Contract designer, 32 files | Opus 4.7 | 40 direct / 4.29M cached | 105.2K | 105.24K direct / 4.29M cached | $6.41 | $6.41 | $493.59 | 32 contracts shipped, self-check 19/19 pass. Actual $6.41 via heavy prompt caching (4M cache read, 288K cache write, 40 direct input, 105K output). Cache optimization reduced cost significantly below pre-cache estimate ($10-12 raw). Haiku 2.7K input negligible background. API duration 23m 4s, wallclock 26m 32s, 4016 lines added 1 removed. |
 
 ## Running Projection (V3 estimate, reference only)
 
