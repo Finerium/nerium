@@ -1,0 +1,254 @@
+{
+  "schema_version": "0.1.0",
+  "contract_ref": "docs/contracts/builder_specialist_executor.contract.md",
+  "pipeline_id": "lumio",
+  "display_name": "Lumio smart reading SaaS landing page",
+  "description": "Scaled-down demo build that exercises every Builder specialist role end to end. Produces a deployable Next.js 15 landing page plus a small FastAPI backend stub. Bounded to 11 specialists to stay inside the $500 hackathon budget per NarasiGhaisan Section 4. Tokopedia-tier output requires 10 to 50 million tokens and is a post-hackathon scale demo.",
+  "tech_stack": {
+    "frontend": "next_js_15_app_router",
+    "styling": "tailwind_v4_oklch",
+    "backend": "fastapi_python",
+    "persistence": "sqlite",
+    "state": "zustand"
+  },
+  "default_strategy": "collaborative_anthropic",
+  "budget_caps": {
+    "total_usd": 25.0,
+    "total_input_tokens": 800000,
+    "total_output_tokens": 400000,
+    "wallclock_seconds": 2400
+  },
+  "specialist_steps": [
+    {
+      "step_index": 0,
+      "specialist_id": "lumio_strategist",
+      "role": "strategist",
+      "display_name": "Product strategist",
+      "preferred_lane": "anthropic_direct",
+      "preferred_model": "claude-opus-4-7",
+      "acceptable_substitute_model": "claude-sonnet-4-6",
+      "budget_tokens": 40000,
+      "budget_wallclock_seconds": 180,
+      "input_artifact_refs": [],
+      "output_artifact_paths": [
+        "builds/lumio/strategy/product_brief.md",
+        "builds/lumio/strategy/user_personas.md"
+      ],
+      "handoff_to_step_indices": [1, 5]
+    },
+    {
+      "step_index": 1,
+      "specialist_id": "lumio_architect",
+      "role": "architect",
+      "display_name": "System architect",
+      "preferred_lane": "anthropic_direct",
+      "preferred_model": "claude-opus-4-7",
+      "acceptable_substitute_model": "claude-sonnet-4-6",
+      "budget_tokens": 60000,
+      "budget_wallclock_seconds": 240,
+      "input_artifact_refs": [
+        "builds/lumio/strategy/product_brief.md"
+      ],
+      "output_artifact_paths": [
+        "builds/lumio/architecture/system_overview.md",
+        "builds/lumio/architecture/component_tree.md",
+        "builds/lumio/architecture/api_contract.yaml"
+      ],
+      "handoff_to_step_indices": [2, 3, 4]
+    },
+    {
+      "step_index": 2,
+      "specialist_id": "lumio_db_schema",
+      "role": "db_schema_builder",
+      "display_name": "Database schema builder",
+      "preferred_lane": "anthropic_direct",
+      "preferred_model": "claude-sonnet-4-6",
+      "acceptable_substitute_model": "claude-haiku-4-5-20251001",
+      "budget_tokens": 25000,
+      "budget_wallclock_seconds": 120,
+      "input_artifact_refs": [
+        "builds/lumio/architecture/api_contract.yaml"
+      ],
+      "output_artifact_paths": [
+        "builds/lumio/backend/schema.sql",
+        "builds/lumio/backend/migrations/0001_init.sql"
+      ],
+      "handoff_to_step_indices": [4]
+    },
+    {
+      "step_index": 3,
+      "specialist_id": "lumio_ui_builder",
+      "role": "ui_builder",
+      "display_name": "Frontend UI builder",
+      "preferred_lane": "anthropic_direct",
+      "preferred_model": "claude-opus-4-7",
+      "acceptable_substitute_model": "claude-sonnet-4-6",
+      "budget_tokens": 120000,
+      "budget_wallclock_seconds": 360,
+      "input_artifact_refs": [
+        "builds/lumio/architecture/component_tree.md",
+        "builds/lumio/strategy/user_personas.md"
+      ],
+      "output_artifact_paths": [
+        "builds/lumio/frontend/app/page.tsx",
+        "builds/lumio/frontend/app/layout.tsx",
+        "builds/lumio/frontend/components/hero.tsx",
+        "builds/lumio/frontend/components/feature_grid.tsx",
+        "builds/lumio/frontend/components/pricing.tsx"
+      ],
+      "handoff_to_step_indices": [7, 8]
+    },
+    {
+      "step_index": 4,
+      "specialist_id": "lumio_api_builder",
+      "role": "api_builder",
+      "display_name": "Backend API builder",
+      "preferred_lane": "anthropic_direct",
+      "preferred_model": "claude-sonnet-4-6",
+      "acceptable_substitute_model": "claude-haiku-4-5-20251001",
+      "budget_tokens": 80000,
+      "budget_wallclock_seconds": 300,
+      "input_artifact_refs": [
+        "builds/lumio/architecture/api_contract.yaml",
+        "builds/lumio/backend/schema.sql"
+      ],
+      "output_artifact_paths": [
+        "builds/lumio/backend/main.py",
+        "builds/lumio/backend/routes/read_sessions.py",
+        "builds/lumio/backend/routes/users.py"
+      ],
+      "handoff_to_step_indices": [8]
+    },
+    {
+      "step_index": 5,
+      "specialist_id": "lumio_copywriter",
+      "role": "copywriter",
+      "display_name": "Copywriter",
+      "preferred_lane": "anthropic_direct",
+      "preferred_model": "claude-sonnet-4-6",
+      "acceptable_substitute_model": "claude-haiku-4-5-20251001",
+      "budget_tokens": 30000,
+      "budget_wallclock_seconds": 150,
+      "input_artifact_refs": [
+        "builds/lumio/strategy/product_brief.md",
+        "builds/lumio/strategy/user_personas.md"
+      ],
+      "output_artifact_paths": [
+        "builds/lumio/copy/headline_variants.md",
+        "builds/lumio/copy/feature_descriptions.md",
+        "builds/lumio/copy/pricing_labels.md"
+      ],
+      "handoff_to_step_indices": [3]
+    },
+    {
+      "step_index": 6,
+      "specialist_id": "lumio_asset_designer",
+      "role": "asset_designer",
+      "display_name": "Asset designer",
+      "preferred_lane": "anthropic_direct",
+      "preferred_model": "claude-opus-4-7",
+      "acceptable_substitute_model": "claude-sonnet-4-6",
+      "budget_tokens": 40000,
+      "budget_wallclock_seconds": 180,
+      "input_artifact_refs": [
+        "builds/lumio/strategy/product_brief.md"
+      ],
+      "output_artifact_paths": [
+        "builds/lumio/assets/logo.svg",
+        "builds/lumio/assets/hero_illustration.svg",
+        "builds/lumio/assets/favicon.svg"
+      ],
+      "handoff_to_step_indices": [3]
+    },
+    {
+      "step_index": 7,
+      "specialist_id": "lumio_qa_reviewer",
+      "role": "qa_reviewer",
+      "display_name": "Quality review",
+      "preferred_lane": "anthropic_direct",
+      "preferred_model": "claude-opus-4-7",
+      "acceptable_substitute_model": "claude-sonnet-4-6",
+      "budget_tokens": 60000,
+      "budget_wallclock_seconds": 240,
+      "input_artifact_refs": [
+        "builds/lumio/frontend/app/page.tsx",
+        "builds/lumio/frontend/components/hero.tsx"
+      ],
+      "output_artifact_paths": [
+        "builds/lumio/qa/review_report.md",
+        "builds/lumio/qa/a11y_findings.md"
+      ],
+      "handoff_to_step_indices": [9]
+    },
+    {
+      "step_index": 8,
+      "specialist_id": "lumio_integration_engineer",
+      "role": "integration_engineer",
+      "display_name": "Integration engineer",
+      "preferred_lane": "anthropic_managed",
+      "preferred_model": "claude-opus-4-7",
+      "acceptable_substitute_model": "claude-opus-4-7",
+      "budget_tokens": 150000,
+      "budget_wallclock_seconds": 600,
+      "input_artifact_refs": [
+        "builds/lumio/frontend/app/page.tsx",
+        "builds/lumio/backend/main.py"
+      ],
+      "output_artifact_paths": [
+        "builds/lumio/integration/build_log.md",
+        "builds/lumio/integration/test_results.json",
+        "builds/lumio/integration/pr_url.txt"
+      ],
+      "handoff_to_step_indices": [9],
+      "notes": "Managed Agents lane per MANAGED_AGENTS_RESEARCH.md Section D3 demo moment. Sandboxed container, real git ops, real test runner. Heracles owns implementation."
+    },
+    {
+      "step_index": 9,
+      "specialist_id": "lumio_deployer",
+      "role": "deployer",
+      "display_name": "Deployer",
+      "preferred_lane": "anthropic_direct",
+      "preferred_model": "claude-sonnet-4-6",
+      "acceptable_substitute_model": "claude-haiku-4-5-20251001",
+      "budget_tokens": 35000,
+      "budget_wallclock_seconds": 180,
+      "input_artifact_refs": [
+        "builds/lumio/integration/test_results.json",
+        "builds/lumio/qa/review_report.md"
+      ],
+      "output_artifact_paths": [
+        "builds/lumio/deploy/deploy_plan.md",
+        "builds/lumio/deploy/env_requirements.md"
+      ],
+      "handoff_to_step_indices": [10],
+      "notes": "Deployment target platform unresolved per NarasiGhaisan Section 19 (Vercel flagged uncertain). Deployer emits plan plus env requirements, Apollo halts for Ghaisan lock before any real provisioning."
+    },
+    {
+      "step_index": 10,
+      "specialist_id": "lumio_final_strategist",
+      "role": "strategist",
+      "display_name": "Launch strategist",
+      "preferred_lane": "anthropic_direct",
+      "preferred_model": "claude-opus-4-7",
+      "acceptable_substitute_model": "claude-sonnet-4-6",
+      "budget_tokens": 25000,
+      "budget_wallclock_seconds": 150,
+      "input_artifact_refs": [
+        "builds/lumio/deploy/deploy_plan.md",
+        "builds/lumio/qa/review_report.md"
+      ],
+      "output_artifact_paths": [
+        "builds/lumio/launch/go_to_market_brief.md",
+        "builds/lumio/launch/post_launch_monitor_checklist.md"
+      ],
+      "handoff_to_step_indices": []
+    }
+  ],
+  "invariants": [
+    "step_indices are dense and monotonic starting at 0",
+    "every handoff_to_step_index references a real step_index in this file",
+    "sum of specialist_steps[*].budget_tokens must not exceed total_input_tokens plus total_output_tokens caps",
+    "no step has preferred_lane other than anthropic_direct or anthropic_managed during the hackathon shipped run",
+    "gemini_stub and higgsfield_stub lanes may be surfaced in UI but do not appear as preferred_lane in any step"
+  ]
+}
