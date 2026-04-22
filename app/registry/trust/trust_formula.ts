@@ -60,6 +60,8 @@ export function calculate(
     throw new InvalidInputError('verifier_attestation_count must be non-negative');
   }
 
+  warnIfOutOfRange(identity_id, inputs);
+
   const normalizedWeights = normalizeWeights(weights);
 
   const signals = {
@@ -99,6 +101,10 @@ function normalizeWeights(weights: TrustFormulaWeights): TrustFormulaWeights {
   const hasNegative = entries.some(([, v]) => v < 0);
   const total = entries.reduce((s, [, v]) => s + Math.max(v, 0), 0);
   if (hasNegative || total <= 0) {
+    console.warn(
+      '[trust_formula] weights negative or sum<=0, falling back to DEFAULT_WEIGHTS',
+      { offered: weights },
+    );
     return DEFAULT_WEIGHTS;
   }
   if (Math.abs(total - 1) < 1e-9) return weights;
@@ -108,6 +114,24 @@ function normalizeWeights(weights: TrustFormulaWeights): TrustFormulaWeights {
     successful_execution: Math.max(weights.successful_execution, 0) / total,
     verifier_attestation: Math.max(weights.verifier_attestation, 0) / total,
   };
+}
+
+function warnIfOutOfRange(identity_id: string, inputs: TrustInputs): void {
+  const offenders: string[] = [];
+  if (!inRange01(inputs.usage_count_normalized)) offenders.push('usage_count_normalized');
+  if (!inRange01(inputs.positive_review_ratio)) offenders.push('positive_review_ratio');
+  if (!inRange01(inputs.successful_execution_rate)) offenders.push('successful_execution_rate');
+  if (!inRange01(inputs.verifier_attestation_weight)) offenders.push('verifier_attestation_weight');
+  if (offenders.length > 0) {
+    console.warn(
+      '[trust_formula] inputs out of [0,1] clamped per trust_score.contract.md Section 8',
+      { identity_id, offenders },
+    );
+  }
+}
+
+function inRange01(value: number): boolean {
+  return Number.isFinite(value) && value >= 0 && value <= 1;
 }
 
 function deriveStability(inputs: TrustInputs): TrustStability {

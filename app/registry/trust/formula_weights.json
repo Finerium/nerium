@@ -1,0 +1,7 @@
+{
+  "$schema_note": "Mirrors DEFAULT_WEIGHTS in app/registry/trust/trust_types.ts. Persistence artifact per trust_score.contract.md v0.1.0 Section 6. Override at runtime by editing this file plus rebooting the Registry service; do not edit trust_types.ts constant in parallel.",
+  "usage": 0.20,
+  "reviews": 0.30,
+  "successful_execution": 0.30,
+  "verifier_attestation": 0.20
+}

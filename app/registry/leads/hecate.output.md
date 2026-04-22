@@ -67,12 +67,14 @@ Hybrid per ADR 0004. Most identity cards shipped in the demo seed are mock (Lumi
 
 ## 8. Strategic Decisions Surfaced
 
-Two strategic questions from the Hecate prompt reach V3 for sign-off before lock:
+Two strategic decisions reach V3 for explicit sign-off before lock. Both currently default to the recommended posture so Phase 2 is unblocked.
 
-1. Mock-vs-real trust signal mix. Recommendation: hybrid as in Section 6. Awaiting V3 confirmation.
-2. UI exposure of hash fields. Recommendation: hide by default, show on card expand. Defer visual call to Phoebe plus Harmonia.
+1. Trust formula weight split (ADR 0001). Recommendation: contract defaults `{usage: 0.20, reviews: 0.30, successful_execution: 0.30, verifier_attestation: 0.20}`, Option A in the ADR. Awaiting V3 confirmation.
+2. Mock-vs-real trust signal mix (ADR 0004). Recommendation: hybrid as in Section 6, seeded marketplace plus real scores on live-run identities. Awaiting V3 confirmation.
 
-Neither blocks Phase 2 spawn. Downstream Workers can proceed on the recommended posture; if V3 redirects, Hecate reopens and adjusts artifacts in a follow-up session.
+Separately, ADR 0005 (UI exposure of `prompt_hash` and `contract_hash` fields) is deferred to Phoebe plus Harmonia as a visual-team call rather than a V3 decision. Recommendation recorded there: hide by default, reveal in card expand.
+
+Neither V3-blocked item prevents Phase 2 Worker spawn. If V3 redirects on either, Hecate reopens and adjusts artifacts in a follow-up session.
 
 ## 9. Self-Check Summary
 
