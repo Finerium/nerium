@@ -1,0 +1,60 @@
+{
+  "_comment_synthetic": "Pure mock placeholder pools per Ghaisan Decision 2 (2026-04-22). Every identifier here is fictional. Listing slugs mirror the niche-vertical creator examples from NarasiGhaisan Section 5 so demo tooltips read as plausible agent listings without impersonating any real user or product.",
+  "_contract": "docs/contracts/transaction_stream.contract.md v0.1.0",
+  "_owner": "Rhea",
+  "synthetic": true,
+  "creator_id_pool": [
+    "creator-001",
+    "creator-002",
+    "creator-003",
+    "creator-004",
+    "creator-005",
+    "creator-006",
+    "creator-007",
+    "creator-008",
+    "creator-009",
+    "creator-010"
+  ],
+  "buyer_id_pool": [
+    "buyer-001",
+    "buyer-002",
+    "buyer-003",
+    "buyer-004",
+    "buyer-005",
+    "buyer-006",
+    "buyer-007",
+    "buyer-008",
+    "buyer-009",
+    "buyer-010",
+    "buyer-011",
+    "buyer-012"
+  ],
+  "listing_slug_pool": [
+    "restaurant-menu-agent",
+    "clinic-intake-bot",
+    "invoice-ocr-agent",
+    "legal-clause-extractor",
+    "research-paper-summarizer",
+    "e-commerce-listing-optimizer",
+    "travel-itinerary-planner",
+    "podcast-transcript-digest",
+    "support-ticket-triage",
+    "contract-redline-reviewer",
+    "market-sentiment-tracker",
+    "inventory-restock-agent"
+  ],
+  "amount_distribution": {
+    "min_usd": 0.05,
+    "max_usd": 18.0,
+    "_note": "Range chosen so most pulses read as micropayment kaya-listrik charges with an occasional larger creator_payout. Values sampled uniformly in log space for demo variation."
+  },
+  "kind_weights": {
+    "agent_invocation": 0.6,
+    "creator_payout": 0.18,
+    "platform_fee": 0.12,
+    "refund": 0.05,
+    "subscription_topup": 0.03,
+    "adjustment": 0.02,
+    "_note": "Weights sum to 1.0. Invocations dominate so the demo reads as an active marketplace; payouts and fees appear frequently enough to convey the revenue-share narrative."
+  }
+}
