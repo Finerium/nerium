@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 48" width="192" height="48">
+  <title>NERIUM logo seed</title>
+  <desc>Opus procedural SVG logo seed, NERIUM RV Talos Sub-Phase 2 gap-fill. Monospace geometric treatment of the wordmark. Hesperus authors the polished variant in Sub-Phase 3; this exists as baseline so downstream agents have a working asset path.</desc>
+  <rect x="0" y="0" width="192" height="48" fill="#06060c"/>
+  <text x="16" y="34" font-family="'Courier New', monospace" font-size="28" font-weight="bold" fill="#00f0ff" letter-spacing="4">NERIUM</text>
+  <line x1="16" y1="40" x2="176" y2="40" stroke="#ff2e88" stroke-width="2"/>
+  <line x1="16" y1="43" x2="176" y2="43" stroke="#c9a061" stroke-width="1"/>
+</svg>

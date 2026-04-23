@@ -1,0 +1,72 @@
+{
+  "entries": [
+    {
+      "svg_path": "/assets/procedural/svg/hud_frame_cyberpunk.svg",
+      "png_path": null,
+      "dimensions_px": {
+        "w": 128,
+        "h": 96
+      },
+      "backend_used": "native_svg_only",
+      "generated_at": "2026-04-23T11:15:26.897Z",
+      "notes": "no rasterizer available; Phaser will load SVG natively via this.load.svg()"
+    },
+    {
+      "svg_path": "/assets/procedural/svg/hud_frame_medieval.svg",
+      "png_path": null,
+      "dimensions_px": {
+        "w": 128,
+        "h": 96
+      },
+      "backend_used": "native_svg_only",
+      "generated_at": "2026-04-23T11:15:26.898Z",
+      "notes": "no rasterizer available; Phaser will load SVG natively via this.load.svg()"
+    },
+    {
+      "svg_path": "/assets/procedural/svg/hud_frame_steampunk.svg",
+      "png_path": null,
+      "dimensions_px": {
+        "w": 128,
+        "h": 96
+      },
+      "backend_used": "native_svg_only",
+      "generated_at": "2026-04-23T11:15:26.898Z",
+      "notes": "no rasterizer available; Phaser will load SVG natively via this.load.svg()"
+    },
+    {
+      "svg_path": "/assets/procedural/svg/inventory_slot.svg",
+      "png_path": null,
+      "dimensions_px": {
+        "w": 48,
+        "h": 48
+      },
+      "backend_used": "native_svg_only",
+      "generated_at": "2026-04-23T11:15:26.899Z",
+      "notes": "no rasterizer available; Phaser will load SVG natively via this.load.svg()"
+    },
+    {
+      "svg_path": "/assets/procedural/svg/minimap_ring.svg",
+      "png_path": null,
+      "dimensions_px": {
+        "w": 96,
+        "h": 96
+      },
+      "backend_used": "native_svg_only",
+      "generated_at": "2026-04-23T11:15:26.899Z",
+      "notes": "no rasterizer available; Phaser will load SVG natively via this.load.svg()"
+    },
+    {
+      "svg_path": "/assets/procedural/svg/nerium_logo.svg",
+      "png_path": null,
+      "dimensions_px": {
+        "w": 192,
+        "h": 48
+      },
+      "backend_used": "native_svg_only",
+      "generated_at": "2026-04-23T11:15:26.899Z",
+      "notes": "no rasterizer available; Phaser will load SVG natively via this.load.svg()"
+    }
+  ],
+  "backend_probed": "native_svg_only",
+  "generated_at": "2026-04-23T11:15:26.899Z"
+}

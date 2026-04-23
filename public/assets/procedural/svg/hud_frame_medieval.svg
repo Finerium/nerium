@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 96" width="128" height="96" shape-rendering="crispEdges">
+  <title>Medieval Desert HUD Frame</title>
+  <desc>Opus procedural SVG, NERIUM RV Talos Sub-Phase 2 gap-fill. Brass outer ring, terracotta fill, inner sandstone panel. Hesperus may supersede during Sub-Phase 3.</desc>
+  <defs>
+    <linearGradient id="medBrass" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#d4b06b"/>
+      <stop offset="0.55" stop-color="#c97a4a"/>
+      <stop offset="1" stop-color="#563418"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="128" height="96" fill="none"/>
+  <rect x="2" y="2" width="124" height="92" fill="url(#medBrass)" stroke="#563418" stroke-width="2"/>
+  <rect x="8" y="8" width="112" height="80" fill="#e8c57d" stroke="#8b6f47" stroke-width="2"/>
+  <rect x="12" y="12" width="104" height="72" fill="none" stroke="#c97a4a" stroke-width="1"/>
+  <polygon points="4,4 14,4 14,14 4,14" fill="#c97a4a" stroke="#563418" stroke-width="1"/>
+  <polygon points="114,4 124,4 124,14 114,14" fill="#c97a4a" stroke="#563418" stroke-width="1"/>
+  <polygon points="4,82 14,82 14,92 4,92" fill="#c97a4a" stroke="#563418" stroke-width="1"/>
+  <polygon points="114,82 124,82 124,92 114,92" fill="#c97a4a" stroke="#563418" stroke-width="1"/>
+  <circle cx="9" cy="9" r="1.5" fill="#f5ecd1"/>
+  <circle cx="119" cy="9" r="1.5" fill="#f5ecd1"/>
+  <circle cx="9" cy="87" r="1.5" fill="#f5ecd1"/>
+  <circle cx="119" cy="87" r="1.5" fill="#f5ecd1"/>
+</svg>

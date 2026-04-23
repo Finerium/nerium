@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 96" width="128" height="96" shape-rendering="crispEdges">
+  <title>Steampunk Victorian HUD Frame</title>
+  <desc>Opus procedural SVG, NERIUM RV Talos Sub-Phase 2 gap-fill. Brass ring, copper rivets, sepia paper fill. Hesperus may supersede during Sub-Phase 3.</desc>
+  <rect x="0" y="0" width="128" height="96" fill="none"/>
+  <rect x="2" y="2" width="124" height="92" fill="#c9a061" stroke="#40281c" stroke-width="2"/>
+  <rect x="6" y="6" width="116" height="84" fill="#e5d6b8" stroke="#7a2f24" stroke-width="1"/>
+  <rect x="10" y="10" width="108" height="76" fill="none" stroke="#a46b3f" stroke-width="1"/>
+  <circle cx="9" cy="9" r="2.5" fill="#c9a061" stroke="#40281c" stroke-width="1"/>
+  <circle cx="119" cy="9" r="2.5" fill="#c9a061" stroke="#40281c" stroke-width="1"/>
+  <circle cx="9" cy="87" r="2.5" fill="#c9a061" stroke="#40281c" stroke-width="1"/>
+  <circle cx="119" cy="87" r="2.5" fill="#c9a061" stroke="#40281c" stroke-width="1"/>
+  <circle cx="9" cy="9" r="1" fill="#40281c"/>
+  <circle cx="119" cy="9" r="1" fill="#40281c"/>
+  <circle cx="9" cy="87" r="1" fill="#40281c"/>
+  <circle cx="119" cy="87" r="1" fill="#40281c"/>
+  <circle cx="24" cy="9" r="1.5" fill="#a46b3f"/>
+  <circle cx="104" cy="9" r="1.5" fill="#a46b3f"/>
+  <circle cx="24" cy="87" r="1.5" fill="#a46b3f"/>
+  <circle cx="104" cy="87" r="1.5" fill="#a46b3f"/>
+</svg>
