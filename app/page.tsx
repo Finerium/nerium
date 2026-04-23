@@ -1,93 +1,58 @@
 //
 // app/page.tsx
 //
-// Nemea Phase 5 QA emergency harness landing (2026-04-22). Renders an index
-// of the five pillar demo pages plus the Advisor surface. Non-technical
-// framing first (the five pillars and their pitch), pillar links second.
+// NERIUM landing page. Server Component entry point for the `/` route per
+// RV_PLAN.md RV.5 (landing minimal scope) and M2 Section 4.8 Kalypso spec.
+//
+// Architecture: this Server Component renders four composed landing
+// sections. Each section is a Client Component because Framer Motion
+// scroll-reveal animations need the browser runtime. The page itself stays
+// a Server Component to keep TTFB fast and avoid shipping unnecessary
+// client-side JS at the page boundary.
+//
+// Path audit: the active Next.js App Router lives at project root `app/`
+// per `app/layout.tsx`, `app/play/page.tsx`, `tsconfig.json`, and
+// `next.config.ts`. Session opening prompt referenced `src/app/page.tsx` as
+// target, but per `_meta/translator_notes.md` gotcha 19 the route MUST sit
+// at the actual active router to avoid silent 404. Components still live at
+// `src/components/landing/*` per session spec. Decision logged in
+// `docs/kalypso.decisions.md`.
+//
+// This file supersedes the Nemea-v1 Phase 5 QA emergency harness landing
+// (pillar-card index page) per `docs/phase_rv/REUSE_REWRITE_MATRIX.md`
+// Section 19 PORT decision (`app/page.tsx -> Kalypso landing page`).
+//
+// NO embedded Phaser canvas on this surface. NO 3D WebGL on this surface.
+// Link to `/play` only (M2 Section 4.8 hard stops).
 //
 
-import Link from 'next/link';
-import { HarnessShell } from './_harness/HarnessShell';
+import type { Metadata } from 'next';
+import { HeroSection } from '../src/components/landing/HeroSection';
+import { MetaNarrativeSection } from '../src/components/landing/MetaNarrativeSection';
+import { PillarsSection } from '../src/components/landing/PillarsSection';
+import { CTASection } from '../src/components/landing/CTASection';
 
-const PILLAR_CARDS: ReadonlyArray<{
-  href: string;
-  title: string;
-  sub: string;
-}> = [
-  {
-    href: '/builder',
-    title: 'Builder',
-    sub:
-      'Hero pillar. Pipeline visualizer, Blueprint Moment reveal, Lumio cached replay, and 2D pixel worlds.',
+export const metadata: Metadata = {
+  title: 'NERIUM. Infrastructure for the AI agent economy.',
+  description:
+    'NERIUM is a five-pillar platform for the AI agent economy. Builder is the flagship, a gamified agent orchestrator you play through in a browser. Marketplace, Banking, Registry, and Protocol round out the stack. Built with Opus 4.7 for the Cerebral Valley plus Anthropic hackathon, April 2026.',
+  openGraph: {
+    title: 'NERIUM. Infrastructure for the AI agent economy.',
+    description:
+      'A five-pillar platform. Built with Opus 4.7. Open source from day one.',
+    url: 'https://github.com/Finerium/nerium',
+    siteName: 'NERIUM',
+    type: 'website',
   },
-  {
-    href: '/marketplace',
-    title: 'Marketplace',
-    sub:
-      'Cross-vendor storefront. Browse listings curated across every major agent build tool.',
-  },
-  {
-    href: '/banking',
-    title: 'Banking',
-    sub:
-      'Usage-based billing. Wallet, live cost meter, and synthetic transaction pulse.',
-  },
-  {
-    href: '/registry',
-    title: 'Registry',
-    sub:
-      'Agent identity card with trust band, vendor origin, and audit trail.',
-  },
-  {
-    href: '/protocol',
-    title: 'Protocol',
-    sub:
-      'Cross-model translation. Claude and Gemini panels from the same AgentIntent.',
-  },
-  {
-    href: '/advisor',
-    title: 'Advisor',
-    sub:
-      'The single conversational surface that sits above every pillar.',
-  },
-];
+};
 
-export default function HomePage() {
+export default function LandingPage() {
   return (
-    <HarnessShell
-      heading="NERIUM"
-      sub="Infrastructure for the AI agent economy. Built with Opus 4.7 for the Cerebral Valley plus Anthropic hackathon, April 2026."
-    >
-      <section className="nemea-harness-hero">
-        <h1>Five pillars. One conversational surface.</h1>
-        <p>
-          Builder (hero) replaces the manual meta-orchestration that sits
-          above every current AI coding tool. Marketplace gives creators a
-          neutral storefront and buyers a single account. Banking charges per
-          execution the way utilities charge per kilowatt-hour. Registry is
-          the DNS of the agent layer. Protocol preserves the uniqueness of
-          each model rather than forcing a single universal dialect.
-        </p>
-        <p>
-          Positioning: AWS plus Stripe plus DNS plus HTTP for the agent
-          economy.
-        </p>
-      </section>
-      <div className="nemea-harness-pillar-grid">
-        {PILLAR_CARDS.map((pillar) => (
-          <Link
-            key={pillar.href}
-            href={pillar.href}
-            className="nemea-harness-pillar-card"
-            prefetch={false}
-          >
-            <span className="nemea-harness-pillar-card-title">
-              {pillar.title}
-            </span>
-            <span className="nemea-harness-pillar-card-sub">{pillar.sub}</span>
-          </Link>
-        ))}
-      </div>
-    </HarnessShell>
+    <main className="min-h-screen w-full bg-background text-foreground">
+      <HeroSection />
+      <MetaNarrativeSection />
+      <PillarsSection />
+      <CTASection />
+    </main>
   );
 }

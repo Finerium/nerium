@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" role="img" aria-label="NERIUM vertical slice preview, W4 finalize pending">
+  <rect width="1920" height="1080" fill="#0a0a14"/>
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#8cc8ff" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#0a0a14" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#glow)"/>
+  <text x="960" y="470" text-anchor="middle" font-family="Orbitron, Exo 2, Rajdhani, Inter, system-ui, sans-serif" font-size="160" font-weight="700" fill="#e8e8ea" letter-spacing="12">NERIUM</text>
+  <text x="960" y="600" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="44" fill="#94a3c4" letter-spacing="4">Vertical slice preview</text>
+  <text x="960" y="690" text-anchor="middle" font-family="Share Tech Mono, JetBrains Mono, monospace" font-size="28" fill="#7c8299" letter-spacing="8">W4 FINALIZE PENDING</text>
+</svg>
