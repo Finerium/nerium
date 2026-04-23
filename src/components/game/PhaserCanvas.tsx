@@ -24,6 +24,7 @@ import * as Phaser from 'phaser';
 import { BootScene } from '../../game/scenes/BootScene';
 import { PreloadScene } from '../../game/scenes/PreloadScene';
 import { ApolloVillageScene } from '../../game/scenes/ApolloVillageScene';
+import { MiniBuilderCinematicScene } from '../../game/scenes/MiniBuilderCinematicScene';
 import { wireBridge, type GameBridge } from '../../state/gameBridge';
 
 export default function PhaserCanvas() {
@@ -58,7 +59,11 @@ export default function PhaserCanvas() {
           debug: false,
         },
       },
-      scene: [BootScene, PreloadScene, ApolloVillageScene],
+      // MiniBuilderCinematicScene is registered at construction but does
+      // not auto-start: BootScene -> PreloadScene -> ApolloVillageScene is
+      // the normal boot chain. The cinematic is launched on demand by
+      // gameBridge in response to the quest effect `play_cinematic`.
+      scene: [BootScene, PreloadScene, ApolloVillageScene, MiniBuilderCinematicScene],
     });
 
     gameRef.current = game;

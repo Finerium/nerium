@@ -1,11 +1,11 @@
 ---
 author: Thalia-v2
-session: W2 Session A
+session: W2 Session A plus W3 Session B
 date: 2026-04-23
 status: accepted
 ---
 
-# Thalia-v2 Session A Decisions
+# Thalia-v2 Session A plus Session B Decisions
 
 Running ADR log for choices that affect cross-agent contracts, file-path conventions, or scope. Decisions below are in force unless superseded by a later ADR signed by V4 or by a Pythia-v2 contract amendment.
 
@@ -68,3 +68,41 @@ Running ADR log for choices that affect cross-agent contracts, file-path convent
 **Decision.** MiniBuilderCinematicScene is NOT authored in Session A. Placeholder registration is omitted from `PhaserCanvas` scene list to prevent a half-built scene from appearing in the scene registry. Session B adds the cinematic scene plus its `game.cinematic.*` emission wiring.
 
 **Consequence.** `src/game/scenes/MiniBuilderCinematicScene.ts` does not exist at end of Session A. Nyx's `builder-run-started` trigger (quest step 4) cannot yet call `this.scene.start('MiniBuilderCinematic')`; Nyx must stage the trigger so it no-ops if the scene key is absent, OR Nyx can author against the Session B spec and wait for Thalia-v2 W3 to land.
+
+## ADR-7 Cinematic fixture: historical 22-node (gotcha 9)
+
+**Context.** The V3 Urania Blueprint Moment bundles a historical 22-agent roster at `app/builder/moment/BlueprintReveal.tsx` (`NERIUM_TEAM_NODES`). The RV phase roster at `docs/phase_rv/RV_NERIUM_AGENT_STRUCTURE_v2.md` Section 3.1 is 16 agents (9 product-side plus 7 specialists). Gotcha 9 of `_meta/translator_notes.md` requires an explicit decision: "either is valid, do not silently mix".
+
+**Options considered.**
+
+1. Historical 22-node. Matches the submission's meta-narrative "NERIUM built itself by running the manual workflow it automates, one last time" because the 22 agents ARE the pipeline that built the shipped product.
+2. Current-state 16-node RV roster. More operationally accurate for a post-hackathon reader but less visually dense and less tied to the actual judge-facing story.
+3. Dual-layer (both rosters mapped onto the scene). Explicitly forbidden by gotcha 9.
+
+**Decision.** Option 1. MiniBuilderCinematicScene renders the literal 22-agent roster (advisor 1 plus leads 5 plus ma_lane 1 plus workers 15) inherited verbatim from `NERIUM_TEAM_NODES`. A comment in the scene source references the historical snapshot to make the choice auditable.
+
+**Consequence.** The cinematic, the V3 Blueprint Moment (for any demo video still reachable via Urania code), and the README meta-narrative line are all telling the same 22-agent story. If the RV roster later ships as part of a second-quest cinematic, that second cinematic is authored against a separate fixture and the scene shell reused, not the historical fixture mutated.
+
+## ADR-8 Scene launch pattern: pause lobby plus launch cinematic
+
+**Context.** `scene.start('MiniBuilder')` would stop the ApolloVillage lobby, forcing a full reinitialization on return (tile rebuild, NPC respawn, camera reconfigure, bus re-registration). `scene.launch('MiniBuilder')` keeps the lobby mounted behind the cinematic but leaves the lobby's input and update ticks running. Neither default suits a short scripted sequence where the player should return to their exact position without re-seeing the scene fade-in.
+
+**Decision.** Bridge launches the cinematic with `scene.pause('ApolloVillage')` followed by `scene.launch(MINI_BUILDER_SCENE_KEY, { key, returnToScene: 'ApolloVillage' })`. The cinematic scene calls `scene.resume('ApolloVillage')` and `scene.stop()` in its `finishCinematic()` cleanup. This preserves lobby state across the cinematic, yields a clean camera handoff, and does not leak event listeners because the bus subscription on the lobby scene side runs off `scene.events` not a loop.
+
+**Consequence.** Post-hackathon expansion to a second lobby (Cyberpunk Shanghai) requires passing the active lobby key into the cinematic via scene data, which the `returnToScene` field already supports. The bridge hard-codes `ApolloVillage` as the only lobby for the vertical slice.
+
+## ADR-9 Cinematic trigger path: questEffectBus subscribed inside gameBridge
+
+**Context.** `src/stores/questStore.ts` emits `play_cinematic` onto `questEffectBus` (a local EventEmitter-style bus in `src/lib/questRunner.ts`) when the Lumio onboarding quest reaches the appropriate step. Something must translate that bus event into a Phaser `scene.launch` call. Candidate owners: (a) `ApolloVillageScene` subscribes during `create()`, (b) `gameBridge.ts` subscribes during `wireBridge()`, (c) a new standalone `cinematicCoordinator` module.
+
+**Decision.** Option (b). The bridge already owns the single translation layer between Zustand and Phaser (`zustand_bridge.contract.md` Section 4), and `questEffectBus` is logically another Zustand-adjacent emitter. Adding a standalone coordinator would proliferate one-file modules without contract backing. Wiring inside the ApolloVillageScene would couple cinematic orchestration to a specific scene, blocking a future Cyberpunk Shanghai lobby from reusing the path.
+
+**Consequence.** The bridge imports `questEffectBus` from `src/lib/questRunner.ts` and `MINI_BUILDER_SCENE_KEY` from the cinematic scene file. Teardown disposes of the bus subscription alongside the other disposers, so Strict Mode double-mount still shows a single active subscription at any time.
+
+## ADR-10 Cinematic duration: 12,000 ms
+
+**Context.** Session B brief caps the cinematic at 10 to 15 seconds. Shorter feels cramped for a 22-node reveal plus camera pullback plus MA highlight. Longer risks dominating the 3-minute demo video budget (Kalypso will likely cut 15 to 20 seconds total for this moment including framing lines).
+
+**Decision.** 12,000 ms total. Breakdown lives in the scene file header comment. Phase timings are constants at the top of the file, tuneable if Harmonia-RV-B or Nemea flag pacing issues during integration polish.
+
+**Consequence.** The `CinematicCompletePayload` durationMs lands at approximately 12,000 in normal playback. Smoke test asserts the completion event fires under 15,000 ms as a soft bound (`MINI_BUILDER_TOTAL_MS + 120 ms fallback timer`).

@@ -28,6 +28,8 @@ import {
   useAudioStore,
 } from './stores';
 import type { Trigger, WorldId } from './types';
+import { questEffectBus } from '../lib/questRunner';
+import { MINI_BUILDER_SCENE_KEY } from '../game/scenes/MiniBuilderCinematicScene';
 
 export interface GameBridge {
   game: Phaser.Game;
@@ -103,6 +105,50 @@ export function wireBridge(game: Phaser.Game): GameBridge {
   disposers.push(
     bus.on('game.pickup.interact', (payload) => {
       useInventoryStore.getState().award(payload.itemId, 1);
+    }),
+  );
+
+  // ---- Quest effect bus to Phaser scene manager ----
+  //
+  // The quest `play_cinematic` effect flows through questEffectBus (see
+  // src/lib/questRunner.ts Section 10) rather than directly mutating a
+  // store. The bridge forwards it into the Phaser scene manager by
+  // launching MiniBuilderCinematicScene against whichever "lobby" scene is
+  // currently active. This is the sole launch site for the cinematic so
+  // the scope of scene orchestration stays inside the bridge layer per
+  // zustand_bridge.contract.md Section 4.
+  disposers.push(
+    questEffectBus.on((payload) => {
+      if (payload.effect.type !== 'play_cinematic') return;
+      const key = payload.effect.key;
+      const sceneManager = game.scene;
+      // Identify the lobby scene currently running so the cinematic can
+      // resume it after completion. ApolloVillage is the only lobby in
+      // the vertical slice; post-hackathon expansion can walk the active
+      // scene list and pick the highest-priority lobby-typed scene.
+      const lobbyKey = 'ApolloVillage';
+      const lobby = sceneManager.getScene(lobbyKey) as Phaser.Scene | null;
+      if (!lobby || !sceneManager.isActive(lobbyKey)) {
+        console.warn(
+          `[gameBridge] play_cinematic ignored: lobby scene ${lobbyKey} not active`,
+        );
+        return;
+      }
+      // Pause the lobby so its input and update ticks stall while the
+      // cinematic overlays the canvas.
+      sceneManager.pause(lobbyKey);
+      // ui.cinematicPlaying flips via startCinematic; the
+      // subscribeWithSelector below then emits game.cinematic.start on
+      // behalf of React so HUD dim logic reads from Zustand, not Phaser.
+      useUIStore.getState().startCinematic(key);
+      // ScenePlugin.launch (distinct from SceneManager.start) runs the
+      // target scene alongside the caller without shutting the caller
+      // down. Routing through the lobby scene's ScenePlugin keeps the
+      // parent relationship explicit for a clean resume on completion.
+      lobby.scene.launch(MINI_BUILDER_SCENE_KEY, {
+        key,
+        returnToScene: lobbyKey,
+      });
     }),
   );
 
