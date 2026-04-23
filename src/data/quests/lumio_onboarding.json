@@ -1,0 +1,129 @@
+{
+  "id": "lumio_onboarding",
+  "title": "Meet Apollo and build Lumio v1",
+  "description": "Apollo walks you through the Builder workflow using the Lumio vertical slice as the demonstration project. Finish the 9-step onboarding, earn the Lumio Blueprint, and unlock the caravan for multi-vendor commerce.",
+  "giver": "apollo",
+  "world": "apollo_village",
+  "autostart": true,
+  "prerequisites": {
+    "completedQuests": [],
+    "items": [],
+    "trust": {}
+  },
+  "steps": [
+    {
+      "id": "npc_greet",
+      "title": "Approach Apollo",
+      "trigger": { "type": "npc_interact", "npcId": "apollo" },
+      "effects": [
+        { "type": "open_dialogue", "dialogueId": "apollo_intro", "startNode": "greet" }
+      ],
+      "hintText": "Find Apollo in the village and talk to him.",
+      "optional": false
+    },
+    {
+      "id": "dialog_complete",
+      "title": "Hear Apollo out",
+      "trigger": {
+        "type": "dialogue_node_reached",
+        "dialogueId": "apollo_intro",
+        "nodeId": "prompt_brief"
+      },
+      "effects": [
+        { "type": "push_toast", "kind": "quest", "message": "Apollo is ready for your brief.", "dismissAfterMs": 3000 }
+      ],
+      "hintText": "Listen to Apollo's introduction.",
+      "optional": false
+    },
+    {
+      "id": "prompt_submitted",
+      "title": "Describe Lumio",
+      "trigger": { "type": "prompt_submitted", "slot": "lumio_brief" },
+      "condition": { "minChars": 20 },
+      "effects": [
+        { "type": "stream_apollo_response", "streamKey": "apollo_stream" }
+      ],
+      "hintText": "Describe Lumio in one sentence (minimum 20 characters).",
+      "optional": false
+    },
+    {
+      "id": "builder_run_started",
+      "title": "Watch the Builder channel",
+      "trigger": {
+        "type": "dialogue_node_reached",
+        "dialogueId": "apollo_intro",
+        "nodeId": "builder_cinematic"
+      },
+      "effects": [
+        { "type": "play_cinematic", "key": "mini_builder" }
+      ],
+      "hintText": "Apollo channels the Builder. Hold still.",
+      "optional": false
+    },
+    {
+      "id": "builder_run_complete",
+      "title": "Let the Builder finish",
+      "trigger": { "type": "cinematic_complete", "key": "mini_builder" },
+      "effects": [
+        { "type": "award_item", "itemId": "lumio_blueprint_v1", "quantity": 1 },
+        { "type": "add_trust", "npcId": "apollo", "amount": 10 },
+        { "type": "add_currency", "code": "USD", "amount": 5 }
+      ],
+      "hintText": "The Lumio build is materializing before you.",
+      "optional": false
+    },
+    {
+      "id": "inventory_item_awarded",
+      "title": "Claim the Lumio Blueprint",
+      "trigger": { "type": "item_acquired", "itemId": "lumio_blueprint_v1" },
+      "effects": [
+        { "type": "push_toast", "kind": "inventory", "message": "Lumio Blueprint v1 added to your inventory.", "dismissAfterMs": 3500 },
+        { "type": "unlock_world", "worldId": "cyberpunk_shanghai" }
+      ],
+      "hintText": "A blueprint has landed in your satchel.",
+      "optional": false
+    },
+    {
+      "id": "caravan_spawned",
+      "title": "Find the caravan",
+      "trigger": { "type": "zone_enter", "zoneId": "caravan_arrival_zone" },
+      "effects": [
+        { "type": "push_toast", "kind": "info", "message": "A caravan has arrived at the village edge.", "dismissAfterMs": 4000 }
+      ],
+      "hintText": "A caravan has set up at the village edge. Walk over to it.",
+      "optional": false
+    },
+    {
+      "id": "caravan_interact",
+      "title": "Meet the caravan vendor",
+      "trigger": { "type": "npc_interact", "npcId": "caravan_vendor" },
+      "effects": [
+        { "type": "open_dialogue", "dialogueId": "caravan_vendor_greet", "startNode": "greet" }
+      ],
+      "hintText": "Speak with the caravan vendor about multi-vendor agents.",
+      "optional": false
+    },
+    {
+      "id": "quest_close",
+      "title": "Close the onboarding",
+      "trigger": {
+        "type": "dialogue_node_reached",
+        "dialogueId": "caravan_vendor_greet",
+        "nodeId": "farewell"
+      },
+      "effects": [
+        { "type": "complete_quest", "questId": "lumio_onboarding" },
+        { "type": "push_toast", "kind": "quest", "message": "Onboarding complete. Your journey begins.", "dismissAfterMs": 4500 }
+      ],
+      "hintText": "Say your goodbyes. The vertical slice is yours to explore.",
+      "optional": false
+    }
+  ],
+  "rewards": {
+    "currency": { "USD": 5 },
+    "items": ["lumio_blueprint_v1"],
+    "trust": { "apollo": 10 },
+    "unlockedWorlds": ["cyberpunk_shanghai"]
+  },
+  "tags": ["onboarding", "tutorial", "lumio"]
+}
