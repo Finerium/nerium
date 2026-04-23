@@ -1,0 +1,99 @@
+{
+  "id": "apollo_intro",
+  "source": "custom",
+  "speaker": "apollo",
+  "start": "greet",
+  "tags": ["onboarding", "apollo", "lumio"],
+  "vars": {
+    "playerName": "traveler",
+    "lumio_brief": ""
+  },
+  "nodes": {
+    "greet": {
+      "lines": [
+        { "text": "You reached Apollo Village, {playerName}." },
+        { "text": "I am Apollo. I advise every build here, start to finish." }
+      ],
+      "choices": [
+        { "label": "Show me how to build Lumio.", "next": "prompt_brief" },
+        { "label": "Who are you?", "next": "lore", "if": "trust.apollo < 5" }
+      ]
+    },
+    "lore": {
+      "lines": [
+        { "text": "I am the advisor. Every NERIUM build starts with one question." },
+        { "text": "Answer it, and the specialists follow." }
+      ],
+      "choices": [
+        { "label": "Ready. Show me.", "next": "prompt_brief" }
+      ]
+    },
+    "prompt_brief": {
+      "lines": [
+        { "text": "Describe the app you want in one sentence." }
+      ],
+      "challenge": {
+        "kind": "prompt_input",
+        "slotId": "lumio_brief",
+        "placeholder": "A smart reading SaaS that summarizes long articles.",
+        "minChars": 20,
+        "maxChars": 280,
+        "label": "Your brief",
+        "helperText": "Twenty characters minimum. The specialists read this next.",
+        "multiline": true
+      },
+      "onSubmit": {
+        "next": "builder_cinematic",
+        "effects": [
+          {
+            "type": "fire_trigger",
+            "trigger": { "type": "prompt_submitted", "slot": "lumio_brief" }
+          }
+        ]
+      }
+    },
+    "builder_cinematic": {
+      "lines": [
+        { "text": "Good. Watch the specialists assemble it." }
+      ],
+      "phaser": {
+        "event": "play_cinematic",
+        "key": "mini_builder",
+        "resumeOnEvent": "cinematic_complete"
+      },
+      "effects": [
+        { "type": "play_cinematic", "key": "mini_builder" }
+      ],
+      "next": "post_cinematic"
+    },
+    "post_cinematic": {
+      "lines": [
+        { "text": "Eleven specialists, one blueprint, one working seed." },
+        { "text": "That is the loop. Every future build follows it." }
+      ],
+      "choices": [
+        { "label": "Continue.", "next": "reward", "effects": [] }
+      ]
+    },
+    "reward": {
+      "effects": [
+        { "type": "award_item", "itemId": "lumio_blueprint_v1", "quantity": 1 },
+        { "type": "add_trust", "npcId": "apollo", "amount": 10 },
+        {
+          "type": "push_toast",
+          "kind": "inventory",
+          "message": "Lumio Blueprint v1 added to inventory.",
+          "dismissAfterMs": 3200
+        }
+      ],
+      "next": "end"
+    },
+    "end": {
+      "effects": [
+        { "type": "complete_quest", "questId": "lumio_onboarding" },
+        { "type": "unlock_world", "worldId": "caravan_route" }
+      ],
+      "end": true
+    }
+  }
+}
