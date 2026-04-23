@@ -42,3 +42,11 @@ next-env.d.ts
 
 # Playwright MCP session artifacts
 .playwright-mcp/
+
+# Skill transplant staging area (RV-1 Talos)
+# External repos cloned here for SKILL.md extraction. Gitignored to keep upstream licenses
+# and commit histories out of this repo. Committed skills live at .claude/skills/ with
+# ORIGIN/LICENSE/TRANSPLANTED BY headers. Retained through W2 for asset reference, deleted
+# at end of RV phase per RV_PLAN RV.8.
+_skills_staging/
+
