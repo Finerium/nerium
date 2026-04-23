@@ -1,0 +1,65 @@
+{
+  "currency": {
+    "label": "Saldo",
+    "toggle": "Ganti mata uang",
+    "symbol_usd": "USD",
+    "symbol_idr": "IDR"
+  },
+  "language": {
+    "label": "Bahasa",
+    "toggle": "Ganti bahasa",
+    "en_short": "EN",
+    "id_short": "ID"
+  },
+  "model": {
+    "label": "Model",
+    "option_opus": "Opus 4.7",
+    "option_sonnet": "Sonnet 4.6",
+    "honest_claim_title": "Runtime demo cuma pakai Opus 4.7 dan Sonnet 4.6."
+  },
+  "sidebar": {
+    "title": "Struktur agent",
+    "subtitle": "Pipeline viz, model, audio",
+    "collapse": "Tutup sidebar",
+    "expand": "Buka sidebar"
+  },
+  "topbar": {
+    "quest_label": "Misi",
+    "quest_none": "Belum ada misi aktif",
+    "minimap_label": "Desa Apollo"
+  },
+  "bottombar": {
+    "dialogue_placeholder": "Hampiri NPC lalu tekan E buat mulai ngobrol.",
+    "prompt_heading": "Tantangan prompt",
+    "prompt_placeholder": "Tulis prompt lu ke Advisor",
+    "prompt_submit": "Kirim",
+    "prompt_submitting": "Mengirim",
+    "prompt_min_chars": "Minimal {min} karakter.",
+    "prompt_max_chars": "Maksimal {max} karakter.",
+    "prompt_count": "{current} dari {max} karakter",
+    "prompt_too_short": "Butuh minimal {min} karakter. Lu ketik {current}.",
+    "prompt_too_long": "Terlalu panjang. Maksimal {max} karakter."
+  },
+  "inventory": {
+    "toast_label": "Lu dapet {item}",
+    "toast_dismiss": "Tutup",
+    "toast_opened": "Buka inventory"
+  },
+  "shop": {
+    "title": "Pasar Desa Apollo",
+    "subtitle": "Agent dan tools buat dijual",
+    "close": "Tutup toko",
+    "empty": "Stok kosong dulu. Balik lagi abis misi onboarding.",
+    "honest_claim_heading": "Listing ini benih demo",
+    "cta_purchase": "Beli"
+  },
+  "apollo": {
+    "stream_placeholder": "Apollo lagi ngetik",
+    "stream_empty": "Ngobrol sama Advisor, ketik prompt lu."
+  },
+  "controls": {
+    "move": "Pakai panah atau WASD buat jalan",
+    "interact": "Tekan E buat interact sama NPC",
+    "caravan": "Klik caravan kalo udah kebuka"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "currency": {
+    "label": "Balance",
+    "toggle": "Toggle currency",
+    "symbol_usd": "USD",
+    "symbol_idr": "IDR"
+  },
+  "language": {
+    "label": "Language",
+    "toggle": "Toggle language",
+    "en_short": "EN",
+    "id_short": "ID"
+  },
+  "model": {
+    "label": "Model",
+    "option_opus": "Opus 4.7",
+    "option_sonnet": "Sonnet 4.6",
+    "honest_claim_title": "Shipping runtime uses Opus 4.7 plus Sonnet 4.6 only."
+  },
+  "sidebar": {
+    "title": "Agent structure",
+    "subtitle": "Pipeline viz + model + audio",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar"
+  },
+  "topbar": {
+    "quest_label": "Quest",
+    "quest_none": "No active quest",
+    "minimap_label": "Apollo Village"
+  },
+  "bottombar": {
+    "dialogue_placeholder": "Walk up to an NPC and press E to start a conversation.",
+    "prompt_heading": "Prompt challenge",
+    "prompt_placeholder": "Write your prompt for the Advisor",
+    "prompt_submit": "Submit",
+    "prompt_submitting": "Submitting",
+    "prompt_min_chars": "At least {min} characters.",
+    "prompt_max_chars": "Maximum {max} characters.",
+    "prompt_count": "{current} of {max} characters",
+    "prompt_too_short": "Need at least {min} characters. You have {current}.",
+    "prompt_too_long": "Too long. Maximum {max} characters."
+  },
+  "inventory": {
+    "toast_label": "You received {item}",
+    "toast_dismiss": "Dismiss",
+    "toast_opened": "Open inventory"
+  },
+  "shop": {
+    "title": "Apollo Village Market",
+    "subtitle": "Agents + tools for sale",
+    "close": "Close shop",
+    "empty": "Nothing in stock yet. Check back after the onboarding quest.",
+    "honest_claim_heading": "Listings are demo seeds",
+    "cta_purchase": "Buy"
+  },
+  "apollo": {
+    "stream_placeholder": "Apollo is writing",
+    "stream_empty": "Talk to the Advisor, type your prompt."
+  },
+  "controls": {
+    "move": "Arrow keys or WASD to move",
+    "interact": "Press E to interact with an NPC",
+    "caravan": "Click the caravan when it unlocks"
+  }
+}
