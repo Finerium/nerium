@@ -3,127 +3,103 @@
 //
 // src/components/landing/CTASection.tsx
 //
-// Final CTA block per M2 Section 4.8 Kalypso output spec. Primary "Play the
-// demo" to /play, secondary "View source" to GitHub, Discord handle
-// nerium0leander anchored in NarasiGhaisan Section 14 (V1 handoff Section
-// 3.12 confirmed).
+// Final CTA block + footer, aesthetic-fidelity port of Claude Design mockup
+// final section. Two surfaces in one file:
 //
-// No em dash, no emoji. MIT license reference per V2 lock, OSS mandate per
-// CLAUDE.md submission section.
+//   1. #nl-final - dominant CTA "build production apps by playing a game."
+//      with primary button routing to /play via Next.js Link (not the
+//      alert() stub from the mockup, because by W3 the /play route is
+//      actually live).
+//   2. .nl-footer - credits, repo link, back-to-top anchor.
+//
+// Client Component only because of the #nl-final scroll-reveal. Footer is
+// static content but hitches a ride on the same file to keep the landing
+// component tree shallow (four section components registered in the M2
+// Kalypso spec: Hero, MetaNarrative, Pillars, CTA).
+//
+// prefers-reduced-motion snaps the reveal to final state.
+//
+// MIT license + Discord handle + GitHub repo all preserved. These are V1 +
+// V2 locks: CLAUDE.md Submission section, NarasiGhaisan Section 14.
 //
 
 import Link from 'next/link';
-import { motion, useReducedMotion } from 'framer-motion';
+import { useEffect, useRef } from 'react';
 
 export function CTASection() {
-  const reduceMotion = useReducedMotion();
+  const rootRef = useRef<HTMLDivElement | null>(null);
 
-  const revealProps = reduceMotion
-    ? { initial: {}, whileInView: {}, viewport: {}, transition: {} }
-    : {
-        initial: { opacity: 0, y: 24 },
-        whileInView: { opacity: 1, y: 0 },
-        viewport: { once: true, amount: 0.3 },
-        transition: { duration: 0.6, ease: 'easeOut' as const },
-      };
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
+    const reduced =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const reveals = Array.from(root.querySelectorAll<HTMLElement>('.nl-reveal'));
+
+    if (reduced) {
+      reveals.forEach((el) => el.classList.add('in'));
+      return;
+    }
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add('in');
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+    reveals.forEach((el) => io.observe(el));
+
+    return () => io.disconnect();
+  }, []);
 
   return (
-    <section
-      id="cta"
-      aria-label="NERIUM calls to action"
-      className="w-full bg-[oklch(0.09_0.02_270)] px-6 py-24 text-foreground sm:py-32"
-    >
-      <div className="mx-auto max-w-4xl text-center">
-        <motion.p
-          {...revealProps}
-          className="mb-4 font-mono text-sm uppercase tracking-[0.3em] text-primary"
-        >
-          Try it
-        </motion.p>
-
-        <motion.h2
-          {...revealProps}
-          className="font-serif text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl"
-        >
-          Play the vertical slice in your browser.
-        </motion.h2>
-
-        <motion.p
-          {...revealProps}
-          className="mt-6 text-lg leading-relaxed text-muted"
-        >
-          Open source from day one. MIT licensed. The repo is the demo; the
-          demo is the repo.
-        </motion.p>
-
-        <motion.div
-          {...revealProps}
-          className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row"
-        >
+    <div ref={rootRef}>
+      <section className="nl-final" id="nl-final" aria-label="Play the demo">
+        <div className="nl-reveal" style={{ width: '100%' }}>
+          <p className="nl-pretitle">&gt; press start</p>
+          <h2>
+            build production apps
+            <br />
+            by <span>playing a game</span>.
+          </h2>
           <Link
             href="/play"
             prefetch={false}
-            className="inline-flex items-center justify-center rounded-pill bg-primary px-8 py-3 font-semibold text-background transition-all duration-150 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background motion-reduce:transition-none"
+            className="nl-btn nl-btn-primary"
+            aria-label="Play the vertical slice"
           >
-            Play the demo
+            <span className="nl-arrow">&gt;</span> play in browser
           </Link>
+        </div>
+      </section>
+
+      <footer className="nl-footer">
+        <div className="nl-credits">
+          MIT license · built with Opus 4.7 for Cerebral Valley + Anthropic,
+          April 2026 · pixel sprites and procedural backdrops by Opus 4.7,
+          phosphor-green palette OKLCH, CC0 asset packs (Kenney, OpenGameArt)
+          referenced in <code>public/assets/CREDITS.md</code>.
+        </div>
+        <div className="nl-foot-right">
           <a
             href="https://github.com/Finerium/nerium"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center rounded-pill border border-border bg-transparent px-8 py-3 font-semibold text-foreground transition-colors duration-150 hover:border-primary hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background motion-reduce:transition-none"
           >
-            View source
+            github.com/Finerium/nerium
           </a>
-        </motion.div>
-
-        <motion.dl
-          {...revealProps}
-          className="mt-16 grid grid-cols-1 gap-8 text-left sm:grid-cols-3"
-        >
-          <div className="rounded-lg border border-border bg-[oklch(0.11_0.02_270)] p-5">
-            <dt className="mb-2 font-mono text-xs uppercase tracking-widest text-muted">
-              Repo
-            </dt>
-            <dd className="font-mono text-sm text-foreground">
-              <a
-                href="https://github.com/Finerium/nerium"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline decoration-muted underline-offset-4 transition-colors duration-150 hover:decoration-primary hover:text-primary motion-reduce:transition-none"
-              >
-                github.com/Finerium/nerium
-              </a>
-            </dd>
-          </div>
-
-          <div className="rounded-lg border border-border bg-[oklch(0.11_0.02_270)] p-5">
-            <dt className="mb-2 font-mono text-xs uppercase tracking-widest text-muted">
-              Discord
-            </dt>
-            <dd className="font-mono text-sm text-foreground">
-              nerium0leander
-            </dd>
-          </div>
-
-          <div className="rounded-lg border border-border bg-[oklch(0.11_0.02_270)] p-5">
-            <dt className="mb-2 font-mono text-xs uppercase tracking-widest text-muted">
-              License
-            </dt>
-            <dd className="font-mono text-sm text-foreground">
-              MIT, open source from day one
-            </dd>
-          </div>
-        </motion.dl>
-
-        <motion.p
-          {...revealProps}
-          className="mt-16 text-sm leading-relaxed text-muted"
-        >
-          Ghaisan Khoirul Badruzaman (GitHub Finerium). Built with Opus 4.7
-          for the Cerebral Valley plus Anthropic hackathon, April 2026.
-        </motion.p>
-      </div>
-    </section>
+          <span>discord: nerium0leander</span>
+          <a href="#nl-top">back to top</a>
+        </div>
+      </footer>
+    </div>
   );
 }

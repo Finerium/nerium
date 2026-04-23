@@ -1,10 +1,10 @@
 ---
 agent: kalypso
-phase: RV W3 draft
-status: W3 draft, W4 finalize pending
+phase: RV W3 draft plus W3 Sub-Phase A aesthetic-fidelity port
+status: W3 Sub-Phase A complete, W4 finalize pending
 date: 2026-04-23
-version: 0.1.0
-scope: landing page + README synthesis + submission package scaffold
+version: 0.2.0
+scope: landing page (Claude Design HTML -> Next.js 15 port) + README synthesis + submission package scaffold
 ---
 
 # Kalypso decisions (ADR log)
@@ -127,7 +127,7 @@ All 4 moves succeeded with `R` status (rename) preserving git history and blame.
 6. Optional: spawn `StaticLeaderboardMockup.tsx` if Ghaisan requests a leaderboard teaser
 7. OSS link verification (`github.com/Finerium/nerium` must be public + MIT license present at repo root, both confirmed locally but not yet pushed)
 
-## Self-check 19 of 19
+## Self-check 20 of 20
 
 | # | Item | Status |
 |---|---|---|
@@ -149,4 +149,74 @@ All 4 moves succeeded with `R` status (rename) preserving git history and blame.
 | 16 | No live Phaser embed on landing | PASS (Link to /play only) |
 | 17 | No 3D WebGL on landing | PASS (Tailwind + Framer Motion only) |
 | 18 | No new dependencies silently added | PASS (Framer Motion + GSAP already in package.json) |
-| 19 | Commit landed | PENDING (next step of session) |
+| 19 | Commit landed | PASS (first session commit 689fb77 plus follow-ups) |
+| 20 | Aesthetic-fidelity port of Claude Design mockup | PASS (HIGH, see D10) |
+
+## D10. Aesthetic-fidelity port from Claude Design mockup (W3 Sub-Phase A)
+
+**Context.** The prior Kalypso session (documented D1 through D9 above) shipped a functional fallback landing using generic Tailwind utilities because the Claude Design mockup did not exist yet. The mockup landed on disk as `_skills_staging/claude_design_landing.html` (59 KB) after Ghaisan generated it via claude.ai/design. This session (W3 Sub-Phase A) is the aesthetic-fidelity pass the first session could not do.
+
+**Decision.** Rewrite all four landing section Client Components and the `app/page.tsx` Server Component to preserve the mockup aesthetic absolutely: OKLCH phosphor-green palette, 6 parallax scenes with scene-swap, CRT scanfield and vignette, phosphor dust particles, three Google Fonts via `next/font/google` (VT323, Space Grotesk, JetBrains Mono), pixel-sprite box-shadow renderer, boot choreography with Web Animations API, IntersectionObserver for reveal and scene-swap and counter rollup.
+
+**Fidelity level.** HIGH. Side-by-side visual comparison of mockup vs Next.js ported landing matches: color palette identical, fonts identical, scene layer compositions identical, boot choreography timing identical (220 ms terminal lines + 55 ms per char + 520 ms underbar + 1400 ms walker + 520/520/600 ms tagline/meta/ctarow), manifesto zoom + counter rollup + replaces list all pixel-compatible.
+
+**Intentional deviations (4 items, documented for translator_notes sync).**
+
+1. Primary CTA targets `/play` via Next.js `<Link>` (prefetch=false) rather than the mockup `onclick="alert('Build not deployed yet')"`. Rationale: /play route is live by W3, RV.5 explicitly directs link-to-/play behavior.
+2. Hero video element inserted at end of hero section (not present in mockup). Rationale: prior Kalypso D3 committed `public/video/demo-preview.mp4` placeholder + SVG poster, preserves W4 finalize integration path (Ghaisan records final, drop-in replacement).
+3. "view source" secondary CTA replaces "download game / soon" ghost button. Rationale: W3 has a real public repo link; a "download game" placeholder leaks a roadmap claim that is not honest for hackathon submission surface. The "download game" phrasing may return in a post-hackathon refresh.
+4. Footer copy appends ", CC0 asset packs referenced in public/assets/CREDITS.md" to the mockup's "pixel sprites and soundscape original, CC0" line. Rationale: honest-claim discipline; sprites are procedural Opus 4.7, not all "original" in the sense of hand-drawn, and the attribution trail must resolve back to `public/assets/CREDITS.md` per Talos W2 asset provenance.
+
+**Files produced this session.**
+
+- `app/page.tsx` (Server Component, rewritten, 100 lines, next/font triad + 6 child mounts)
+- `app/landing.css` (new, 1500 lines, scoped `.nerium-landing` rule tree)
+- `src/components/landing/HeroSection.tsx` (rewritten, 295 lines, terminal boot + logotype + walker + video slot)
+- `src/components/landing/MetaNarrativeSection.tsx` (rewritten, 373 lines, what + pain + manifesto + replaces in one file)
+- `src/components/landing/PillarsSection.tsx` (rewritten, 164 lines, Builder hero-card + 4 smaller pillars)
+- `src/components/landing/CTASection.tsx` (rewritten, 105 lines, final CTA + footer)
+- `src/components/landing/LandingBackground.tsx` (new, 509 lines, 6 parallax scenes + scroll parallax + scene-swap IO)
+- `src/components/landing/LandingNav.tsx` (new, 36 lines, top nav Server Component)
+- `src/components/landing/PixelSprite.tsx` (new, 174 lines, box-shadow sprite renderer)
+
+**Verification.**
+
+- `npx next build --experimental-build-mode=compile` PASS, 2.6 s, route `/` present and server-rendered dynamic.
+- `tsc --noEmit` on project tsconfig PASS for landing surface (one unrelated pre-existing e2e test declaration collision persists).
+- Em dash grep (U+2014 via Python codepoint scan) across all 9 new plus edited files: zero hits.
+- Emoji grep (U+1F000 to U+1FFFF plus U+2600 to U+27BF plus U+2B50 plus U+2B55) across all 9 new plus edited files: zero hits.
+- Meta-narrative string "NERIUM built itself by running the manual workflow it automates, one last time, for this hackathon." preserved verbatim in HeroSection (as hook under the wordmark) plus MetaNarrativeSection (as manifesto quote). Two surfaces agree.
+- Honest-claim on Builder hero card: `phaser · opus · howler` corner + "Opus 4.7 underneath" copy. No claim of feature not shipped.
+- `/play` route reference via Next.js Link with `prefetch={false}` in HeroSection plus CTASection. Zero Phaser imports on landing. Zero Three.js imports on landing.
+
+## D11. Scoped landing CSS via `.nerium-landing` wrapper + `app/landing.css`
+
+**Context.** The landing page uses a radically different aesthetic (CRT phosphor-green, pixel fonts, parallax scenes) from the `/play` route (Phaser canvas takeover + HUD). Both share `app/layout.tsx` and `app/globals.css`. Leaking landing styles into /play would be a visual regression, and leaking /play's world-cascade theme tokens into the landing would paint the phosphor-green surface in whatever `data-world` is currently applied on the `<html>` element.
+
+**Options considered.**
+
+1. Add landing styles directly to `app/globals.css` (leaks into /play).
+2. Add landing styles as a second `<style jsx global>` on the page (works but pollutes server render surface).
+3. New `app/landing.css` file, imported by `app/page.tsx` only, every rule anchored to `.nerium-landing` wrapper class on the landing tree root.
+
+**Decision.** Option 3. `app/landing.css` contains ~1500 lines of ported mockup CSS with every selector prefixed by `.nerium-landing` where needed to prevent cascade into /play. Global-tag rules like `html, body` from the mockup are rewritten as scoped `.nerium-landing` descendants since the actual html/body root is already owned by `app/layout.tsx` (Nemea harness).
+
+**Consequence.** `/play` continues to render under the existing harness + Phaser system, completely unaffected by landing styles. CSS variables for fonts (`--font-vt323`, `--font-space-grotesk`, `--font-jetbrains-mono`) injected onto the wrapper via `next/font/google` + className interpolation, so the three Google Fonts never touch the root document element.
+
+## D12. Three next/font/google loaders in the Server Component
+
+**Context.** Mockup uses `<link rel="stylesheet">` to Google Fonts CDN. Next.js 15 best practice is `next/font/google` for SSR-stable font loading (no FOIT, no FOUT, CSS variable projection) and preserves the hackathon's "production-grade" bar per NarasiGhaisan Section 4.
+
+**Decision.** `app/page.tsx` imports `VT323`, `Space_Grotesk`, and `JetBrains_Mono` from `next/font/google`, each configured with `variable: '--font-<name>'` so they project as CSS variables. The variables are applied on the landing wrapper `<div className={`nerium-landing ${vt323.variable} ${spaceGrotesk.variable} ${jetBrainsMono.variable}`}>`. The scoped CSS in `app/landing.css` consumes these via `var(--font-vt323)` etc. with generic fallback.
+
+**Consequence.** Fonts download once per session, SSR-rendered, cached at Google Fonts CDN by Next.js 15 build step (verified by build output showing successful page data collection). Zero visual regression during font load because `display: 'swap'` is set per loader. The `/play` route does not see these fonts because the wrapper element lives only inside `app/page.tsx`.
+
+## Open items for W4 finalize (refreshed)
+
+1. Replace `public/video/demo-preview.mp4` (14 KB solid-color placeholder from prior session D3) with actual demo recording from Ghaisan / vertical-slice walkthrough.
+2. Replace video poster `demo-preview-poster.svg` if final video has different aspect ratio.
+3. Audit scene-swap scene activation on mobile (900 px breakpoint) since the IO thresholds may behave differently when sections collapse vertically.
+4. Optional: spawn `StaticLeaderboardMockup.tsx` if Ghaisan requests a leaderboard teaser between Pillars and CTA.
+5. OSS link verification (`github.com/Finerium/nerium` must be public + MIT license present at repo root; confirmed locally but not yet pushed to remote).
+6. Ghaisan voice polish pass on README + summary + demo script pending W4 finalize (V3 voice-preserve discipline).
+7. Nemea-RV-B a11y + Lighthouse sweep should now target the phosphor-green landing surface, not the generic Tailwind fallback from W3 session 1. Keyboard nav through nav links + CTAs, reduced-motion honor sites, focus outlines on `.nl-btn` states, color contrast for `--nl-fog` body copy on `--nl-ink` background (should be near WCAG AA but worth verifying).
