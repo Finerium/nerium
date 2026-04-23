@@ -44,6 +44,12 @@ tsconfig.tsbuildinfo
 # Playwright MCP session artifacts
 .playwright-mcp/
 
+# Playwright test artifacts (tests/ source is tracked; runtime outputs are not)
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
 # Skill transplant staging area (RV-1 Talos)
 # External repos cloned here for SKILL.md extraction. Gitignored to keep upstream licenses
 # and commit histories out of this repo. Committed skills live at .claude/skills/ with
@@ -51,3 +57,10 @@ tsconfig.tsbuildinfo
 # at end of RV phase per RV_PLAN RV.8.
 _skills_staging/
 
+
+# RV W2 Talos Sub-Phase 2 CC0 bulk
+# Staged pack bodies live in _skills_staging/cc0-packs/ and are not committed.
+# Curated subsets go to public/assets/cc0/{pack}/ and ARE committed.
+_skills_staging/cc0-packs/
+public/assets/cc0/warped-city/PSD/
+public/assets/cc0/warped-city/__MACOSX/
