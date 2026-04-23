@@ -70,6 +70,12 @@ I lived a 47-agent 9-phase 106-step pipeline manually for an earlier project. I 
 
 ---
 
+## Assets
+
+Shipped with CC0 (Kenney plus OpenGameArt Warped City plus OpenGameArt Steampunk 32x32) plus Opus 4.7 procedural SVG and Canvas assets only. Brullov Oak Woods (custom permissive, attribution required) is referenced for local clones but ships empty in the committed repo to respect the no-redistribution clause. Multi-vendor asset pipeline (fal.ai Nano Banana 2) is transplanted via `.claude/skills/fal-nano-banana-sprite/SKILL.md` as dormant infrastructure and is not exercised in this build. Reactivation would require a superseding ADR that rescinds `docs/adr/ADR-override-antipattern-7.md`. Full attribution in [`public/assets/CREDITS.md`](./public/assets/CREDITS.md); machine-readable provenance in `public/assets/ledger/asset-ledger.jsonl`.
+
+---
+
 ## License
 
 MIT. See [LICENSE](./LICENSE) for full text. Open source from day one, per the hackathon mandate and by my own preference.
