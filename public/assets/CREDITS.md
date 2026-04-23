@@ -59,7 +59,28 @@ Six SVG chrome seeds live at `public/assets/procedural/svg/`: three genre HUD fr
 
 ## Audio
 
-Only Kenney RPG Audio (CC0) is committed at this time. World ambient loops for Apollo Village, Cyberpunk Shanghai, and Steampunk Victorian remain Euterpe's responsibility to source from OpenGameArt CC0 or synthesize via Howler oscillator primitives, and their credits will be added to this file when Euterpe Session B commits.
+Euterpe RV W3 curated ten SFX cues and three ambient placeholder loops from the Kenney RPG Audio pack (CC0, https://kenney.nl/assets/rpg-audio). Upstream files continue to live at `public/assets/cc0/kenney-audio-rpg/` with `LICENSE.txt` committed alongside. Curated copies land at `public/audio/sfx/` and `public/audio/ambient/` with cue-named filenames so `src/data/audio/cues.json` references them directly. No transcoding was applied; curated files retain the original OGG Vorbis containers per `docs/euterpe.decisions.md` ADR-002.
+
+SFX cue map (source Kenney file, curated cue path):
+
+- `metalLatch.ogg` to `public/audio/sfx/prompt-submit.ogg`
+- `bookFlip2.ogg` to `public/audio/sfx/dialog-advance.ogg`
+- `handleSmallLeather.ogg` to `public/audio/sfx/item-pickup.ogg`
+- `handleCoins.ogg` to `public/audio/sfx/quest-complete.ogg`
+- `doorOpen_1.ogg` to `public/audio/sfx/caravan-unlock.ogg`
+- `creak3.ogg` to `public/audio/sfx/cinematic-sting.ogg`
+- `cloth1.ogg` to `public/audio/sfx/ui-hover.ogg`
+- `metalClick.ogg` to `public/audio/sfx/ui-click.ogg`
+- `bookFlip1.ogg` to `public/audio/sfx/typewriter-char.ogg`
+- `bookOpen.ogg` to `public/audio/sfx/scene-ready.ogg`
+
+Ambient loop placeholders. Honest-claim: the Kenney RPG Audio pack does not ship dedicated ambient loops. Each of the three ambient cues below is a short Kenney SFX played at low baseline volume with `loop: true` and a 200 ms Howler cross-fade so the seam stays inaudible during the vertical slice. Post-hackathon, swap for dedicated CC0 ambient loops (OpenGameArt Sonic Labs, Ricardo Gonzalez Aranda, or equivalent).
+
+- `creak1.ogg` to `public/audio/ambient/apollo-village-loop.ogg` (wooden village creaks)
+- `metalClick.ogg` to `public/audio/ambient/cyberpunk-teaser-loop.ogg` (mechanical ticks)
+- `metalPot1.ogg` to `public/audio/ambient/steampunk-placeholder-loop.ogg` (metallic chamber resonance)
+
+Voluntary courtesy credit: Kenney (kenney.nl, CC0 1.0 Universal).
 
 ## Honest-claim seed line
 

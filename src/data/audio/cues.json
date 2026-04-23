@@ -1,0 +1,137 @@
+{
+  "$schema": "./cues.schema.json",
+  "version": "0.1.0",
+  "comment": "Euterpe audio cue registry. Source files curated from Kenney RPG Audio (CC0, kenney.nl/assets/rpg-audio). See docs/euterpe.decisions.md for the curation rationale and ambient-loop gap note.",
+  "defaults": {
+    "preload": true,
+    "html5": false
+  },
+  "cues": {
+    "prompt-submit": {
+      "src": "/audio/sfx/prompt-submit.ogg",
+      "sourceFile": "metalLatch.ogg",
+      "baseVolume": 0.75,
+      "loop": false,
+      "category": "sfx"
+    },
+    "dialog-advance": {
+      "src": "/audio/sfx/dialog-advance.ogg",
+      "sourceFile": "bookFlip2.ogg",
+      "baseVolume": 0.55,
+      "loop": false,
+      "category": "sfx"
+    },
+    "item-pickup": {
+      "src": "/audio/sfx/item-pickup.ogg",
+      "sourceFile": "handleSmallLeather.ogg",
+      "baseVolume": 0.7,
+      "loop": false,
+      "category": "sfx"
+    },
+    "quest-complete": {
+      "src": "/audio/sfx/quest-complete.ogg",
+      "sourceFile": "handleCoins.ogg",
+      "baseVolume": 0.85,
+      "loop": false,
+      "category": "sfx"
+    },
+    "caravan-unlock": {
+      "src": "/audio/sfx/caravan-unlock.ogg",
+      "sourceFile": "doorOpen_1.ogg",
+      "baseVolume": 0.8,
+      "loop": false,
+      "category": "sfx"
+    },
+    "cinematic-sting": {
+      "src": "/audio/sfx/cinematic-sting.ogg",
+      "sourceFile": "creak3.ogg",
+      "baseVolume": 0.8,
+      "loop": false,
+      "category": "music"
+    },
+    "ui-hover": {
+      "src": "/audio/sfx/ui-hover.ogg",
+      "sourceFile": "cloth1.ogg",
+      "baseVolume": 0.3,
+      "loop": false,
+      "category": "sfx"
+    },
+    "ui-click": {
+      "src": "/audio/sfx/ui-click.ogg",
+      "sourceFile": "metalClick.ogg",
+      "baseVolume": 0.6,
+      "loop": false,
+      "category": "sfx"
+    },
+    "typewriter-char": {
+      "src": "/audio/sfx/typewriter-char.ogg",
+      "sourceFile": "bookFlip1.ogg",
+      "baseVolume": 0.15,
+      "loop": false,
+      "category": "sfx",
+      "throttleMs": 45
+    },
+    "scene-ready": {
+      "src": "/audio/sfx/scene-ready.ogg",
+      "sourceFile": "bookOpen.ogg",
+      "baseVolume": 0.5,
+      "loop": false,
+      "category": "sfx"
+    },
+    "apollo-village-loop": {
+      "src": "/audio/ambient/apollo-village-loop.ogg",
+      "sourceFile": "creak1.ogg",
+      "baseVolume": 0.45,
+      "loop": true,
+      "category": "ambient",
+      "html5": true
+    },
+    "cyberpunk-teaser-loop": {
+      "src": "/audio/ambient/cyberpunk-teaser-loop.ogg",
+      "sourceFile": "metalClick.ogg",
+      "baseVolume": 0.4,
+      "loop": true,
+      "category": "ambient",
+      "html5": true
+    },
+    "steampunk-placeholder-loop": {
+      "src": "/audio/ambient/steampunk-placeholder-loop.ogg",
+      "sourceFile": "metalPot1.ogg",
+      "baseVolume": 0.35,
+      "loop": true,
+      "category": "ambient",
+      "html5": true
+    }
+  },
+  "ambientLoopIdMap": {
+    "apollo_village": "apollo-village-loop",
+    "cyberpunk_teaser": "cyberpunk-teaser-loop",
+    "cyberpunk_shanghai": "cyberpunk-teaser-loop",
+    "steampunk_placeholder": "steampunk-placeholder-loop",
+    "steampunk_victorian": "steampunk-placeholder-loop",
+    "medieval_desert": "apollo-village-loop"
+  },
+  "eventRouting": [
+    { "topic": "game.scene.ready", "cue": "scene-ready", "maxOncePerMs": 2000 },
+    { "topic": "game.audio.sfx_play", "cueFrom": "payload.sfxKey", "volumeOverrideFrom": "payload.volumeOverride" },
+    { "topic": "game.audio.ambient_play", "cueFromAmbientLoopId": "payload.loopId", "fadeInMsFrom": "payload.fadeInMs" },
+    { "topic": "game.audio.ambient_stop", "action": "stop_ambient", "fadeOutMsFrom": "payload.fadeOutMs" },
+    { "topic": "game.audio.music_play", "cueFrom": "payload.trackKey", "fadeInMsFrom": "payload.fadeInMs", "loopFrom": "payload.loop" },
+    { "topic": "game.audio.music_stop", "action": "stop_music", "fadeOutMsFrom": "payload.fadeOutMs" },
+    { "topic": "game.npc.interact", "cue": "ui-click", "maxOncePerMs": 250 },
+    { "topic": "game.pickup.interact", "cue": "item-pickup" },
+    { "topic": "game.dialogue.opened", "cue": "dialog-advance" },
+    { "topic": "game.dialogue.node_entered", "cue": "dialog-advance", "skipFirst": false },
+    { "topic": "game.dialogue.choice_selected", "cue": "ui-click" },
+    { "topic": "game.dialogue.challenge_submitted", "cue": "prompt-submit" },
+    { "topic": "game.dialogue.stream_chunk", "cue": "typewriter-char", "throttle": true },
+    { "topic": "game.quest.started", "cue": "scene-ready" },
+    { "topic": "game.quest.completed", "cue": "quest-complete" },
+    { "topic": "game.quest.step_advanced", "cue": "ui-click", "maxOncePerMs": 300 },
+    { "topic": "game.inventory.awarded", "cue": "item-pickup" },
+    { "topic": "game.ui.toast_pushed", "cue": "ui-hover" },
+    { "topic": "game.cinematic.start", "cue": "cinematic-sting" },
+    { "topic": "game.world.unlocked", "cue": "caravan-unlock" },
+    { "topic": "game.shop.purchase_completed", "cue": "quest-complete" }
+  ]
+}

@@ -30,6 +30,7 @@ import {
 import type { Trigger, WorldId } from './types';
 import { questEffectBus } from '../lib/questRunner';
 import { MINI_BUILDER_SCENE_KEY } from '../game/scenes/MiniBuilderCinematicScene';
+import { audioEngine } from '../lib/audioEngine';
 
 export interface GameBridge {
   game: Phaser.Game;
@@ -59,6 +60,15 @@ export function wireBridge(game: Phaser.Game): GameBridge {
 
   const bus = attachBusTo(game);
   const disposers: Array<() => void> = [];
+
+  // ---- Euterpe audio engine wiring ----
+  //
+  // audioEngine.attachBus subscribes every game.audio.*, quest, dialogue,
+  // scene, inventory, cinematic, and world topic declared in cues.json
+  // eventRouting. The engine owns Howler instance lifetime; detachBus
+  // releases the bus subscriptions without tearing down preloaded Howls so
+  // subsequent wireBridge invocations can re-attach cheaply.
+  disposers.push(audioEngine.attachBus(bus));
 
   // ---- Phaser to Store wiring ----
 

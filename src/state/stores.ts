@@ -38,7 +38,6 @@ import type {
   ToastId,
   NpcId,
   WorldId,
-  AmbientLoopId,
 } from './types';
 
 // ---- questStore (Nyx authority) ----
@@ -352,51 +351,10 @@ export const useUIStore = create<UIStore>()(
 );
 
 // ---- audioStore (Euterpe authority) ----
-
-export interface AudioStore {
-  masterVolume: number;
-  musicVolume: number;
-  sfxVolume: number;
-  ambientVolume: number;
-  muted: boolean;
-  currentAmbient: AmbientLoopId | null;
-  musicFadeInMs: number;
-  musicFadeOutMs: number;
-  setMasterVolume: (v: number) => void;
-  setMusicVolume: (v: number) => void;
-  setSfxVolume: (v: number) => void;
-  setAmbientVolume: (v: number) => void;
-  toggleMute: () => void;
-  playAmbient: (loopId: AmbientLoopId) => void;
-  stopAmbient: () => void;
-  playOneShot: (sfxKey: string) => void;
-}
-
-function clampVolume(v: number): number {
-  if (!Number.isFinite(v)) return 0;
-  return Math.max(0, Math.min(1, v));
-}
-
-export const useAudioStore = create<AudioStore>()(
-  subscribeWithSelector((set) => ({
-    masterVolume: 0.8,
-    musicVolume: 0.6,
-    sfxVolume: 0.7,
-    ambientVolume: 0.5,
-    muted: false,
-    currentAmbient: null,
-    musicFadeInMs: 800,
-    musicFadeOutMs: 600,
-    setMasterVolume: (v) => set({ masterVolume: clampVolume(v) }),
-    setMusicVolume: (v) => set({ musicVolume: clampVolume(v) }),
-    setSfxVolume: (v) => set({ sfxVolume: clampVolume(v) }),
-    setAmbientVolume: (v) => set({ ambientVolume: clampVolume(v) }),
-    toggleMute: () => set((s) => ({ muted: !s.muted })),
-    playAmbient: (loopId) => set({ currentAmbient: loopId }),
-    stopAmbient: () => set({ currentAmbient: null }),
-    playOneShot: (sfxKey) => {
-      // STUB until Euterpe authors Howler wrapper.
-      console.info(`[audioStore] playOneShot (stub)`, sfxKey);
-    },
-  })),
-);
+//
+// Canonical instance lives in src/stores/audioStore.ts (Euterpe RV W3).
+// Re-exported here so existing bridge consumers (src/state/gameBridge.ts)
+// continue to import from `./stores` without knowing the split. Both sides
+// of the bridge (Phaser emitters plus Howler wrapper in src/lib/audioEngine.ts)
+// observe the same store singleton.
+export { useAudioStore, type AudioStore } from '../stores/audioStore';
