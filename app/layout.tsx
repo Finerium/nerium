@@ -24,7 +24,7 @@ import './globals.css';
 import './_harness/harness.css';
 
 export const metadata: Metadata = {
-  title: 'NERIUM — Infrastructure for the AI agent economy',
+  title: 'NERIUM. Infrastructure for the AI agent economy.',
   description:
     'NERIUM is a five-pillar platform for the AI agent economy: Builder, Marketplace, Banking, Registry, Protocol. Built with Opus 4.7 for the Cerebral Valley plus Anthropic hackathon, April 2026.',
 };
