@@ -1,0 +1,11 @@
+{
+  "boot": {
+    "files": [
+      {
+        "type": "image",
+        "key": "nerium_logo_seed",
+        "url": "/assets/procedural/svg/nerium_logo.svg"
+      }
+    ]
+  }
+}

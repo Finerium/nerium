@@ -134,6 +134,20 @@ function buildAtlasJson(cfg: WorldConfig): PhaserAtlasJsonHash {
   };
 }
 
+function buildBootPack() {
+  return {
+    boot: {
+      files: [
+        {
+          type: 'image',
+          key: 'nerium_logo_seed',
+          url: '/assets/procedural/svg/nerium_logo.svg',
+        },
+      ],
+    },
+  };
+}
+
 function buildPreloadPack(worldsReady: WorldId[]) {
   return {
     preload: {
@@ -201,6 +215,11 @@ async function main() {
     worldsReady.push(cfg.world);
     console.log(`[pack-atlas] wrote ${relative(ROOT, outJson)}`);
   }
+
+  const bootPack = buildBootPack();
+  const bootPath = resolve(PACKS_DIR, 'boot-asset-pack.json');
+  writeFileSync(bootPath, JSON.stringify(bootPack, null, 2) + '\n');
+  console.log(`[pack-atlas] wrote ${relative(ROOT, bootPath)}`);
 
   const preloadPack = buildPreloadPack(worldsReady);
   const preloadPath = resolve(PACKS_DIR, 'preload-asset-pack.json');
