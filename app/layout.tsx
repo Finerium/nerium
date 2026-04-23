@@ -17,7 +17,8 @@
 // and no new mock.
 //
 
-import type { Metadata, ReactNode } from 'next';
+import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 import { ClientThemeBoot } from './_harness/ClientThemeBoot';
 import './globals.css';
 import './_harness/harness.css';

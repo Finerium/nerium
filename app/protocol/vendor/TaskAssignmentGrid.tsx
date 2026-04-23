@@ -166,7 +166,6 @@ export default function TaskAssignmentGrid(
             <span
               className="morpheus-grid-task-cell"
               role="rowheader"
-              scope="row"
             >
               {TASK_LABELS[task]}
             </span>

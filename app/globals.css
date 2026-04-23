@@ -16,6 +16,24 @@
 
 @import "tailwindcss";
 
+/*
+ * Tailwind v4 automatic content detection scans every project file by default.
+ * The RV documentation (docs/phase_rv/*.md, _meta/*.md) quotes Tailwind class
+ * syntax like `bg-[url(...)]` as pedagogical examples, and v4's scanner picks
+ * those up as real classes. The resulting `url(...)` reference then fails the
+ * webpack module resolver because `...` is a literal placeholder, not a path.
+ *
+ * Exclude docs, meta, the RV skill-transplant staging area, and external repo
+ * artifacts under _skills_staging so Tailwind only scans actual source.
+ * Paths are relative to this CSS file (app/globals.css).
+ */
+@source not "../docs";
+@source not "../_meta";
+@source not "../_skills_staging";
+@source not "../.claude";
+@source not "../cache";
+@source not "../_deprecated";
+
 @theme {
   --color-primary: oklch(0.830 0.150 200.0);
   --color-secondary: oklch(0.660 0.270 5.0);

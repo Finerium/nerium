@@ -290,7 +290,7 @@ function TranslationSplitInner(props: TranslationSplitProps): ReactElement {
       </section>
 
       <div className="translation-split">
-        {leftSerialized.ok ? (
+        {leftSerialized.ok === true ? (
           <ClaudePanel
             vendor_id={leftAdapter.profile.vendor_id}
             adapter={leftAdapter}
@@ -304,7 +304,7 @@ function TranslationSplitInner(props: TranslationSplitProps): ReactElement {
             message={leftSerialized.message}
           />
         )}
-        {rightSerialized.ok ? (
+        {rightSerialized.ok === true ? (
           <GeminiMockPanel
             vendor_id={rightAdapter.profile.vendor_id}
             adapter={rightAdapter}

@@ -30,6 +30,9 @@
     "**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "_skills_staging",
+    "_deprecated",
+    "cache"
   ]
 }

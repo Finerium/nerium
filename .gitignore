@@ -39,6 +39,7 @@ venv/
 
 # Next.js auto-generated
 next-env.d.ts
+tsconfig.tsbuildinfo
 
 # Playwright MCP session artifacts
 .playwright-mcp/

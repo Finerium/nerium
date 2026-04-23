@@ -371,7 +371,6 @@ export function LumioReplay({
                   type="button"
                   className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm"
                   onClick={reset}
-                  disabled={status === 'loading'}
                 >
                   Reset
                 </button>

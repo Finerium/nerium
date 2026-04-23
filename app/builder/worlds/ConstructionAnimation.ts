@@ -202,7 +202,7 @@ export class ConstructionAnimation {
     const baseSource = (baseTexture as { source?: unknown }).source ?? baseTexture;
 
     const makeSprite = (sprite: SpriteEntry): InstanceType<PixiModule['Sprite']> => {
-      const frame = sprite.frame ?? slotFrame('agent_node_idle');
+      const frame = sprite.frame ?? slotFrame('agent_idle');
       const rect = new Rectangle(frame.x, frame.y, frame.w, frame.h);
       const texture = new (Texture as unknown as { new (opts: unknown): unknown })({
         source: baseSource,
