@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Minimap ring">
+  <title>Minimap Ring</title>
+  <desc>Circular compass frame for minimap TopBar HUD. Outer brass ring, inner plate, cardinal tick marks, player dot center. Palette swappable via CSS custom properties --color-primary, --color-accent, --color-foreground, --color-background, --color-border. Default fallbacks match cyberpunk_shanghai. Author: Hesperus W3.</desc>
+  <defs>
+    <radialGradient id="mrPlate" cx="0.5" cy="0.45" r="0.6">
+      <stop offset="0" stop-color="var(--color-background, #06060c)" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="var(--color-background, #06060c)" stop-opacity="0.95"/>
+    </radialGradient>
+    <filter id="mrGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <circle cx="64" cy="64" r="62" fill="none" stroke="var(--color-border, #3a1f5e)" stroke-width="2"/>
+  <circle cx="64" cy="64" r="58" fill="url(#mrPlate)" stroke="var(--color-primary, #00f0ff)" stroke-width="1.5"/>
+  <circle cx="64" cy="64" r="54" fill="none" stroke="var(--color-accent, #8b5cf6)" stroke-width="0.5" stroke-opacity="0.55"/>
+  <g stroke="var(--color-primary, #00f0ff)" stroke-width="1.5" fill="none" filter="url(#mrGlow)">
+    <line x1="64" y1="4" x2="64" y2="14"/>
+    <line x1="64" y1="114" x2="64" y2="124"/>
+    <line x1="4" y1="64" x2="14" y2="64"/>
+    <line x1="114" y1="64" x2="124" y2="64"/>
+  </g>
+  <g stroke="var(--color-accent, #8b5cf6)" stroke-width="0.75" fill="none" opacity="0.55">
+    <line x1="64" y1="8" x2="64" y2="12" transform="rotate(45 64 64)"/>
+    <line x1="64" y1="8" x2="64" y2="12" transform="rotate(-45 64 64)"/>
+    <line x1="64" y1="116" x2="64" y2="120" transform="rotate(45 64 64)"/>
+    <line x1="64" y1="116" x2="64" y2="120" transform="rotate(-45 64 64)"/>
+  </g>
+  <g fill="var(--color-foreground, #e8eaef)" font-family="monospace" font-size="7" font-weight="700" text-anchor="middle">
+    <text x="64" y="18" opacity="0.9">N</text>
+    <text x="64" y="118" opacity="0.6">S</text>
+    <text x="18" y="67" opacity="0.6">W</text>
+    <text x="110" y="67" opacity="0.6">E</text>
+  </g>
+  <g stroke="var(--color-primary, #00f0ff)" stroke-width="0.4" fill="none" opacity="0.25">
+    <circle cx="64" cy="64" r="40"/>
+    <circle cx="64" cy="64" r="24"/>
+    <line x1="14" y1="64" x2="114" y2="64" stroke-dasharray="2 3"/>
+    <line x1="64" y1="14" x2="64" y2="114" stroke-dasharray="2 3"/>
+  </g>
+  <circle cx="64" cy="64" r="3" fill="var(--color-secondary, #ff2e88)" filter="url(#mrGlow)"/>
+  <circle cx="64" cy="64" r="1.2" fill="var(--color-foreground, #e8eaef)"/>
+</svg>

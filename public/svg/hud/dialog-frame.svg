@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 320" role="img" aria-label="NERIUM dialog frame">
+  <title>NERIUM Dialog Frame (genre-neutral)</title>
+  <desc>Genre-neutral dialog box chrome. Palette swappable via CSS custom properties --color-primary, --color-accent, --color-border, --color-background, --color-foreground. Default fallbacks match cyberpunk_shanghai (globals.css @theme seed). Erato-v2 consumes for DialogueOverlay and NPC speech surfaces per Linus dialogue schema. Author: Hesperus W3.</desc>
+  <defs>
+    <linearGradient id="dfPlate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="var(--color-background, #06060c)" stop-opacity="0.96"/>
+      <stop offset="1" stop-color="var(--color-background, #06060c)" stop-opacity="0.90"/>
+    </linearGradient>
+    <filter id="dfSoftGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect x="4" y="4" width="504" height="312" rx="6" ry="6" fill="url(#dfPlate)" stroke="var(--color-primary, #00f0ff)" stroke-width="1.5"/>
+  <rect x="10" y="10" width="492" height="300" rx="4" ry="4" fill="none" stroke="var(--color-accent, #8b5cf6)" stroke-width="0.75" stroke-opacity="0.7"/>
+  <g fill="none" stroke="var(--color-primary, #00f0ff)" stroke-width="2" filter="url(#dfSoftGlow)">
+    <polyline points="4,28 4,4 28,4"/>
+    <polyline points="484,4 508,4 508,28"/>
+    <polyline points="4,292 4,316 28,316"/>
+    <polyline points="484,316 508,316 508,292"/>
+  </g>
+  <g fill="var(--color-accent, #8b5cf6)">
+    <rect x="14" y="14" width="3" height="12"/>
+    <rect x="14" y="14" width="12" height="3"/>
+    <rect x="495" y="14" width="3" height="12"/>
+    <rect x="486" y="14" width="12" height="3"/>
+    <rect x="14" y="294" width="3" height="12"/>
+    <rect x="14" y="303" width="12" height="3"/>
+    <rect x="495" y="294" width="3" height="12"/>
+    <rect x="486" y="303" width="12" height="3"/>
+  </g>
+  <g fill="var(--color-primary, #00f0ff)">
+    <rect x="248" y="2" width="16" height="3"/>
+    <rect x="248" y="315" width="16" height="3"/>
+    <rect x="2" y="152" width="3" height="16"/>
+    <rect x="507" y="152" width="3" height="16"/>
+  </g>
+  <g transform="translate(24, 280)">
+    <circle cx="0" cy="0" r="4" fill="var(--color-primary, #00f0ff)" filter="url(#dfSoftGlow)"/>
+    <circle cx="0" cy="0" r="2" fill="var(--color-background, #06060c)"/>
+  </g>
+  <g transform="translate(488, 24)" fill="var(--color-accent, #8b5cf6)" font-family="monospace" font-size="7" font-weight="600" text-anchor="end" opacity="0.55">
+    <text x="0" y="0">NRM.DLG</text>
+  </g>
+  <line x1="24" y1="40" x2="488" y2="40" stroke="var(--color-border, #3a1f5e)" stroke-width="0.5" stroke-opacity="0.6"/>
+  <line x1="24" y1="272" x2="488" y2="272" stroke="var(--color-border, #3a1f5e)" stroke-width="0.5" stroke-opacity="0.5"/>
+</svg>

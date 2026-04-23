@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Inventory slot">
+  <title>Inventory Slot</title>
+  <desc>Beveled square inventory cell frame. Corner chips, inset shadow track, subtle grid inside. Palette swappable via CSS custom properties --color-primary, --color-accent, --color-background, --color-border, --color-foreground. Default fallbacks match cyberpunk_shanghai. Erato-v2 InventoryToast plus SideBar roster cell consume. Author: Hesperus W3.</desc>
+  <defs>
+    <linearGradient id="isPlate" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="var(--color-background, #06060c)" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="var(--color-background, #06060c)" stop-opacity="0.78"/>
+    </linearGradient>
+    <linearGradient id="isBevel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="var(--color-primary, #00f0ff)" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="var(--color-accent, #8b5cf6)" stop-opacity="0.7"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="3" ry="3" fill="url(#isBevel)"/>
+  <rect x="4" y="4" width="56" height="56" rx="2" ry="2" fill="url(#isPlate)" stroke="var(--color-border, #3a1f5e)" stroke-width="0.75"/>
+  <path d="M4 4 L60 4 L60 6 L6 6 L6 60 L4 60 Z" fill="var(--color-primary, #00f0ff)" fill-opacity="0.25"/>
+  <path d="M60 4 L60 60 L4 60 L4 58 L58 58 L58 4 Z" fill="#000000" fill-opacity="0.45"/>
+  <g fill="var(--color-accent, #8b5cf6)">
+    <rect x="4" y="4" width="4" height="1"/>
+    <rect x="4" y="4" width="1" height="4"/>
+    <rect x="56" y="4" width="4" height="1"/>
+    <rect x="59" y="4" width="1" height="4"/>
+    <rect x="4" y="59" width="4" height="1"/>
+    <rect x="4" y="56" width="1" height="4"/>
+    <rect x="56" y="59" width="4" height="1"/>
+    <rect x="59" y="56" width="1" height="4"/>
+  </g>
+  <g stroke="var(--color-primary, #00f0ff)" stroke-width="0.25" fill="none" opacity="0.2">
+    <line x1="12" y1="8" x2="12" y2="56"/>
+    <line x1="32" y1="8" x2="32" y2="56"/>
+    <line x1="52" y1="8" x2="52" y2="56"/>
+    <line x1="8" y1="12" x2="56" y2="12"/>
+    <line x1="8" y1="32" x2="56" y2="32"/>
+    <line x1="8" y1="52" x2="56" y2="52"/>
+  </g>
+  <g fill="var(--color-foreground, #e8eaef)" opacity="0.35">
+    <circle cx="32" cy="32" r="1"/>
+  </g>
+</svg>

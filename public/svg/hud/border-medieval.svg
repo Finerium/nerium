@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" role="img" aria-label="Medieval Desert HUD border">
+  <title>Medieval Desert HUD Border</title>
+  <desc>Terracotta brass-ring frame with sand inner panel, stone corner diamonds, and desert glyph midpoints. Palette sourced from app/builder/worlds/medieval_desert/palette.ts. OKLCH: primary 0.620 0.140 45, secondary 0.820 0.100 85, accent 0.750 0.180 70, foreground 0.220 0.030 50, border 0.780 0.020 75. Moroccan souk plus Dune Arrakeen reference (NarasiGhaisan Section 7). Author: Hesperus W3.</desc>
+  <defs>
+    <linearGradient id="medTerra" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d48c5a"/>
+      <stop offset="0.55" stop-color="#c97a4a"/>
+      <stop offset="1" stop-color="#8b5430"/>
+    </linearGradient>
+    <linearGradient id="medSand" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f0d890"/>
+      <stop offset="1" stop-color="#e8c57d"/>
+    </linearGradient>
+    <radialGradient id="medBrass" cx="0.5" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#f0d48a"/>
+      <stop offset="0.6" stop-color="#c97a4a"/>
+      <stop offset="1" stop-color="#6a3d1c"/>
+    </radialGradient>
+    <pattern id="medHatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#8b6f47" stroke-width="0.6" stroke-opacity="0.28"/>
+    </pattern>
+  </defs>
+  <rect x="0" y="0" width="320" height="240" fill="url(#medTerra)"/>
+  <rect x="0" y="0" width="320" height="240" fill="url(#medHatch)"/>
+  <rect x="14" y="14" width="292" height="212" fill="url(#medSand)" stroke="#3d2817" stroke-width="1.5"/>
+  <rect x="22" y="22" width="276" height="196" fill="none" stroke="#8b6f47" stroke-width="1" stroke-dasharray="5 3"/>
+  <rect x="28" y="28" width="264" height="184" fill="none" stroke="#c97a4a" stroke-width="0.75" stroke-opacity="0.55"/>
+  <g stroke="#3d2817" stroke-width="1.5">
+    <circle cx="14" cy="14" r="8" fill="url(#medBrass)"/>
+    <circle cx="306" cy="14" r="8" fill="url(#medBrass)"/>
+    <circle cx="14" cy="226" r="8" fill="url(#medBrass)"/>
+    <circle cx="306" cy="226" r="8" fill="url(#medBrass)"/>
+  </g>
+  <g fill="#3d2817">
+    <circle cx="14" cy="14" r="2.5"/>
+    <circle cx="306" cy="14" r="2.5"/>
+    <circle cx="14" cy="226" r="2.5"/>
+    <circle cx="306" cy="226" r="2.5"/>
+  </g>
+  <g fill="#8b6f47" stroke="#3d2817" stroke-width="0.75">
+    <polygon points="160,8 167,14 160,20 153,14"/>
+    <polygon points="160,220 167,226 160,232 153,226"/>
+    <polygon points="8,120 14,127 8,134 2,127"/>
+    <polygon points="312,120 318,127 312,134 306,127"/>
+  </g>
+  <g fill="#c97a4a" fill-opacity="0.55">
+    <rect x="72" y="12" width="12" height="4"/>
+    <rect x="236" y="12" width="12" height="4"/>
+    <rect x="72" y="224" width="12" height="4"/>
+    <rect x="236" y="224" width="12" height="4"/>
+  </g>
+</svg>
