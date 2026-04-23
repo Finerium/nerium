@@ -1,0 +1,46 @@
+{
+  "version": "0.1.0",
+  "generated_by": "pack-atlas.ts",
+  "generated_at": "2026-04-23T11:15:26.003Z",
+  "worlds": [
+    {
+      "world": "medieval_desert",
+      "atlas_png": "/assets/worlds/medieval_desert/atlas_32.png",
+      "atlas_json": "/assets/packs/medieval_desert.atlas.json"
+    },
+    {
+      "world": "cyberpunk_shanghai",
+      "atlas_png": "/assets/worlds/cyberpunk_shanghai/atlas_32.png",
+      "atlas_json": "/assets/packs/cyberpunk_shanghai.atlas.json"
+    },
+    {
+      "world": "steampunk_victorian",
+      "atlas_png": "/assets/worlds/steampunk_victorian/atlas_32.png",
+      "atlas_json": "/assets/packs/steampunk_victorian.atlas.json"
+    }
+  ],
+  "cc0_sheets": [
+    {
+      "sourceKey": "kenney_roguelike_rpg",
+      "path": "/assets/cc0/kenney-roguelike/sheet.png"
+    },
+    {
+      "sourceKey": "kenney_ui_pack_rpg_expansion",
+      "path": "/assets/cc0/kenney-ui-rpg-expansion/sheet.png"
+    },
+    {
+      "sourceKey": "opengameart_warped_city",
+      "path": "/assets/cc0/warped-city/tileset.png"
+    }
+  ],
+  "procedural_gapfills": [
+    "/assets/procedural/opengameart_steampunk_show.png",
+    "/assets/procedural/opengameart_steampunk_tiles_32x32.png",
+    "/assets/procedural/svg/hud_frame_cyberpunk.svg",
+    "/assets/procedural/svg/hud_frame_medieval.svg",
+    "/assets/procedural/svg/hud_frame_steampunk.svg",
+    "/assets/procedural/svg/inventory_slot.svg",
+    "/assets/procedural/svg/minimap_ring.svg",
+    "/assets/procedural/svg/nerium_logo.svg"
+  ]
+}

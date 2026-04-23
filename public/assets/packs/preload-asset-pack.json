@@ -1,0 +1,39 @@
+{
+  "preload": {
+    "files": [
+      {
+        "type": "atlas",
+        "key": "atlas_medieval_desert",
+        "textureURL": "/assets/worlds/medieval_desert/atlas_32.png",
+        "atlasURL": "/assets/packs/medieval_desert.atlas.json"
+      },
+      {
+        "type": "atlas",
+        "key": "atlas_cyberpunk_shanghai",
+        "textureURL": "/assets/worlds/cyberpunk_shanghai/atlas_32.png",
+        "atlasURL": "/assets/packs/cyberpunk_shanghai.atlas.json"
+      },
+      {
+        "type": "atlas",
+        "key": "atlas_steampunk_victorian",
+        "textureURL": "/assets/worlds/steampunk_victorian/atlas_32.png",
+        "atlasURL": "/assets/packs/steampunk_victorian.atlas.json"
+      },
+      {
+        "type": "image",
+        "key": "ui_panel_kenney",
+        "url": "/assets/cc0/kenney-ui-rpg-expansion/sheet.png"
+      },
+      {
+        "type": "image",
+        "key": "roguelike_master",
+        "url": "/assets/cc0/kenney-roguelike/sheet.png"
+      },
+      {
+        "type": "image",
+        "key": "warped_city_tileset",
+        "url": "/assets/cc0/warped-city/tileset.png"
+      }
+    ]
+  }
+}
