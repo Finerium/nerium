@@ -1,0 +1,8 @@
+{
+  "resource": "https://nerium.com/mcp",
+  "authorization_servers": ["https://nerium.com"],
+  "bearer_methods_supported": ["header"],
+  "resource_documentation": "https://nerium.com/docs/mcp",
+  "resource_signing_alg_values_supported": ["RS256"],
+  "scopes_supported": ["mcp:read", "mcp:write", "mcp:admin"]
+}

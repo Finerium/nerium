@@ -40,9 +40,12 @@ from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
+from src.backend.auth.router import oauth_router
 from src.backend.config import Settings, get_settings
 from src.backend.db.pool import close_pool, create_app_pool, set_pool
 from src.backend.healthz import router as healthz_router
+from src.backend.mcp.server import mount_mcp
+from src.backend.mcp.well_known import router as well_known_router
 
 logger = logging.getLogger(__name__)
 
@@ -215,6 +218,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     # Platform-level endpoints outside /v1 per contract Section 3.1.
     app.include_router(healthz_router)
+
+    # Khronos (W1 MCP + OAuth 2.1 DCR). /oauth/* + /.well-known/oauth-* mount
+    # outside /v1 per docs/contracts/mcp_server.contract.md Section 3.1. The
+    # /mcp Streamable HTTP surface is mounted as an ASGI sub-app via
+    # mount_mcp(app) so FastMCP's request handling bypasses FastAPI's body
+    # parsing per MCP spec revision 2025-06-18.
+    app.include_router(oauth_router)
+    app.include_router(well_known_router)
+    mount_mcp(app)
 
     # /v1 placeholder so downstream agents can mount without repo churn.
     app.include_router(_build_v1_placeholder_router(), prefix=API_V1_PREFIX)
