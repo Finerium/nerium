@@ -1,0 +1,4 @@
+{
+  "_note": "Canonical dashboard JSON lives at ops/grafana/dashboards/fastapi_dashboard.json. This file is an alias path retained to match docs/contracts/observability.contract.md Section 6 path reference and the Selene agent prompt task 6.",
+  "_canonical_path": "ops/grafana/dashboards/fastapi_dashboard.json"
+}

@@ -1,0 +1,142 @@
+[project]
+name = "nerium-backend"
+version = "0.1.0"
+description = "NERIUM backend API (FastAPI, Postgres 16 multi-tenant RLS, Redis 7, Arq). Hackathon submission Cerebral Valley plus Anthropic April 2026, built with Opus 4.7."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Ghaisan Khoirul Badruzaman", email = "finerium@users.noreply.github.com" }]
+requires-python = ">=3.12"
+
+dependencies = [
+  # Web framework
+  "fastapi>=0.115.0,<0.120.0",
+  "uvicorn[standard]>=0.32.0,<0.36.0",
+  "starlette>=0.41.0,<0.46.0",
+
+  # Configuration + validation
+  "pydantic>=2.9.0,<3.0.0",
+  "pydantic-settings>=2.6.0,<3.0.0",
+
+  # Database
+  "asyncpg>=0.30.0,<0.31.0",
+  "alembic>=1.14.0,<2.0.0",
+  "sqlalchemy>=2.0.35,<2.1.0",
+
+  # Redis
+  "redis>=5.2.0,<6.0.0",
+
+  # Background job queue
+  "arq>=0.26.0,<0.27.0",
+
+  # Observability (shared with Selene obs subsystem)
+  "structlog>=24.4.0,<26.0.0",
+  "asgi-correlation-id>=4.3.0,<5.0.0",
+
+  # HTTP client
+  "httpx>=0.27.0,<0.29.0",
+
+  # Auth + crypto
+  "python-jose[cryptography]>=3.3.0,<4.0.0",
+  "passlib[bcrypt]>=1.7.4,<2.0.0",
+  "itsdangerous>=2.2.0,<3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.0,<9.0.0",
+  "pytest-asyncio>=0.24.0,<0.26.0",
+  "pytest-cov>=6.0.0,<7.0.0",
+  "ruff>=0.7.0,<0.10.0",
+  "mypy>=1.13.0,<2.0.0",
+  "types-redis>=4.6.0,<5.0.0",
+]
+
+obs = [
+  # Selene consumes these; Aether declares them so the Arq lifespan can import the
+  # obs subsystem without a separate installation step. Keep optional to allow the
+  # FastAPI core tests to run in CI without the full OpenTelemetry stack.
+  "opentelemetry-api>=1.28.0,<2.0.0",
+  "opentelemetry-sdk>=1.28.0,<2.0.0",
+  # Both exporters shipped: HTTP is the primary path to Grafana Cloud Tempo via
+  # Alloy's OTLP receiver, gRPC kept for direct push fallback scenarios.
+  "opentelemetry-exporter-otlp-proto-http>=1.28.0,<2.0.0",
+  "opentelemetry-exporter-otlp-proto-grpc>=1.28.0,<2.0.0",
+  "opentelemetry-instrumentation-fastapi>=0.49b0,<1.0.0",
+  "opentelemetry-instrumentation-asyncpg>=0.49b0,<1.0.0",
+  "opentelemetry-instrumentation-redis>=0.49b0,<1.0.0",
+  "opentelemetry-instrumentation-httpx>=0.49b0,<1.0.0",
+  "opentelemetry-instrumentation-sqlalchemy>=0.49b0,<1.0.0",
+  "opentelemetry-instrumentation-logging>=0.49b0,<1.0.0",
+  "sentry-sdk[fastapi,asyncpg]>=2.18.0,<3.0.0",
+  "prometheus-client>=0.21.0,<1.0.0",
+]
+
+mcp = [
+  # Khronos consumes these; Aether declares them so the FastAPI app factory can
+  # mount FastMCP as an ASGI sub-app at /mcp and include the OAuth DCR routers
+  # without a separate install step. MCP spec revision 2025-06-18 (Streamable
+  # HTTP + RFC 9728 Protected Resource Metadata + RFC 8707 Resource Indicators)
+  # is the minimum supported version.
+  "mcp>=1.6.0,<2.0.0",
+  # cryptography ships transitively via python-jose[cryptography]; pin explicitly
+  # so the JWK (n, e) serialisation path in src/backend/auth/jwt_signer.py has a
+  # known-good RSA primitive surface.
+  "cryptography>=44.0.0,<46.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=70.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["backend*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+# Contract paths per docs/contracts/{mcp_server,oauth_dcr,mcp_tool_registry}.contract.md
+# Section 6: tests/mcp/, tests/auth/. Aether's FastAPI core tests live at
+# tests/backend/. Keep all three roots discoverable.
+testpaths = ["tests/backend", "tests/mcp", "tests/auth"]
+python_files = ["test_*.py"]
+pythonpath = ["."]
+filterwarnings = [
+  "ignore::DeprecationWarning:pydantic.*",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = [
+  ".next",
+  "node_modules",
+  "_skills_staging",
+  "src/backend/db/migrations/versions",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "N", "ASYNC", "S"]
+ignore = [
+  "E501",  # line length handled by formatter
+  "S101",  # assert allowed in tests
+  "B008",  # FastAPI Depends() default intentional
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = false
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_return_any = true
+no_implicit_optional = true
+check_untyped_defs = true
+ignore_missing_imports = true
+exclude = [
+  "src/backend/db/migrations/",
+]

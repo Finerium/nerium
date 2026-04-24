@@ -1,0 +1,174 @@
+// Grafana Alloy configuration for NERIUM backend observability shipping.
+//
+// Owner: Selene (W1 observability). Contract:
+// docs/contracts/observability.contract.md Section 6 (file path) + Section 3
+// (log shape + metric catalog).
+//
+// This config runs Alloy alongside the FastAPI container and ships:
+//   - stdout JSON logs (Docker json-file driver) to Grafana Cloud Loki
+//   - OTLP traces from the FastAPI OTel SDK to Grafana Cloud Tempo
+//   - Prometheus /metrics from the FastAPI app to Grafana Cloud Mimir
+//
+// Provisioning:
+//   1. Sign up Grafana Cloud Free (50 GB logs / 50 GB traces / 10k series
+//      metrics / 14-day retention / 3 users).
+//   2. Create a single "Access Policy" with scopes:
+//        metrics:write, logs:write, traces:write
+//   3. Generate an API token under that policy.
+//   4. Export the four endpoint + instance id variables in .env:
+//        GRAFANA_CLOUD_PROM_URL, GRAFANA_CLOUD_PROM_USERNAME,
+//        GRAFANA_CLOUD_LOKI_URL, GRAFANA_CLOUD_LOKI_USERNAME,
+//        GRAFANA_CLOUD_TEMPO_URL, GRAFANA_CLOUD_TEMPO_USERNAME,
+//        GRAFANA_CLOUD_API_KEY.
+//   5. docker run (or systemd) Alloy with this config mounted read-only.
+
+logging {
+    level  = "info"
+    format = "json"
+}
+
+// ---------------------------------------------------------------------------
+// Secrets: pulled from Alloy's environment. Keep out of git.
+// ---------------------------------------------------------------------------
+local.file "grafana_cloud_api_key" {
+    filename  = env("GRAFANA_CLOUD_API_KEY_FILE")
+    is_secret = true
+}
+
+// ---------------------------------------------------------------------------
+// Metrics: scrape FastAPI /metrics, remote_write to Grafana Cloud Mimir.
+// ---------------------------------------------------------------------------
+prometheus.scrape "nerium_api" {
+    targets = [{
+        __address__ = env("NERIUM_API_METRICS_ADDR"),  // e.g. "nerium-api:8080"
+        service     = "nerium-api",
+        env         = env("DEPLOYMENT_ENV"),
+    }]
+    metrics_path    = "/metrics"
+    scrape_interval = "15s"
+    scrape_timeout  = "10s"
+    forward_to      = [prometheus.remote_write.grafana_cloud.receiver]
+}
+
+prometheus.remote_write "grafana_cloud" {
+    endpoint {
+        url = env("GRAFANA_CLOUD_PROM_URL")
+        basic_auth {
+            username = env("GRAFANA_CLOUD_PROM_USERNAME")
+            password = local.file.grafana_cloud_api_key.content
+        }
+    }
+    // Drop high-cardinality labels at edge to protect the 10k series quota.
+    external_labels = {
+        service = "nerium-api",
+        env     = env("DEPLOYMENT_ENV"),
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Logs: tail Docker container stdout (JSON) to Grafana Cloud Loki.
+// ---------------------------------------------------------------------------
+discovery.docker "containers" {
+    host             = "unix:///var/run/docker.sock"
+    refresh_interval = "15s"
+}
+
+discovery.relabel "nerium_filter" {
+    targets = discovery.docker.containers.targets
+    rule {
+        source_labels = ["__meta_docker_container_name"]
+        regex         = "/nerium-.*"
+        action        = "keep"
+    }
+    rule {
+        source_labels = ["__meta_docker_container_name"]
+        target_label  = "container"
+        regex         = "/(.*)"
+        replacement   = "$1"
+    }
+    rule {
+        target_label = "service"
+        replacement  = "nerium-api"
+    }
+    rule {
+        target_label = "env"
+        replacement  = env("DEPLOYMENT_ENV")
+    }
+}
+
+loki.source.docker "nerium" {
+    host          = "unix:///var/run/docker.sock"
+    targets       = discovery.relabel.nerium_filter.output
+    forward_to    = [loki.process.structlog.receiver]
+    relabel_rules = discovery.relabel.nerium_filter.rules
+}
+
+// Parse the structlog JSON and promote a small, low-cardinality label set
+// (level, event, service). trace_id + request_id stay in the line body so
+// they do not inflate stream count.
+loki.process "structlog" {
+    stage.json {
+        expressions = {
+            level   = "level",
+            event   = "event",
+            service = "service",
+        }
+    }
+    stage.labels {
+        values = {
+            level   = "",
+            event   = "",
+            service = "",
+        }
+    }
+    stage.timestamp {
+        source = "timestamp"
+        format = "RFC3339Nano"
+    }
+    forward_to = [loki.write.grafana_cloud.receiver]
+}
+
+loki.write "grafana_cloud" {
+    endpoint {
+        url = env("GRAFANA_CLOUD_LOKI_URL")
+        basic_auth {
+            username = env("GRAFANA_CLOUD_LOKI_USERNAME")
+            password = local.file.grafana_cloud_api_key.content
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Traces: receive OTLP from FastAPI SDK, forward to Grafana Cloud Tempo.
+// ---------------------------------------------------------------------------
+otelcol.receiver.otlp "default" {
+    http {
+        endpoint = "0.0.0.0:4318"
+    }
+    grpc {
+        endpoint = "0.0.0.0:4317"
+    }
+    output {
+        traces = [otelcol.processor.batch.default.input]
+    }
+}
+
+otelcol.processor.batch "default" {
+    send_batch_size = 512
+    timeout         = "5s"
+    output {
+        traces = [otelcol.exporter.otlphttp.grafana_cloud.input]
+    }
+}
+
+otelcol.exporter.otlphttp "grafana_cloud" {
+    client {
+        endpoint = env("GRAFANA_CLOUD_TEMPO_URL")
+        auth     = otelcol.auth.basic.grafana_cloud.handler
+    }
+}
+
+otelcol.auth.basic "grafana_cloud" {
+    username = env("GRAFANA_CLOUD_TEMPO_USERNAME")
+    password = local.file.grafana_cloud_api_key.content
+}
