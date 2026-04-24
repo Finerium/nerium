@@ -49,6 +49,7 @@ from src.backend.errors.problem_json import problem_response
 from src.backend.middleware.auth import (
     DEFAULT_PUBLIC_PATHS,
     DEFAULT_PUBLIC_PREFIXES,
+    DEFAULT_PUBLIC_SUFFIXES,
     AuthPrincipal,
 )
 
@@ -90,11 +91,13 @@ class TenantBindingMiddleware(BaseHTTPMiddleware):
         public_paths: Iterable[str] = DEFAULT_PUBLIC_PATHS,
         public_prefixes: Iterable[str] = DEFAULT_PUBLIC_PREFIXES,
         cross_tenant_prefixes: Iterable[str] = DEFAULT_CROSS_TENANT_PATHS,
+        public_suffixes: Iterable[str] = DEFAULT_PUBLIC_SUFFIXES,
     ) -> None:
         super().__init__(app)
         self._public_paths = frozenset(public_paths)
         self._public_prefixes = tuple(public_prefixes)
         self._cross_tenant_prefixes = tuple(cross_tenant_prefixes)
+        self._public_suffixes = tuple(public_suffixes)
 
     def _is_skipped(self, path: str) -> bool:
         if path in self._public_paths:
@@ -104,6 +107,9 @@ class TenantBindingMiddleware(BaseHTTPMiddleware):
                 return True
         for prefix in self._cross_tenant_prefixes:
             if path.startswith(prefix):
+                return True
+        for suffix in self._public_suffixes:
+            if path.endswith(suffix):
                 return True
         return False
 
@@ -151,6 +157,7 @@ def install_tenant_binding(
     public_paths: Iterable[str] = DEFAULT_PUBLIC_PATHS,
     public_prefixes: Iterable[str] = DEFAULT_PUBLIC_PREFIXES,
     cross_tenant_prefixes: Iterable[str] = DEFAULT_CROSS_TENANT_PATHS,
+    public_suffixes: Iterable[str] = DEFAULT_PUBLIC_SUFFIXES,
 ) -> None:
     """Register :class:`TenantBindingMiddleware` on the app."""
 
@@ -159,6 +166,7 @@ def install_tenant_binding(
         public_paths=tuple(public_paths),
         public_prefixes=tuple(public_prefixes),
         cross_tenant_prefixes=tuple(cross_tenant_prefixes),
+        public_suffixes=tuple(public_suffixes),
     )
 
 

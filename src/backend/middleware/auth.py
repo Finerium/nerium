@@ -71,6 +71,22 @@ DEFAULT_PUBLIC_PREFIXES: tuple[str, ...] = (
 """Path prefixes that bypass auth. OAuth discovery + problem type pages."""
 
 
+DEFAULT_PUBLIC_SUFFIXES: tuple[str, ...] = (
+    # Kratos W2 S2: MA session SSE endpoint. Browser ``EventSource``
+    # cannot set ``Authorization`` headers so the endpoint consumes
+    # either a query-param ``?ticket=<jwt>`` (Nike realtime ticket)
+    # or an inline ``Authorization: Bearer <jwt>`` for server-side
+    # callers. Both paths resolve an :class:`AuthPrincipal`
+    # explicitly inside the handler via
+    # :func:`src.backend.ma.sse_stream.resolve_sse_principal`, so we
+    # skip the middleware here rather than reject bare ``EventSource``
+    # connections pre-handler.
+    "/stream",
+)
+"""Path suffixes that bypass auth. SSE endpoints that self-authenticate
+via realtime ticket or explicit bearer inside the handler."""
+
+
 @dataclass(frozen=True)
 class AuthPrincipal:
     """Authenticated caller identity.
@@ -163,12 +179,14 @@ class AuthMiddleware(BaseHTTPMiddleware):
         verifier: TokenVerifier | None = None,
         public_paths: Iterable[str] = DEFAULT_PUBLIC_PATHS,
         public_prefixes: Iterable[str] = DEFAULT_PUBLIC_PREFIXES,
+        public_suffixes: Iterable[str] = DEFAULT_PUBLIC_SUFFIXES,
     ) -> None:
         super().__init__(app)
         self._settings = settings
         self._verifier: TokenVerifier = verifier or _default_hs256_verifier
         self._public_paths = frozenset(public_paths)
         self._public_prefixes = tuple(public_prefixes)
+        self._public_suffixes = tuple(public_suffixes)
 
     def is_public(self, path: str) -> bool:
         """Return True when ``path`` does not require authentication."""
@@ -177,6 +195,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return True
         for prefix in self._public_prefixes:
             if path.startswith(prefix):
+                return True
+        for suffix in self._public_suffixes:
+            if path.endswith(suffix):
                 return True
         return False
 
@@ -255,6 +276,7 @@ def install_auth(
     verifier: TokenVerifier | None = None,
     public_paths: Iterable[str] = DEFAULT_PUBLIC_PATHS,
     public_prefixes: Iterable[str] = DEFAULT_PUBLIC_PREFIXES,
+    public_suffixes: Iterable[str] = DEFAULT_PUBLIC_SUFFIXES,
 ) -> None:
     """Attach :class:`AuthMiddleware` to the given FastAPI/Starlette app.
 
@@ -269,6 +291,7 @@ def install_auth(
         verifier=verifier,
         public_paths=tuple(public_paths),
         public_prefixes=tuple(public_prefixes),
+        public_suffixes=tuple(public_suffixes),
     )
 
 
@@ -277,6 +300,7 @@ __all__ = [
     "AuthPrincipal",
     "DEFAULT_PUBLIC_PATHS",
     "DEFAULT_PUBLIC_PREFIXES",
+    "DEFAULT_PUBLIC_SUFFIXES",
     "TokenVerifier",
     "install_auth",
 ]

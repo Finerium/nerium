@@ -40,8 +40,8 @@ from decimal import Decimal
 from typing import Any, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Header, Path, Request, Response, status
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Header, Path, Query, Request, Response, status
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from src.backend.db.pool import get_pool
 from src.backend.db.tenant import tenant_scoped
@@ -66,6 +66,7 @@ from src.backend.ma.schemas import (
     CreateMASessionResponse,
     MASessionDetailResponse,
 )
+from src.backend.ma.sse_stream import sse_stream_handler
 from src.backend.ma.state_machine import MASessionStatus, is_terminal
 from src.backend.ma.whitelist_gate import enforce_whitelist_gate
 from src.backend.middleware.auth import AuthPrincipal
@@ -397,6 +398,48 @@ async def cancel_session(
         status=new_status,
         cancel_requested=True,
         cancelled_at_request=datetime.now(timezone.utc),
+    )
+
+
+@sessions_router.get(
+    "/{session_id}/stream",
+    response_class=StreamingResponse,
+)
+async def stream_session(
+    request: Request,
+    session_id: UUID = Path(..., description="MA session UUID v7"),
+    last_event_id: Optional[str] = Header(None, alias="Last-Event-ID"),
+    ticket: Optional[str] = Query(
+        None,
+        description=(
+            "Nike realtime ticket JWT. Required when the caller is a "
+            "browser using EventSource; server-to-server callers may "
+            "use the Authorization header instead."
+        ),
+    ),
+) -> StreamingResponse:
+    """SSE endpoint: replay persisted events + live-tail live ones.
+
+    Browser clients obtain the ``ticket`` via ``POST /v1/realtime/ticket``
+    (Nike, W2) and pass it as a query param because ``EventSource``
+    cannot set headers. Server + test + MCP callers use the standard
+    ``Authorization: Bearer <jwt>`` header (Aether middleware path).
+
+    Either authentication path resolves an :class:`AuthPrincipal`
+    bound to the caller's tenant; tenant-scoped RLS then filters the
+    session lookup so a cross-tenant id returns 404 rather than
+    leaking existence.
+
+    Resume semantics are driven by the ``Last-Event-ID`` header per
+    the SSE spec. The contract trim window is 24 h; replay beyond
+    that window returns HTTP 410 ``stream_gone``.
+    """
+
+    return await sse_stream_handler(
+        request=request,
+        session_id=session_id,
+        last_event_id=last_event_id,
+        ticket=ticket,
     )
 
 
