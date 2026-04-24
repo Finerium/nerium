@@ -181,19 +181,39 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     app.state.flag_listener = flag_listener
 
+    # 5) Nike realtime ConnectionManager. Installed after Redis so it
+    #    can grab a pub/sub subscriber connection. Best-effort: a
+    #    failure here logs + continues so the API still boots when the
+    #    realtime subsystem is degraded.
+    try:
+        from src.backend.realtime.lifespan import install_realtime
+
+        await install_realtime()
+        app.state.realtime_up = True
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.warning("lifespan.realtime.install_failed err=%s", exc)
+        app.state.realtime_up = False
+
     logger.info(
-        "lifespan.startup.complete pool_min=%d pool_max=%d redis_max=%d arq=%s flags=%s",
+        "lifespan.startup.complete pool_min=%d pool_max=%d redis_max=%d arq=%s flags=%s realtime=%s",
         settings.database_pool_min_size,
         settings.database_pool_max_size,
         settings.redis_max_connections,
         "up" if arq_redis is not None else "off",
         "up" if flag_listener is not None else "off",
+        "up" if getattr(app.state, "realtime_up", False) else "off",
     )
 
     try:
         yield
     finally:
         logger.info("lifespan.shutdown.begin")
+        try:
+            from src.backend.realtime.lifespan import shutdown_realtime
+
+            await shutdown_realtime()
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.warning("lifespan.realtime.shutdown_failed err=%s", exc)
         if flag_listener is not None:
             try:
                 from src.backend.flags.invalidator import (
@@ -215,6 +235,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.redis_pool = None
         app.state.arq_redis = None
         app.state.flag_listener = None
+        app.state.realtime_up = False
         logger.info("lifespan.shutdown.complete")
 
 

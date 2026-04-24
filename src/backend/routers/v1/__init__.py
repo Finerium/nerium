@@ -122,6 +122,10 @@ _PILLAR_REGISTRY: tuple[tuple[str, str, str], ...] = (
     # Kratos W2 P2 Session 1: MA session CRUD. SSE stream endpoint
     # lands at the same prefix in Session 3.
     ("ma.sessions", "src.backend.routers.v1.ma", "sessions_router"),
+    # Nike W2 NP P3 Session 1: generic realtime WebSocket. Mounts at
+    # ``/v1/realtime/ws``. Session 2 adds ``/v1/realtime/ticket`` mint
+    # endpoint + optional generic SSE wrapper to this same package.
+    ("realtime.ws", "src.backend.routers.v1.realtime", "ws_router"),
     # Future W2 slots. Keeping the label namespace so Nemea can assert
     # pillars are mounted before their dependent tests run.
     # ("marketplace.listing", "src.backend.routers.v1.marketplace", "listing_router"),
