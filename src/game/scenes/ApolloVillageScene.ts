@@ -22,6 +22,7 @@ import type { WorldId } from '../../state/types';
 import { Player } from '../objects/Player';
 import { NPC } from '../objects/NPC';
 import { Caravan } from '../objects/Caravan';
+import { TreasurerNPC } from '../objects/TreasurerNPC';
 import type { GameEventBus } from '../../state/GameEventBus';
 
 interface ApolloVillageSceneData {
@@ -56,6 +57,7 @@ export class ApolloVillageScene extends Phaser.Scene {
   private player?: Player;
   private apolloNpc?: NPC;
   private caravanVendorNpc?: NPC;
+  private treasurerNpc?: TreasurerNPC;
   private caravan?: Caravan;
   private caravanZone?: Phaser.GameObjects.Zone;
   private caravanZoneEntered = false;
@@ -82,6 +84,7 @@ export class ApolloVillageScene extends Phaser.Scene {
     this.spawnApollo();
     this.spawnCaravan();
     this.spawnCaravanVendor();
+    this.spawnTreasurer();
     this.spawnCaravanArrivalZone();
     this.configureCamera(width, height);
     this.registerSceneCleanup();
@@ -126,6 +129,9 @@ export class ApolloVillageScene extends Phaser.Scene {
     }
     if (this.player && this.caravanVendorNpc) {
       this.caravanVendorNpc.updateProximity(this.player);
+    }
+    if (this.player && this.treasurerNpc) {
+      this.treasurerNpc.updateProximity(this.player);
     }
   }
 
@@ -273,6 +279,22 @@ export class ApolloVillageScene extends Phaser.Scene {
       textureKey: this.atlasKey,
       frame: FRAME_AGENT_IDLE,
       interactRadius: 48,
+    });
+  }
+
+  private spawnTreasurer() {
+    // Treasurer NPC for the Marshall W2 cross-pillar tier-state surface.
+    // Sits two tiles north-west of the caravan sigil so the trade district
+    // reads as a cluster (caravan + caravan vendor + treasurer) without
+    // overlapping the caravan arrival zone bounds. Coordinates align with
+    // the central courtyard accent wall row added in layoutTiles so the
+    // treasurer reads as an intentional NPC, not a stray placement.
+    const treasurerX = (VILLAGE_COLS - 6) * TILE_PX;
+    const treasurerY = (VILLAGE_ROWS / 2 - 2) * TILE_PX;
+    this.treasurerNpc = new TreasurerNPC(this, treasurerX, treasurerY, {
+      textureKey: this.atlasKey,
+      frame: FRAME_AGENT_ACTIVE,
+      interactRadius: 56,
     });
   }
 

@@ -28,9 +28,12 @@ import { useEffect } from 'react';
 
 import apolloIntroJson from '../../data/dialogues/apollo_intro.json';
 import caravanVendorGreetJson from '../../data/dialogues/caravan_vendor_greet.json';
+import treasurerGreetJson from '../../data/dialogues/treasurer_greet.json';
 import { parseDialogue } from '../../data/dialogues/_schema';
 import { registerDialogues } from '../../stores/dialogueStore';
 import { useQuestStore } from '../../stores/questStore';
+import { wireTreasurerBridge } from '../../lib/treasurerDialogueBridge';
+import { useTierStore } from '../../hooks/useSubscriptionTier';
 
 let bootstrapped = false;
 
@@ -43,6 +46,7 @@ export default function QuestBootstrap() {
       registerDialogues([
         parseDialogue(apolloIntroJson, 'apollo_intro'),
         parseDialogue(caravanVendorGreetJson, 'caravan_vendor_greet'),
+        parseDialogue(treasurerGreetJson, 'treasurer_greet'),
       ]);
     } catch (err) {
       console.error('[QuestBootstrap] dialogue registration failed', err);
@@ -55,6 +59,30 @@ export default function QuestBootstrap() {
     } catch (err) {
       console.error('[QuestBootstrap] quest autostart failed', err);
     }
+
+    // Marshall W2 P6 S2: treasurer NPC -> dialogue bridge + pricing
+    // navigation hop. This is purely additive and lives outside the
+    // Thalia-v2-owned gameBridge so it stays editable from Marshall
+    // territory without touching cross-pillar wiring.
+    let treasurerHandle: { teardown: () => void } | null = null;
+    try {
+      treasurerHandle = wireTreasurerBridge();
+    } catch (err) {
+      console.error('[QuestBootstrap] treasurer bridge wire failed', err);
+    }
+
+    // Hydrate the subscription tier on first mount so the HUD tier
+    // badge + treasurer dialogue both render with the live value
+    // instead of the default-free fallback.
+    try {
+      void useTierStore.getState().refresh();
+    } catch (err) {
+      console.error('[QuestBootstrap] tier refresh failed', err);
+    }
+
+    return () => {
+      treasurerHandle?.teardown();
+    };
   }, []);
 
   return null;

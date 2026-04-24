@@ -27,9 +27,10 @@ import CurrencyDisplay from './CurrencyDisplay';
 export interface TopBarProps {
   questTrackerSlot?: ReactNode;
   minimapSlot?: ReactNode;
+  tierBadgeSlot?: ReactNode;
 }
 
-export function TopBar({ questTrackerSlot, minimapSlot }: TopBarProps) {
+export function TopBar({ questTrackerSlot, minimapSlot, tierBadgeSlot }: TopBarProps) {
   const language = useUIPreferencesStore((s) => s.language);
   const toggleLanguage = useUIPreferencesStore((s) => s.toggleLanguage);
   const t = useT();
@@ -79,6 +80,9 @@ export function TopBar({ questTrackerSlot, minimapSlot }: TopBarProps) {
       </div>
 
       <div className="flex items-center gap-3">
+        {tierBadgeSlot ? (
+          <div data-hud-role="tier-badge-slot">{tierBadgeSlot}</div>
+        ) : null}
         <CurrencyDisplay compact={false} />
         <button
           type="button"

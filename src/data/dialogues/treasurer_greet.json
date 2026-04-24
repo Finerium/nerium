@@ -1,0 +1,115 @@
+{
+  "id": "treasurer_greet",
+  "source": "custom",
+  "speaker": "treasurer",
+  "start": "greet",
+  "tags": ["treasurer", "pricing", "tier"],
+  "vars": {
+    "tier": "free",
+    "pricing_live": true
+  },
+  "nodes": {
+    "greet": {
+      "lines": [
+        { "text": "Welcome, traveler. Care to review your standing?" }
+      ],
+      "choices": [
+        {
+          "label": "Show me the tiers.",
+          "next": "pricing_explain",
+          "if": "vars.pricing_live === true"
+        },
+        {
+          "label": "What is my current standing?",
+          "next": "current_tier_show"
+        },
+        {
+          "label": "The treasury is closed for now.",
+          "next": "coming_soon",
+          "if": "vars.pricing_live !== true"
+        },
+        { "label": "Travel safe.", "next": "farewell" }
+      ]
+    },
+    "pricing_explain": {
+      "lines": [
+        { "text": "Four tiers stand before the agent economy." },
+        { "text": "Free is for the curious. Starter is for solo builders shipping small projects." },
+        { "text": "Pro is for daily drivers. Team scales seats with priority support." }
+      ],
+      "choices": [
+        {
+          "label": "Open the pricing scrolls.",
+          "next": "upgrade_redirect",
+          "effects": [
+            {
+              "type": "emit_event",
+              "eventName": "nerium.pricing.open",
+              "payload": { "source": "treasurer_pricing_explain" }
+            }
+          ]
+        },
+        { "label": "What is my current standing?", "next": "current_tier_show" },
+        { "label": "Travel safe.", "next": "farewell" }
+      ]
+    },
+    "current_tier_show": {
+      "lines": [
+        { "text": "You stand on the {tier} tier today." },
+        { "text": "Higher tiers unlock unlimited marketplace publishes, premium registry verification, and multi-vendor protocol routing." }
+      ],
+      "choices": [
+        {
+          "label": "Open the pricing scrolls.",
+          "next": "upgrade_redirect",
+          "if": "vars.pricing_live === true",
+          "effects": [
+            {
+              "type": "emit_event",
+              "eventName": "nerium.pricing.open",
+              "payload": { "source": "treasurer_current_tier" }
+            }
+          ]
+        },
+        { "label": "Travel safe.", "next": "farewell" }
+      ]
+    },
+    "upgrade_redirect": {
+      "lines": [
+        { "text": "The pricing scrolls open in a new ledger window. Return when ready." }
+      ],
+      "effects": [
+        {
+          "type": "set_variable",
+          "scope": "dialogue",
+          "name": "treasurer_upgrade_initiated",
+          "value": true
+        }
+      ],
+      "next": "farewell"
+    },
+    "coming_soon": {
+      "lines": [
+        { "text": "Coming soon, traveler. The treasury opens when the next moon rises." },
+        { "text": "Return later. The ledger will be ready." }
+      ],
+      "choices": [
+        { "label": "Travel safe.", "next": "farewell" }
+      ]
+    },
+    "farewell": {
+      "lines": [
+        { "text": "Travel safe." }
+      ],
+      "effects": [
+        {
+          "type": "set_variable",
+          "scope": "dialogue",
+          "name": "treasurer_visited",
+          "value": true
+        }
+      ],
+      "end": true
+    }
+  }
+}

@@ -17,6 +17,7 @@ import { WorldSwitcher } from './worlds/WorldSwitcher';
 import blueprintFixture from './moment/fixtures/blueprint_lumio_2026_04_25.json';
 import type { BlueprintMomentDefinition } from './moment/types';
 import { HarnessShell } from '../_harness/HarnessShell';
+import { BuilderTierGate } from '../../src/components/builder/BuilderTierGate';
 
 export default function BuilderPage() {
   const definition = useMemo<BlueprintMomentDefinition>(
@@ -35,6 +36,26 @@ export default function BuilderPage() {
           World aesthetic
         </h2>
         <WorldSwitcher session_id="session_demo_builder" />
+      </section>
+
+      <section
+        style={{
+          marginBottom: '2rem',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '0.75rem',
+        }}
+      >
+        <BuilderTierGate
+          feature="Guided mode"
+          requiredTier="team"
+          description="Multi-vendor model orchestration with team review."
+        />
+        <BuilderTierGate
+          feature="Express mode"
+          requiredTier="pro"
+          description="Single prompt to production with priority routing."
+        />
       </section>
 
       <section style={{ marginBottom: '2rem' }}>

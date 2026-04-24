@@ -33,6 +33,7 @@ import ApolloStream from './ApolloStream';
 import { HeliosPipelineViz } from './ported/HeliosPipelineViz';
 import { QuestTracker } from '../game/QuestTracker';
 import { DialogueOverlay } from '../game/DialogueOverlay';
+import TierBadge from './TierBadge';
 
 export interface GameHUDProps {
   volumeSliderSlot?: ReactNode;
@@ -48,7 +49,11 @@ export function GameHUD({ volumeSliderSlot, minimapSlot }: GameHUDProps) {
         data-hud-role="game-hud-root"
       >
         <div className="col-span-2 row-start-1 pointer-events-auto">
-          <TopBar questTrackerSlot={<QuestTracker />} minimapSlot={minimapSlot} />
+          <TopBar
+            questTrackerSlot={<QuestTracker />}
+            minimapSlot={minimapSlot}
+            tierBadgeSlot={<TierBadge />}
+          />
         </div>
         <div
           className="col-start-1 row-start-2 pointer-events-none"

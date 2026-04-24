@@ -25,6 +25,7 @@ import {
   PRICING_LABELS,
   type ListingCardProps,
 } from './types';
+import { ListingTierLock } from '../../../src/components/marketplace/ListingTierLock';
 
 const cardShell: CSSProperties = {
   display: 'flex',
@@ -207,6 +208,7 @@ export function ListingCard({
           </span>
           {trust_band_hint && <TrustBandPill band={trust_band_hint} />}
           <VendorBadge vendor={listing.vendor_origin} />
+          <ListingTierLock pricingTier={listing.pricing_tier} />
         </div>
         <h3
           style={{
