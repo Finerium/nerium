@@ -29,8 +29,14 @@ def test_048_chains_off_047() -> None:
     assert module.down_revision == "047_marketplace_search"
 
 
-def test_048_is_the_new_head() -> None:
-    """No migration in the tree parents off 048. Regression guard."""
+def test_048_has_at_most_one_child() -> None:
+    """Ensure the 048 subtree stays linear with the next pillar revision.
+
+    Originally authored as "048 is the new head" when Astraea shipped.
+    Relaxed when Plutus landed ``049_subscription`` off 048. Still a
+    regression guard: if a second W2 migration branches off 048 we
+    want to know because parallel heads require an ``alembic merge``.
+    """
 
     children: list[str] = []
     for path in _VERSIONS.glob("*.py"):
@@ -42,9 +48,9 @@ def test_048_is_the_new_head() -> None:
         rev = getattr(module, "revision", None)
         if dr == "048_trust_score_snapshot" and rev != "048_trust_score_snapshot":
             children.append(rev)
-    assert children == [], (
-        "048_trust_score_snapshot must remain the head until the next "
-        "pillar revision lands. Found children: " + repr(children)
+    assert len(children) <= 1, (
+        "048_trust_score_snapshot must have at most one child to keep "
+        "the migration chain linear. Found children: " + repr(children)
     )
 
 

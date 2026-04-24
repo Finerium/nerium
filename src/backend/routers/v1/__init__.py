@@ -146,9 +146,19 @@ _PILLAR_REGISTRY: tuple[tuple[str, str, str], ...] = (
     # under ``/v1/admin/trust/*`` per docs/contracts/trust_score.contract.md.
     ("registry.trust", "src.backend.routers.v1.registry", "trust_router"),
     ("admin.trust", "src.backend.routers.v1.registry.trust", "admin_trust_router"),
+    # Plutus W2 NP P4 Session 1: Stripe billing surface. Four routers
+    # land under ``/v1/billing/*``:
+    #   - plans: public pricing catalogue (no auth).
+    #   - checkout: POST checkout session create (auth + Hemera gate).
+    #   - subscription: GET current subscription (auth).
+    #   - webhook: POST Stripe-signed webhook (Stripe-Signature header).
+    # Per docs/contracts/payment_stripe.contract.md.
+    ("billing.plans", "src.backend.routers.v1.billing", "plans_router"),
+    ("billing.checkout", "src.backend.routers.v1.billing", "checkout_router"),
+    ("billing.subscription", "src.backend.routers.v1.billing", "subscription_router"),
+    ("billing.webhook", "src.backend.routers.v1.billing", "webhook_router"),
     # Future W2 slots. Keeping the label namespace so Nemea can assert
     # pillars are mounted before their dependent tests run.
-    # ("billing.invoice", "src.backend.routers.v1.billing", "invoice_router"),
     # ("registry.identity", "src.backend.routers.v1.registry", "identity_router"),
 )
 

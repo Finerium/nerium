@@ -60,6 +60,13 @@ DEFAULT_PUBLIC_PATHS: tuple[str, ...] = (
     # Aether-owned router mount probe used by Nemea-RV-v2 E2E smoke
     # tests to verify the /v1 prefix is live. Returns no tenant data.
     "/v1/__placeholder",
+    # Plutus W2 NP P4 S1: public pricing catalogue + Stripe webhook.
+    # Plans is a static read (no DB, no tenant data) so the landing page
+    # renders for anonymous visitors. The webhook is signed by Stripe so
+    # it authenticates itself via the Stripe-Signature header inside the
+    # handler and does not ride the NERIUM bearer path.
+    "/v1/billing/plans",
+    "/v1/billing/webhook/stripe",
 )
 """Paths that bypass auth entirely. Docs + health probes + OpenAPI spec."""
 

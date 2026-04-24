@@ -301,6 +301,67 @@ class Settings(BaseSettings):
         description="httpx request timeout for Admin API calls.",
     )
 
+    # Plutus (W2 NP P4 S1) Stripe billing knobs. Test mode only pre-Atlas
+    # per Gate 4 lock. Live mode is gated on the Hemera
+    # ``billing.live_mode_enabled`` flag AND a non-empty live key; any
+    # shipped-code path that attempts to hit live endpoints without the
+    # flag flipped raises a 403 at the router. The test key here stays
+    # empty in the dev default so a fresh clone boots without any
+    # Stripe dashboard; consumers that need a real test session export
+    # ``NERIUM_STRIPE_SECRET_KEY_TEST`` before ``uvicorn``.
+    stripe_secret_key_test: SecretStr = Field(
+        default=SecretStr(""),
+        description=(
+            "Stripe TEST MODE secret key (sk_test_...). Empty = skip "
+            "Stripe init; any endpoint that needs the client raises 503. "
+            "Populate from the Stripe test dashboard."
+        ),
+    )
+    stripe_webhook_secret: SecretStr = Field(
+        default=SecretStr(""),
+        description=(
+            "Stripe webhook signing secret (whsec_...). Verified via "
+            "stripe.Webhook.construct_event on every POST /v1/billing/"
+            "webhook/stripe. Empty = reject every webhook with 401."
+        ),
+    )
+    stripe_api_version: str = Field(
+        default="2024-09-30.acacia",
+        description=(
+            "Stripe API version pin. Updated explicitly via ferry; "
+            "never auto-bumped at runtime."
+        ),
+    )
+    # Plan Price IDs. Free has no Stripe Price (handled entirely in-app).
+    # Populate from the Stripe dashboard test mode Prices tab.
+    stripe_price_id_starter: str = Field(
+        default="",
+        description=(
+            "Stripe Price id for the Starter tier (USD 19/month). Empty "
+            "allowed in dev; /v1/billing/checkout returns 503 if the "
+            "caller picks a tier whose price id is unset."
+        ),
+    )
+    stripe_price_id_pro: str = Field(
+        default="",
+        description="Stripe Price id for the Pro tier (USD 49/month).",
+    )
+    stripe_price_id_team: str = Field(
+        default="",
+        description="Stripe Price id for the Team tier (USD 149/month).",
+    )
+    stripe_success_url: str = Field(
+        default="https://nerium.com/billing/success",
+        description=(
+            "Default success_url passed to Stripe Checkout Sessions when "
+            "the caller omits the override."
+        ),
+    )
+    stripe_cancel_url: str = Field(
+        default="https://nerium.com/billing/cancel",
+        description="Default cancel_url for Stripe Checkout Sessions.",
+    )
+
     # --- Validators ---
 
     @field_validator("trusted_hosts", "cors_origins", mode="before")
