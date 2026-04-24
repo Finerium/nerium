@@ -1,0 +1,79 @@
+# ClamAV virus scan sidecar.
+#
+# Owner: Chione (W1 storage, NP phase). Contract:
+# docs/contracts/file_storage.contract.md Section 4.3.
+#
+# Runs on the same Hetzner CX32 as the NERIUM backend. Budget: ~2 GB RAM for
+# the virus signature database in memory. CX32 has 8 GB total; after Postgres
+# (1 GB), Redis (512 MB), GlitchTip stack (2 GB), and FastAPI (1 GB), ClamAV
+# fits inside the remaining headroom. If RAM pressure breaks the budget, the
+# documented halt-trigger fallback is to move virus scanning to a cloud
+# service (Cloudflare R2 virus scan beta or a Lambda-style hosted clamd).
+#
+# Bring up with:
+#
+#   docker compose -f ops/clamav/docker-compose.clamav.yml up -d
+#
+# First boot pulls the signature database (freshclam runs on container start),
+# which can take 2 to 5 minutes. The healthcheck probe waits for ``clamdscan
+# --version`` to succeed. Subsequent starts reuse the mounted volume and come
+# up in under 30 seconds.
+#
+# INSTREAM protocol is exposed on TCP 3310. The Arq scan worker connects via
+# the Docker DNS name ``clamav`` from the shared ``nerium`` network that the
+# Aether-owned root docker-compose.yml will define. When bringing up the
+# services together Aether's root compose should include this file via its
+# ``include:`` directive (Docker Compose v2.20+ syntax) or compose-merge via
+# ``-f`` chaining.
+#
+# Signature refresh: ClamAV's built-in freshclam daemon refreshes every 24 h
+# by default. No extra cron required. Submission-era baseline signatures are
+# sufficient for the submission demo.
+
+services:
+  clamav:
+    image: clamav/clamav:stable
+    container_name: nerium-clamav
+    restart: unless-stopped
+    ports:
+      # Bind to loopback only when the backend runs on the same host. In the
+      # Hetzner CX32 deployment the backend is another Docker service on the
+      # shared ``nerium`` network so the port exposure here is for local dev
+      # + for the Arq worker process running outside Docker during debugging.
+      - "127.0.0.1:3310:3310"
+    volumes:
+      # Persist the virus signature database across restarts so freshclam does
+      # not redownload the ~250 MB signature bundle on every container boot.
+      - clamav-db:/var/lib/clamav
+    environment:
+      # Disable freshclam verbose output to keep logs clean.
+      CLAMAV_NO_FRESHCLAMD: "false"
+      # Allow INSTREAM up to the per-upload cap (25 MB) so large archives can
+      # be scanned in one stream. ClamAV default is 25 MB; reassert here so
+      # the behaviour is explicit in the compose surface.
+      CLAMD_CONF_StreamMaxLength: "25M"
+    healthcheck:
+      # clamdscan returns zero when clamd responds with a protocol-valid pong.
+      test: ["CMD-SHELL", "clamdscan --version >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      # Signature DB download on first boot can take a few minutes; allow a
+      # generous start_period so the container is not marked unhealthy before
+      # freshclam completes.
+      start_period: 300s
+    mem_limit: 2g
+    networks:
+      - nerium
+
+volumes:
+  clamav-db:
+    name: nerium-clamav-db
+
+networks:
+  nerium:
+    # External network declared by Aether's root docker-compose.yml. If that
+    # root file has not shipped yet (pre-Aether-session-2) bring this stack up
+    # on its own with ``docker network create nerium`` first.
+    external: true
+    name: nerium

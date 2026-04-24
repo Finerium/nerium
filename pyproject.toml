@@ -18,7 +18,7 @@ dependencies = [
   "pydantic-settings>=2.6.0,<3.0.0",
 
   # Database
-  "asyncpg>=0.30.0,<0.31.0",
+  "asyncpg>=0.30.0,<0.32.0",
   "alembic>=1.14.0,<2.0.0",
   "sqlalchemy>=2.0.35,<2.1.0",
 
@@ -82,6 +82,20 @@ mcp = [
   # so the JWK (n, e) serialisation path in src/backend/auth/jwt_signer.py has a
   # known-good RSA primitive surface.
   "cryptography>=44.0.0,<46.0.0",
+]
+
+storage = [
+  # Chione consumes these for Cloudflare R2 presigned POST + GET signing and
+  # ClamAV INSTREAM scanning. Boto3 S3-compatible client is sufficient for R2's
+  # signature-v4 surface; no aioboto3 yet to keep the runtime slim (the Arq
+  # scan worker wraps sync R2 calls in asyncio.to_thread).
+  "boto3>=1.35.0,<2.0.0",
+  "botocore>=1.35.0,<2.0.0",
+  # python-magic detects MIME from actual bytes so the upload-complete handler
+  # can flag content-type spoofing per file_storage.contract Section 8.
+  # Libmagic must be installed at the OS level (brew install libmagic on macOS,
+  # apt install libmagic1 on Debian / Hetzner CX32).
+  "python-magic>=0.4.27,<0.5.0",
 ]
 
 [build-system]
