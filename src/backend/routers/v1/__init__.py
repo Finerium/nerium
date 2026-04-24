@@ -119,6 +119,10 @@ _PILLAR_REGISTRY: tuple[tuple[str, str, str], ...] = (
     # prefix (e.g. Eunomia's future SQLAdmin panel).
     ("admin.flags", "src.backend.routers.v1.admin", "flags_router"),
     ("me.flags", "src.backend.routers.v1.me", "flags_router"),
+    # Moros W2 NP P3 S1: Chronos budget daemon admin read endpoint.
+    # ``GET /v1/admin/budget/status`` surfaces the Redis state hash
+    # + Hemera-resolved caps so operators can triage cap events.
+    ("admin.budget", "src.backend.routers.v1.admin", "budget_router"),
     # Kratos W2 P2 Session 1: MA session CRUD. SSE stream endpoint
     # lands at the same prefix in Session 3.
     ("ma.sessions", "src.backend.routers.v1.ma", "sessions_router"),

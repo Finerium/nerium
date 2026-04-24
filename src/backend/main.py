@@ -162,6 +162,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             )
         flag_listener = await start_invalidation_listener()
 
+        # Moros (W2 NP P3 S1) idempotent flag seed. Creates the three
+        # budget flags if absent (ma.daily_budget_usd, ma.monthly_budget_usd,
+        # ma.budget_cap_threshold). Existing rows are never overwritten so
+        # admin tunings persist across restarts. The helper swallows DB
+        # errors so the API still boots on a fresh dev DB.
+        try:
+            from src.backend.budget.hemera_seed import ensure_moros_flags
+
+            await ensure_moros_flags()
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.warning("lifespan.flags.moros_seed_failed err=%s", exc)
+
         # Refresh MCP rate-limit policies now that Hemera DB values are
         # loaded. Khronos's boot-time registration used env-var fallback;
         # the refresh path reads the live default from the bootstrap

@@ -245,6 +245,62 @@ class Settings(BaseSettings):
     anthropic_api_key: SecretStr = Field(default=SecretStr(""))
     hemera_bootstrap_builder_live: bool = Field(default=False)
 
+    # Moros (Chronos budget daemon, NP P3 S1) knobs. The Admin API key
+    # is org-scoped (distinct from ``anthropic_api_key`` which is the
+    # runtime Messages API key used by Kratos). If unset the poller
+    # logs a warning and skips the cycle rather than crashing so the
+    # daemon degrades gracefully in dev / test harnesses.
+    anthropic_admin_api_key: SecretStr = Field(
+        default=SecretStr(""),
+        description=(
+            "Anthropic Admin API key (org-scoped) used by Moros to poll "
+            "``/v1/organizations/cost_report`` + ``/usage_report/messages``. "
+            "Empty = poller logs warn + skips cycle."
+        ),
+    )
+    anthropic_admin_api_base_url: str = Field(
+        default="https://api.anthropic.com",
+        description="Base URL for the Anthropic Admin API. Override in tests.",
+    )
+    chronos_poll_interval_seconds: int = Field(
+        default=600,
+        ge=60,
+        le=3600,
+        description=(
+            "Moros usage_api_poller cadence. Contract calls for 5 min "
+            "but the prompt directs 10 min default; keep the override knob "
+            "so ops can tune on the fly without redeploy."
+        ),
+    )
+    chronos_backoff_base_seconds: float = Field(
+        default=30.0,
+        gt=0.0,
+        le=600.0,
+        description="Exponential-backoff base delay when the Admin API errors.",
+    )
+    chronos_backoff_max_seconds: float = Field(
+        default=600.0,
+        gt=0.0,
+        le=3600.0,
+        description="Exponential-backoff ceiling for consecutive Admin API failures.",
+    )
+    chronos_consecutive_failure_alert: int = Field(
+        default=5,
+        ge=1,
+        le=50,
+        description=(
+            "Alert threshold. After this many back-to-back poll failures "
+            "Moros logs an ERROR and surfaces ``last_error`` via "
+            "``GET /v1/admin/budget/status``."
+        ),
+    )
+    chronos_admin_api_timeout_seconds: float = Field(
+        default=15.0,
+        gt=0.0,
+        le=120.0,
+        description="httpx request timeout for Admin API calls.",
+    )
+
     # --- Validators ---
 
     @field_validator("trusted_hosts", "cors_origins", mode="before")
