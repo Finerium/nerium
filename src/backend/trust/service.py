@@ -145,23 +145,58 @@ async def gather_listing_inputs(
 
     now = now or datetime.now(timezone.utc)
 
-    # Stopgap 1: rating proxy from trust_score_cached.
+    # Iapetus W2 NP P4 S1: real review data replaces the P1 stopgaps.
+    # The marketplace_review table is authored by migration 050; if the
+    # migration has not yet applied (or the aggregate query fails) we
+    # fall back to the P1 proxy path and keep the stopgap flag True.
+    review_aggregate_available = True
+    try:
+        from src.backend.commerce.review import aggregate_listing_reviews
+
+        aggregate = await aggregate_listing_reviews(
+            tenant_id=None,
+            listing_id=row["id"],
+            conn=conn,
+        )
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.warning(
+            "trust.listing.review_aggregate_failed listing_id=%s err=%s",
+            row["id"],
+            exc,
+        )
+        aggregate = None
+        review_aggregate_available = False
+
     cached_proxy = row["trust_score_cached"]
-    if cached_proxy is not None:
-        R = float(cached_proxy)
+
+    if aggregate is not None and aggregate.review_count > 0:
+        R = aggregate.rating_mean_normalised
+        review_count = aggregate.review_count
+        helpful_count = aggregate.helpful_count
+        flag_count = aggregate.flag_count
+        using_real_reviews = True
+        used_cached_proxy = False
     else:
-        R = 0.0  # Bayesian falls back to C when v=0.
+        # No reviews yet (legitimate zero). Inputs carry counts=0 so the
+        # Bayesian prior dominates + Wilson falls back to neutral 0.5;
+        # the new-agent boost still kicks in via age_days. The stopgap
+        # flag flips False because we DID source from the real table
+        # (absent rows count as a valid read); this matches the contract
+        # P2 exit criterion: review data source swap, not necessarily
+        # non-empty result.
+        R = float(cached_proxy) if cached_proxy is not None else 0.0
+        review_count = 0
+        helpful_count = 0
+        flag_count = 0
+        using_real_reviews = review_aggregate_available
+        used_cached_proxy = (
+            cached_proxy is not None and not review_aggregate_available
+        )
 
-    # Stopgap 2-3: review + helpful/flag counts synthesised at 0.
-    # A seed listing with a high ``trust_score_cached`` still rides the
-    # C baseline + new-agent boost; the review proxy alone does not
-    # feed v, so the Bayesian shrinkage keeps it conservative.
-    review_count = 0
-    helpful_count = 0
-    flag_count = 0
-
-    # Stopgap 4: verified flag := has an active agent_identity row for
-    # the creator. One creator with one active identity qualifies.
+    # Verified flag: unchanged from P1 (active agent_identity row in
+    # the tenant). Iapetus' next session tightens this to require at
+    # least one completed payout per contract Section 3.1; that
+    # refinement is post-P2.
     identity_row = await conn.fetchrow(
         """
         SELECT status
@@ -186,12 +221,14 @@ async def gather_listing_inputs(
     )
     meta: dict[str, Any] = {
         "stopgap": {
-            "review_proxy_from_trust_score_cached": cached_proxy is not None,
-            "review_count_synthesised_zero": True,
-            "helpful_flag_synthesised_zero": True,
+            "review_proxy_from_trust_score_cached": used_cached_proxy,
+            "review_count_synthesised_zero": not using_real_reviews,
+            "helpful_flag_synthesised_zero": not using_real_reviews,
             "verified_flag_from_identity_existence_only": verified_flag,
-            "iapetus_p2_pending": True,
+            "iapetus_p2_pending": not using_real_reviews,
         },
+        "using_real_review_data": using_real_reviews,
+        "review_aggregate_available": review_aggregate_available,
     }
     return row, inputs, meta
 
@@ -462,23 +499,58 @@ async def gather_creator_inputs(
         user_id,
     )
 
+    # Iapetus W2 NP P4 S1: per-listing review counts + sums flow into
+    # the aggregate weight. A listing with many reviews contributes
+    # more to the creator's R than a listing with none.
+    try:
+        from src.backend.commerce.review import aggregate_listing_reviews
+
+        aggregate_available = True
+    except ImportError:  # pragma: no cover - defensive
+        aggregate_available = False
+
     listings_summary: list[dict[str, Any]] = []
     total_weight = 0.0
     weighted_R = 0.0
+    total_helpful = 0
+    total_flag = 0
+    total_reviews = 0
     oldest_created_at: Optional[datetime] = None
 
     for listing in listing_rows:
-        R = float(listing["trust_score_cached"] or 0.0)
-        # Per-listing weight: 1 per listing. Iapetus P2 can boost this
-        # to review_count + 1 when the reviews table ships.
-        weight = 1.0
-        weighted_R += R * weight
+        R_cache = float(listing["trust_score_cached"] or 0.0)
+
+        if aggregate_available:
+            try:
+                agg = await aggregate_listing_reviews(
+                    tenant_id=None,
+                    listing_id=listing["id"],
+                    conn=conn,
+                )
+                if agg.review_count > 0:
+                    R_listing = agg.rating_mean_normalised
+                    weight = float(agg.review_count)
+                    total_helpful += agg.helpful_count
+                    total_flag += agg.flag_count
+                    total_reviews += agg.review_count
+                else:
+                    R_listing = R_cache
+                    weight = 1.0
+            except Exception:
+                R_listing = R_cache
+                weight = 1.0
+        else:
+            R_listing = R_cache
+            weight = 1.0
+
+        weighted_R += R_listing * weight
         total_weight += weight
         listings_summary.append(
             {
                 "listing_id": str(listing["id"]),
                 "category": str(listing["category"]),
-                "trust_score_cached": R,
+                "trust_score_cached": R_listing,
+                "review_weight": weight,
             }
         )
         if oldest_created_at is None or listing["created_at"] < oldest_created_at:
@@ -505,21 +577,23 @@ async def gather_creator_inputs(
 
     inputs = CategoryInputs(
         review_rating_mean_normalised=max(0.0, min(1.0, R_agg)),
-        review_count=int(total_weight),  # listing count stands in for review count
-        helpful_count=0,
-        flag_count=0,
+        review_count=total_reviews if total_reviews > 0 else int(total_weight),
+        helpful_count=total_helpful,
+        flag_count=total_flag,
         age_days=age_days,
         verified_flag=verified_flag,
     )
     meta: dict[str, Any] = {
         "stopgap": {
-            "listing_count_proxies_review_count": True,
-            "rating_aggregate_from_trust_score_cached": True,
+            "listing_count_proxies_review_count": total_reviews == 0,
+            "rating_aggregate_from_trust_score_cached": total_reviews == 0,
             "oldest_listing_age_used": oldest_created_at is not None,
-            "iapetus_p2_pending": True,
+            "iapetus_p2_pending": not aggregate_available,
         },
+        "using_real_review_data": aggregate_available and total_reviews > 0,
         "listing_count": len(listing_rows),
         "total_weight": total_weight,
+        "total_reviews": total_reviews,
     }
     return user_row, inputs, listings_summary, meta
 

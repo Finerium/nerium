@@ -162,8 +162,18 @@ def test_get_listing_trust_stale_cache_triggers_refresh(
         trust_score_cached=0.5,
     )
     # fetchrow sequence: read_cached (listing row, stale),
-    # gather_listing_inputs (listing row, identity row).
-    conn.fetchrow = AsyncMock(side_effect=[row_stale, row_gather, None])
+    # gather_listing_inputs (listing row, review aggregate, identity row).
+    # Iapetus W2 NP P4 S1 adds the review aggregate between the listing
+    # lookup and the identity SELECT.
+    empty_aggregate = {
+        "review_count": 0,
+        "rating_sum": 0,
+        "helpful_count": 0,
+        "flag_count": 0,
+    }
+    conn.fetchrow = AsyncMock(
+        side_effect=[row_stale, row_gather, empty_aggregate, None]
+    )
 
     token = hs256_jwt_factory(
         user_id=str(USER_ID), tenant_id=str(TENANT_ID), scopes=["read:self"]
@@ -300,7 +310,15 @@ def test_refresh_listing_trust_admin_success(
         trust_score_cached=0.8,
         created_at=datetime.now(timezone.utc) - timedelta(days=20),
     )
-    conn.fetchrow = AsyncMock(side_effect=[listing_row, {"status": "active"}])
+    empty_aggregate = {
+        "review_count": 0,
+        "rating_sum": 0,
+        "helpful_count": 0,
+        "flag_count": 0,
+    }
+    conn.fetchrow = AsyncMock(
+        side_effect=[listing_row, empty_aggregate, {"status": "active"}]
+    )
     conn.execute = AsyncMock(return_value="OK")
 
     token = hs256_jwt_factory(
@@ -333,7 +351,15 @@ def test_refresh_listing_trust_narrow_scope_passes(
         category="content",
         trust_score_cached=0.7,
     )
-    conn.fetchrow = AsyncMock(side_effect=[listing_row, None])
+    empty_aggregate = {
+        "review_count": 0,
+        "rating_sum": 0,
+        "helpful_count": 0,
+        "flag_count": 0,
+    }
+    conn.fetchrow = AsyncMock(
+        side_effect=[listing_row, empty_aggregate, None]
+    )
     conn.execute = AsyncMock(return_value="OK")
 
     token = hs256_jwt_factory(

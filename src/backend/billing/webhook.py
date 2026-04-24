@@ -62,6 +62,11 @@ logger = logging.getLogger(__name__)
 
 # Set of events the handler understands. Anything outside this set logs
 # at INFO and returns success so Stripe does not retry.
+#
+# Iapetus W2 NP P4 S1 extends with marketplace event types via the
+# commerce webhook hook (``src.backend.commerce.webhook``). The hook
+# module is imported lazily inside the dispatcher so a commerce-stack
+# outage does not break subscription webhook processing.
 HANDLED_EVENT_TYPES: frozenset[str] = frozenset(
     {
         "checkout.session.completed",
@@ -71,6 +76,10 @@ HANDLED_EVENT_TYPES: frozenset[str] = frozenset(
         "invoice.paid",
         "invoice.payment_failed",
         "charge.refunded",
+        # Marketplace commerce (Iapetus W2 NP P4 S1).
+        "payment_intent.succeeded",
+        "payment_intent.payment_failed",
+        "account.updated",
     }
 )
 
@@ -258,7 +267,24 @@ async def process_stripe_webhook(
                         event_id,
                     )
                 elif event_type == "charge.refunded":
+                    # Subscription-path refund: reverses the subscription
+                    # revenue entry. The marketplace hook also runs so a
+                    # refund on a marketplace purchase reverses the fee +
+                    # creator payable legs. Both are idempotent via
+                    # distinct ledger keys.
                     notes.extend(await _handle_charge_refunded(conn, event))
+                    notes.extend(
+                        await _run_commerce_hook(conn, event)
+                    )
+                elif event_type in (
+                    "payment_intent.succeeded",
+                    "payment_intent.payment_failed",
+                    "account.updated",
+                ):
+                    # Marketplace commerce events (Iapetus W2 NP P4 S1).
+                    notes.extend(
+                        await _run_commerce_hook(conn, event)
+                    )
                 else:
                     notes.append("unhandled_type")
                     logger.info(
@@ -501,6 +527,28 @@ def _event_to_dict(event: stripe.Event) -> dict[str, Any]:
     if callable(to_dict):
         return to_dict()
     return dict(event)
+
+
+async def _run_commerce_hook(
+    conn: Any,
+    event: stripe.Event,
+) -> list[str]:
+    """Delegate marketplace events to Iapetus' commerce hook.
+
+    Lazy import so a commerce-stack outage (import error) does not
+    break subscription webhook processing. Any hook exception bubbles
+    up so Stripe retries the event.
+    """
+
+    try:
+        from src.backend.commerce.webhook import handle_commerce_event
+    except ImportError:  # pragma: no cover - defensive
+        logger.info(
+            "billing.webhook.commerce_hook_missing type=%s", event["type"]
+        )
+        return ["commerce_hook_missing"]
+
+    return await handle_commerce_event(conn, event)
 
 
 def _event_object_to_dict(obj: Any) -> dict[str, Any]:

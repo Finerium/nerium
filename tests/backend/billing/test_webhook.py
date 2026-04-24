@@ -391,10 +391,17 @@ async def test_charge_refunded_posts_reversing_ledger(
     event = make_charge_refunded_event(amount_refunded=4900)
     _install_verifier(monkeypatch, event)
 
+    # Iapetus W2 NP P4 S1: charge.refunded now dispatches BOTH the
+    # subscription refund handler (Plutus) AND the commerce hook
+    # (Iapetus). The commerce hook runs mark_purchase_refunded which
+    # looks up by payment_intent_id; for a subscription-only charge
+    # the lookup returns None and the commerce branch records
+    # "commerce_refund_not_ours" without touching the ledger.
     conn.fetchrow = AsyncMock(
         side_effect=[
             {"id": uuid4()},  # event insert
-            {"id": uuid4()},  # ledger tx insert
+            {"id": uuid4()},  # ledger tx insert (subscription refund)
+            None,             # commerce mark_purchase_refunded lookup: not ours
         ]
     )
     conn.fetch = AsyncMock(
@@ -409,6 +416,7 @@ async def test_charge_refunded_posts_reversing_ledger(
         sig_header="t=1,v1=x",
     )
     assert "refund_posted" in result.notes
+    assert "commerce_refund_not_ours" in result.notes
 
 
 # ---------------------------------------------------------------------------

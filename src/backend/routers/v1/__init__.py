@@ -157,6 +157,19 @@ _PILLAR_REGISTRY: tuple[tuple[str, str, str], ...] = (
     ("billing.checkout", "src.backend.routers.v1.billing", "checkout_router"),
     ("billing.subscription", "src.backend.routers.v1.billing", "subscription_router"),
     ("billing.webhook", "src.backend.routers.v1.billing", "webhook_router"),
+    # Iapetus W2 NP P4 Session 1: marketplace commerce surface. Three
+    # routers land under ``/v1/commerce/*``:
+    #   - connect: POST onboard + refresh + GET status (Connect Express).
+    #   - purchase: POST /v1/commerce/purchase (PaymentIntent create).
+    #   - review:   CRUD under /v1/commerce/listings/.../reviews +
+    #               /v1/commerce/reviews.
+    # Marketplace Stripe webhook events (payment_intent.*, charge.refunded,
+    # account.updated) ride the existing Plutus webhook dispatcher via
+    # ``src.backend.commerce.webhook.handle_commerce_event`` so no
+    # separate webhook router is mounted.
+    ("commerce.connect", "src.backend.routers.v1.commerce", "connect_router"),
+    ("commerce.purchase", "src.backend.routers.v1.commerce", "purchase_router"),
+    ("commerce.review", "src.backend.routers.v1.commerce", "review_router"),
     # Future W2 slots. Keeping the label namespace so Nemea can assert
     # pillars are mounted before their dependent tests run.
     # ("registry.identity", "src.backend.routers.v1.registry", "identity_router"),

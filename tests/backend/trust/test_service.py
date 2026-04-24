@@ -65,9 +65,19 @@ async def test_gather_listing_inputs_surfaces_stopgap_markers(
         category="content",
         trust_score_cached=0.85,
     )
-    # First fetchrow returns the listing, the second the identity.
+    # Iapetus W2 NP P4 S1: gather_listing_inputs now pulls review data
+    # between the listing SELECT and the identity SELECT. The mock
+    # returns an empty aggregate (count=0) so the stopgap flips to
+    # False while the score falls back to the trust_score_cached
+    # proxy for the rating-mean bucket.
+    empty_aggregate = {
+        "review_count": 0,
+        "rating_sum": 0,
+        "helpful_count": 0,
+        "flag_count": 0,
+    }
     conn.fetchrow = AsyncMock(
-        side_effect=[listing_row, {"status": "active"}]
+        side_effect=[listing_row, empty_aggregate, {"status": "active"}]
     )
 
     row, inputs, meta = await trust_service.gather_listing_inputs(
@@ -75,17 +85,21 @@ async def test_gather_listing_inputs_surfaces_stopgap_markers(
     )
     assert row is listing_row
     assert inputs is not None
-    # R proxied from trust_score_cached.
+    # Empty aggregate falls back to the cached proxy for R.
     assert inputs.review_rating_mean_normalised == pytest.approx(0.85)
-    # Stopgaps synthesised at 0.
     assert inputs.review_count == 0
     assert inputs.helpful_count == 0
     assert inputs.flag_count == 0
     # Verified flag driven by identity row presence.
     assert inputs.verified_flag is True
-    # Meta stopgap dictionary flags Iapetus pending.
-    assert meta["stopgap"]["iapetus_p2_pending"] is True
+    # P1-to-P2 flip: the table read counted as sourcing from real data
+    # so iapetus_p2_pending is now False.
+    assert meta["stopgap"]["iapetus_p2_pending"] is False
     assert meta["stopgap"]["verified_flag_from_identity_existence_only"] is True
+    # Empty aggregate still sources from the real table so
+    # using_real_review_data is True (the meta flag tracks "table
+    # read succeeded", not "result non-empty").
+    assert meta["using_real_review_data"] is True
 
 
 @pytest.mark.asyncio
@@ -98,7 +112,16 @@ async def test_gather_listing_inputs_null_trust_cached_defaults_to_zero(
         tenant_id=TENANT_ID,
         trust_score_cached=None,
     )
-    conn.fetchrow = AsyncMock(side_effect=[listing_row, None])
+    # Iapetus W2 NP P4 S1: sequence is listing, aggregate, identity.
+    empty_aggregate = {
+        "review_count": 0,
+        "rating_sum": 0,
+        "helpful_count": 0,
+        "flag_count": 0,
+    }
+    conn.fetchrow = AsyncMock(
+        side_effect=[listing_row, empty_aggregate, None]
+    )
 
     row, inputs, meta = await trust_service.gather_listing_inputs(
         conn, listing_id=LISTING_ID
@@ -139,7 +162,15 @@ async def test_compute_listing_trust_returns_breakdown(fake_trust_pool) -> None:
         trust_score_cached=0.9,
         created_at=datetime.now(timezone.utc) - timedelta(days=30),
     )
-    conn.fetchrow = AsyncMock(side_effect=[listing_row, None])
+    empty_aggregate = {
+        "review_count": 0,
+        "rating_sum": 0,
+        "helpful_count": 0,
+        "flag_count": 0,
+    }
+    conn.fetchrow = AsyncMock(
+        side_effect=[listing_row, empty_aggregate, None]
+    )
 
     out = await trust_service.compute_listing_trust(
         listing_id=LISTING_ID, tenant_id=TENANT_ID
@@ -167,7 +198,15 @@ async def test_persist_listing_trust_writes_snapshot_and_cache(
         trust_score_cached=0.8,
         created_at=datetime.now(timezone.utc) - timedelta(days=15),
     )
-    conn.fetchrow = AsyncMock(side_effect=[listing_row, {"status": "active"}])
+    empty_aggregate = {
+        "review_count": 0,
+        "rating_sum": 0,
+        "helpful_count": 0,
+        "flag_count": 0,
+    }
+    conn.fetchrow = AsyncMock(
+        side_effect=[listing_row, empty_aggregate, {"status": "active"}]
+    )
     conn.execute = AsyncMock(return_value="OK")
 
     out = await trust_service.persist_listing_trust(
@@ -308,8 +347,21 @@ async def test_read_cached_listing_trust_stale_triggers_refresh(
         category="content",
         trust_score_cached=0.75,
     )
+    # Iapetus W2 NP P4 S1 adds an aggregate call between listing +
+    # identity, so the sequence has an extra empty-aggregate row.
+    empty_aggregate = {
+        "review_count": 0,
+        "rating_sum": 0,
+        "helpful_count": 0,
+        "flag_count": 0,
+    }
     conn.fetchrow = AsyncMock(
-        side_effect=[listing_row_stale, listing_row_for_gather, None]
+        side_effect=[
+            listing_row_stale,
+            listing_row_for_gather,
+            empty_aggregate,
+            None,
+        ]
     )
     conn.execute = AsyncMock(return_value="OK")
 
@@ -348,8 +400,14 @@ async def test_read_cached_listing_trust_null_cache_triggers_refresh(
         category="content",
         trust_score_cached=None,
     )
+    empty_aggregate = {
+        "review_count": 0,
+        "rating_sum": 0,
+        "helpful_count": 0,
+        "flag_count": 0,
+    }
     conn.fetchrow = AsyncMock(
-        side_effect=[never_scored, gather_row, None]
+        side_effect=[never_scored, gather_row, empty_aggregate, None]
     )
 
     payload = await trust_service.read_cached_listing_trust(
@@ -402,7 +460,23 @@ async def test_gather_creator_inputs_weighted_aggregate(fake_trust_pool) -> None
             "status": "published",
         },
     ]
-    conn.fetchrow = AsyncMock(side_effect=[user_row, {"status": "active"}])
+    # Iapetus W2 NP P4 S1: per-listing aggregate calls inject extra
+    # fetchrows between user_row and identity_row. With 2 listings we
+    # need 2 aggregate rows (empty) before the identity row.
+    empty_aggregate = {
+        "review_count": 0,
+        "rating_sum": 0,
+        "helpful_count": 0,
+        "flag_count": 0,
+    }
+    conn.fetchrow = AsyncMock(
+        side_effect=[
+            user_row,
+            empty_aggregate,  # listing 1 aggregate
+            empty_aggregate,  # listing 2 aggregate
+            {"status": "active"},
+        ]
+    )
     conn.fetch = AsyncMock(return_value=listings)
 
     user, inputs, summary, meta = await trust_service.gather_creator_inputs(
@@ -410,16 +484,17 @@ async def test_gather_creator_inputs_weighted_aggregate(fake_trust_pool) -> None
     )
     assert user is user_row
     assert inputs is not None
-    # Weighted aggregate (equal weight 1 per listing): (0.9 + 0.5)/2 = 0.7.
+    # Weighted aggregate (equal weight 1 per listing when aggregate
+    # empty): (0.9 + 0.5)/2 = 0.7.
     assert inputs.review_rating_mean_normalised == pytest.approx(0.7)
-    # Review count proxied from listing count.
+    # Review count proxied from listing count (aggregate empty).
     assert inputs.review_count == 2
     assert inputs.verified_flag is True
     # Oldest listing age used (60 days, well past cutoff -> no boost).
     assert inputs.age_days >= 60.0 - 0.5
     # Summary includes both listings.
     assert len(summary) == 2
-    # Stopgap flags present.
+    # Stopgap flags present (total_reviews == 0 so listing_count proxy).
     assert meta["stopgap"]["listing_count_proxies_review_count"] is True
     assert meta["listing_count"] == 2
 
@@ -462,7 +537,16 @@ async def test_persist_creator_trust_writes_snapshot_and_user_cache(
 ) -> None:
     conn = fake_trust_pool._test_conn
     user_row = make_user_trust_row(user_id=USER_ID, tenant_id=TENANT_ID)
-    conn.fetchrow = AsyncMock(side_effect=[user_row, {"status": "active"}])
+    empty_aggregate = {
+        "review_count": 0,
+        "rating_sum": 0,
+        "helpful_count": 0,
+        "flag_count": 0,
+    }
+    # user_row + 1 listing aggregate + identity_row.
+    conn.fetchrow = AsyncMock(
+        side_effect=[user_row, empty_aggregate, {"status": "active"}]
+    )
     conn.fetch = AsyncMock(
         return_value=[
             {
