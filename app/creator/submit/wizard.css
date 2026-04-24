@@ -1,0 +1,267 @@
+/*
+ * wizard.css
+ *
+ * Local styling for the creator submission wizard. Reuses the harness
+ * design tokens (--color-*, --radius-*) defined in app/_harness/harness.css
+ * so palette parity is automatic across the 3-world theme switch.
+ */
+
+.creator-wizard-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  color: var(--color-foreground, #e8e8ea);
+}
+
+.creator-wizard-stepper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border, #24244c);
+}
+
+.creator-wizard-step-pip {
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-pill, 9999px);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--color-border, #24244c);
+  background: color-mix(in oklch, var(--color-background, #06060c) 92%, transparent);
+  color: var(--color-foreground, #e8e8ea);
+  opacity: 0.72;
+}
+
+.creator-wizard-step-pip[data-active='true'] {
+  opacity: 1;
+  border-color: var(--color-accent, #00f0ff);
+  box-shadow: 0 0 0 1px var(--color-accent, #00f0ff);
+}
+
+.creator-wizard-step-pip[data-complete='true'] {
+  opacity: 0.95;
+  border-color: color-mix(in oklch, var(--color-accent, #00f0ff) 60%, transparent);
+}
+
+.creator-wizard-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border-radius: var(--radius-lg, 0.75rem);
+  border: 1px solid var(--color-border, #24244c);
+  background: color-mix(in oklch, var(--color-background, #06060c) 92%, var(--color-foreground, #e8e8ea) 8%);
+}
+
+.creator-wizard-heading {
+  margin: 0;
+  font-family: var(--font-family-heading, inherit);
+  font-size: 1.5rem;
+  letter-spacing: 0.01em;
+}
+
+.creator-wizard-sub {
+  margin: -0.5rem 0 0;
+  font-size: 0.95rem;
+  opacity: 0.75;
+}
+
+.creator-wizard-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.creator-wizard-footer-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.creator-wizard-btn {
+  appearance: none;
+  border: 1px solid var(--color-border, #24244c);
+  border-radius: var(--radius-md, 0.5rem);
+  background: transparent;
+  color: inherit;
+  padding: 0.55rem 1rem;
+  font: inherit;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.creator-wizard-btn:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--color-accent, #00f0ff) 12%, transparent);
+}
+
+.creator-wizard-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.creator-wizard-btn[data-variant='primary'] {
+  background: var(--color-accent, #00f0ff);
+  color: var(--color-background, #06060c);
+  border-color: var(--color-accent, #00f0ff);
+}
+
+.creator-wizard-btn[data-variant='primary']:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.creator-wizard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.creator-wizard-option {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border, #24244c);
+  border-radius: var(--radius-md, 0.5rem);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.creator-wizard-option:hover {
+  border-color: color-mix(in oklch, var(--color-accent, #00f0ff) 50%, transparent);
+}
+
+.creator-wizard-option[data-selected='true'] {
+  border-color: var(--color-accent, #00f0ff);
+  background: color-mix(in oklch, var(--color-accent, #00f0ff) 10%, transparent);
+}
+
+.creator-wizard-option-title {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.creator-wizard-option-sub {
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.creator-wizard-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.creator-wizard-field-label {
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.creator-wizard-input,
+.creator-wizard-textarea,
+.creator-wizard-select {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  background: color-mix(in oklch, var(--color-background, #06060c) 80%, transparent);
+  border: 1px solid var(--color-border, #24244c);
+  border-radius: var(--radius-md, 0.5rem);
+  color: inherit;
+  font: inherit;
+}
+
+.creator-wizard-textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+
+.creator-wizard-input:focus,
+.creator-wizard-textarea:focus,
+.creator-wizard-select:focus {
+  outline: 2px solid var(--color-accent, #00f0ff);
+  outline-offset: 1px;
+}
+
+.creator-wizard-error {
+  color: var(--color-warning, #facc15);
+  font-size: 0.85rem;
+}
+
+.creator-wizard-help {
+  font-size: 0.85rem;
+  opacity: 0.65;
+}
+
+.creator-wizard-save-indicator {
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+  opacity: 0.8;
+}
+
+.creator-wizard-save-indicator[data-state='saving'] {
+  color: color-mix(in oklch, var(--color-accent, #00f0ff) 85%, white 15%);
+}
+
+.creator-wizard-save-indicator[data-state='saved'] {
+  color: color-mix(in oklch, var(--color-accent, #00f0ff) 55%, white 45%);
+}
+
+.creator-wizard-save-indicator[data-state='error'] {
+  color: var(--color-warning, #facc15);
+}
+
+.creator-wizard-preview-card {
+  border: 1px solid var(--color-border, #24244c);
+  border-radius: var(--radius-md, 0.5rem);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.creator-wizard-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.creator-wizard-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-pill, 9999px);
+  background: color-mix(in oklch, var(--color-accent, #00f0ff) 18%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-accent, #00f0ff) 35%, transparent);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.creator-wizard-asset-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border, #24244c);
+  border-radius: var(--radius-md, 0.5rem);
+}
+
+.creator-wizard-scan-badge[data-state='pending'] {
+  color: var(--color-warning, #facc15);
+}
+
+.creator-wizard-scan-badge[data-state='clean'] {
+  color: color-mix(in oklch, var(--color-accent, #00f0ff) 55%, white 45%);
+}
+
+.creator-wizard-scan-badge[data-state='infected'],
+.creator-wizard-scan-badge[data-state='error'] {
+  color: var(--color-danger, #ff6b6b);
+}

@@ -48,6 +48,7 @@ from src.backend.errors import (
 )
 from src.backend.flags.service import get_flag
 from src.backend.marketplace import queries
+from src.backend.marketplace.events import emit_listing_submitted
 from src.backend.marketplace.validator import (
     ValidationIssue,
     validate_category_metadata,
@@ -643,6 +644,19 @@ async def publish_listing(
         listing_id,
         updated["version"],
     )
+
+    # Emit ``marketplace.listing.submitted`` for P6 Eunomia's moderation
+    # queue. The stub logs + buffers the event; the real consumer lands
+    # with Eunomia. Any failure is swallowed inside the emitter so the
+    # publish path stays flag-safe even when observability is degraded.
+    try:
+        await emit_listing_submitted(
+            listing_id=listing_id, actor_user_id=user_id
+        )
+    except Exception:  # pragma: no cover - emitter swallows its own errors
+        logger.exception(
+            "marketplace.listing.submitted_emit_failed id=%s", listing_id
+        )
     return row_to_detail(updated)
 
 
