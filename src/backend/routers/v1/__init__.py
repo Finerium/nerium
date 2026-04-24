@@ -170,6 +170,15 @@ _PILLAR_REGISTRY: tuple[tuple[str, str, str], ...] = (
     ("commerce.connect", "src.backend.routers.v1.commerce", "connect_router"),
     ("commerce.purchase", "src.backend.routers.v1.commerce", "purchase_router"),
     ("commerce.review", "src.backend.routers.v1.commerce", "review_router"),
+    # Eunomia W2 NP P6 Session 1: admin ops surface.
+    #   - admin.moderation: ``/v1/admin/moderation/listings`` queue +
+    #     approve/reject routes. Scope: admin / admin:moderation.
+    #   - me.gdpr: ``/v1/me/gdpr/export`` + ``/v1/me/gdpr/delete``.
+    #   - me.consent: ``POST /v1/me/consent`` +
+    #     ``GET /v1/me/consent/history``.
+    ("admin.moderation", "src.backend.routers.v1.admin", "moderation_router"),
+    ("me.gdpr", "src.backend.routers.v1.me", "gdpr_router"),
+    ("me.consent", "src.backend.routers.v1.me", "consent_router"),
     # Future W2 slots. Keeping the label namespace so Nemea can assert
     # pillars are mounted before their dependent tests run.
     # ("registry.identity", "src.backend.routers.v1.registry", "identity_router"),

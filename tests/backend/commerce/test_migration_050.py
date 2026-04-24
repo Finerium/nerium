@@ -29,9 +29,17 @@ def test_050_revision_chains_off_049() -> None:
     assert module.down_revision == "049_subscription"
 
 
-def test_050_is_current_head() -> None:
-    """No other migration chains off 050 at authoring time."""
+def test_050_has_at_most_one_child() -> None:
+    """050 must not fork the chain.
 
+    Iapetus P4 S1 originally asserted zero children (050 as head).
+    Eunomia P6 S1 chains 051 off 050 as the canonical successor so the
+    allow-list now tolerates the single expected child name. Any
+    additional sibling (concurrent migration stomp) still trips this
+    guard.
+    """
+
+    allowed_children = {"051_eunomia_admin_moderation_gdpr"}
     children: list[str] = []
     for path in _VERSIONS.glob("*.py"):
         if path.name.startswith("__"):
@@ -42,9 +50,10 @@ def test_050_is_current_head() -> None:
         rev = getattr(module, "revision", None)
         if dr == "050_marketplace_commerce" and rev != "050_marketplace_commerce":
             children.append(rev)
-    assert children == [], (
-        "050 must be the current single head at S1 submission. Found children: "
-        + repr(children)
+    extras = [child for child in children if child not in allowed_children]
+    assert extras == [], (
+        "050 may only have the Eunomia 051 successor; unexpected children: "
+        + repr(extras)
     )
 
 

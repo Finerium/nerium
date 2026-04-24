@@ -10,5 +10,6 @@ from __future__ import annotations
 
 from src.backend.routers.v1.admin.budget import router as budget_router
 from src.backend.routers.v1.admin.flags import router as flags_router
+from src.backend.routers.v1.admin.moderation import router as moderation_router
 
-__all__ = ["budget_router", "flags_router"]
+__all__ = ["budget_router", "flags_router", "moderation_router"]
