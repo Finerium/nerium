@@ -1,0 +1,23 @@
+{
+  "rule_name": "allow_anthropic_egress_on_mcp",
+  "description": "Restrict /mcp and /mcp/* ingress to the Anthropic egress CIDR block. Non-Anthropic source IPs receive 403 at the Cloudflare edge before reaching the Hetzner origin.",
+  "zone": "nerium.com",
+  "owner_agent": "khronos",
+  "contract_ref": "docs/contracts/mcp_server.contract.md Section 4.4",
+  "apply_via": "Cloudflare dashboard - Security - WAF - Custom rules",
+  "ghaisan_manual_apply": true,
+  "rule_expression": "(http.request.uri.path eq \"/mcp\" or starts_with(http.request.uri.path, \"/mcp/\")) and not ip.src in {160.79.104.0/21}",
+  "action": "block",
+  "fallback_flag": {
+    "name": "mcp.edge_allowlist_disabled",
+    "owner": "hemera",
+    "default": false,
+    "effect": "When true, the WAF rule is disabled in the dashboard so demo recording + manual staging tests reach the origin. Revert to false before submission per honest-claim discipline."
+  },
+  "notes": [
+    "Anthropic's public documentation lists 160.79.104.0/21 as the egress CIDR for Claude.ai custom connector fetches as of April 2026. Check the CIDR list before each submission: https://docs.anthropic.com/en/api/ip-addresses.",
+    "Cloudflare free tier allows one custom WAF rule. This rule consumes it; secondary rate limiting runs on the origin via src/backend/middleware/rate_limit.py.",
+    "Add a second rule only when a paid Cloudflare plan is active. Coordinate with Plutus before upgrading the Cloudflare plan (the cost hits the platform operating budget, not the Anthropic API credit pool).",
+    "For local Playwright + curl testing, temporarily set Hemera flag mcp.edge_allowlist_disabled=true or test via the Cloudflare development mode toggle. Both paths log the exception and must be reverted before the demo recording."
+  ]
+}

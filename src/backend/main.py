@@ -188,10 +188,20 @@ def _install_middleware(app: FastAPI, settings: Settings) -> None:
     # 7) Tenant binding (innermost). Runs LAST on request path.
     install_tenant_binding(app)
 
-    # 6) Auth.
-    install_auth(app, settings=settings)
+    # 6) Auth. Khronos injects the RS256 / JWKS verifier so bearer tokens
+    # minted via the OAuth DCR flow (src/backend/auth/) validate against
+    # the rotating JWKS. Aether's HS256 fallback remains available in the
+    # verifier module but is not wired in production.
+    from src.backend.mcp.auth import khronos_rs256_verifier
 
-    # 5) Rate limit.
+    install_auth(app, settings=settings, verifier=khronos_rs256_verifier)
+
+    # 5) Rate limit. Khronos registers per-path policies for /mcp and
+    # /oauth before the middleware dispatches so the first request gets
+    # the right bucket.
+    from src.backend.middleware.rate_limit_mcp import register_mcp_rate_limit_policies
+
+    register_mcp_rate_limit_policies()
     install_rate_limit(app)
 
     # 4) Access log (Selene).

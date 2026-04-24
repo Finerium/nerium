@@ -2,10 +2,11 @@
 
 Contract: ``docs/contracts/mcp_server.contract.md`` Section 3.1.
 
-Module-level FastMCP singleton so Session 2 tool modules can decorate via
-``@mcp_server.tool()``. ``mount_mcp(app)`` wires the ASGI sub-app at
-``/mcp``. Aether calls this inside ``create_app`` after middleware is
-installed.
+Module-level FastMCP singleton so the ``src.backend.mcp.tools`` package
+can decorate tool handlers via ``@mcp_server().tool()``. ``mount_mcp(app)``
+registers the handlers (import triggers decoration), wraps the ASGI
+sub-app with :class:`~src.backend.mcp.auth.McpPrincipalBridgeMiddleware`,
+and mounts it at ``/mcp``. Aether calls this inside ``create_app``.
 
 Version probing: we try ``mcp_server.streamable_http_app()`` (FastMCP
 >= 1.6) first, then fall back to ``create_streamable_http_app`` on older
@@ -66,12 +67,48 @@ def _resolve_streamable_http_factory() -> Callable[[Any], Any]:
         ) from exc
 
 
+def register_mcp_tools() -> None:
+    """Import the tools package so each handler's @tool() decorator runs.
+
+    Deferred import is critical: the tools package imports back from this
+    module to grab the ``mcp_server()`` singleton, so eager import at the
+    top of this module would create a circular dependency.
+    """
+
+    from src.backend.mcp.auth import McpPrincipalBridgeMiddleware  # noqa: F401
+    from src.backend.mcp import tools  # noqa: F401 - side-effect import
+
+    log.info(
+        "mcp.tools.registered",
+        extra={
+            "event": "mcp.tools.registered",
+            "tool_count": len(tools.REGISTERED_TOOL_MODULES),
+        },
+    )
+
+
 def mount_mcp(app: "FastAPI") -> None:
-    """Mount the FastMCP Streamable HTTP server at ``/mcp`` on the FastAPI app."""
+    """Mount the FastMCP Streamable HTTP server at ``/mcp`` on the FastAPI app.
+
+    Side effect order:
+
+    1. Import + register all tool modules (``@mcp_server().tool()`` decorators).
+    2. Resolve the Streamable HTTP ASGI factory for the installed FastMCP.
+    3. Wrap the ASGI app with
+       :class:`~src.backend.mcp.auth.McpPrincipalBridgeMiddleware` so tool
+       handlers see the :class:`AuthPrincipal` via
+       :func:`current_mcp_principal`.
+    4. Mount at ``/mcp``.
+    """
+
+    register_mcp_tools()
+
+    from src.backend.mcp.auth import McpPrincipalBridgeMiddleware
 
     factory = _resolve_streamable_http_factory()
     asgi_app = factory(mcp_server())
-    app.mount("/mcp", asgi_app)
+    bridged = McpPrincipalBridgeMiddleware(asgi_app)
+    app.mount("/mcp", bridged)
     log.info(
         "mcp.server.mounted",
         extra={"event": "mcp.server.mounted", "path": "/mcp"},
