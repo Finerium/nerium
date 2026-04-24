@@ -129,6 +129,22 @@ export function BusBridge(): null {
           }
           break;
         }
+        case 'game.dialogue.node_entered': {
+          // Translate the DialogueOverlay node entry signal into the quest
+          // FSM trigger shape. Epimetheus W0 B4 fix: without this case,
+          // lumio_onboarding steps 1, 3, 8 (each gated on dialogue_node_reached)
+          // stall indefinitely in the live app.
+          const dialogueId = typeof payload.dialogueId === 'string' ? payload.dialogueId : null;
+          const nodeId = typeof payload.nodeId === 'string' ? payload.nodeId : null;
+          if (dialogueId && nodeId) {
+            questStore.getState().fireTrigger({
+              type: 'dialogue_node_reached',
+              dialogueId,
+              nodeId,
+            });
+          }
+          break;
+        }
         case 'nerium.ui.model_changed':
         case 'nerium.ui.language_changed':
         default:
