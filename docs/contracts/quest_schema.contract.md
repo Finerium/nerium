@@ -1,10 +1,11 @@
 # Quest Schema
 
-**Contract Version:** 0.1.0
-**Owner Agent(s):** Nyx (quest state owner, authors quest JSON files plus questStore action surface)
-**Consumer Agent(s):** Linus (dialogue choice effects call `fireTrigger`), Thalia-v2 (Phaser scene events bubble through bridge to `fireTrigger`), Erato-v2 (QuestTracker HUD renders active steps plus rewards), Euterpe (quest trigger events map to sfx cues), Harmonia-RV-A (integration check quest to dialogue to inventory handoff)
-**Stability:** draft
-**Last Updated:** 2026-04-23 (RV Day 0, Pythia-v2 round 2)
+**Contract Version:** 0.2.0
+**Owner Agent(s):** Nyx (quest state owner). Pythia-v3 amended at NP round 3 for scene transition trigger + extended effect set.
+**Consumer Agent(s):** Linus (dialogue choice effects call `fireTrigger`), Thalia-v2 / Helios-v2 (Phaser scene events bubble through bridge to `fireTrigger`), Erato-v2 (QuestTracker HUD on non-`/play` routes only per NP pivot), Euterpe (quest trigger events map to sfx cues), Boreas (chat command `/quest` surfaces status), Harmonia-RV-A / Harmonia-v3 (integration check), Epimetheus (W0 bridge consumes EffectSchema full 11-branch switch per `agent_orchestration_runtime.contract.md` Section 2 B3 fix)
+**Stability:** stable for NP
+**Last Updated:** 2026-04-24 (NP Wave 1, Pythia-v3 round 3 amendment)
+**Changelog v0.2.0:** Added `scene_transition` trigger type for cross-scene quest progression (Apollo Village → Caravan Road → Cyberpunk Shanghai). Added `chat_message` trigger for prompt-based quests via Boreas chat. Added `scene_change` effect for quest-driven world transition. Expanded `EffectSchema` branches total to 13 (added `scene_change` + `request_ma_session`). Bridge consumer (gameBridge effect router) MUST handle all 13 branches per Epimetheus W0 B3 fix.
 
 ## 1. Purpose
 
@@ -50,6 +51,11 @@ export const TriggerSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('quest_complete'), questId: z.string() }),
   z.object({ type: z.literal('timer_elapsed'), ms: z.number().int().nonnegative() }),
   z.object({ type: z.literal('dialogue_node_reached'), dialogueId: z.string(), nodeId: z.string() }),
+  // NP v0.2.0 additions
+  z.object({ type: z.literal('scene_transition'), from: z.string(), to: z.string() }),
+  z.object({ type: z.literal('chat_message'), minChars: z.number().int().positive().optional(), containsAny: z.array(z.string()).optional() }),
+  z.object({ type: z.literal('ma_session_completed'), sessionIdPrefix: z.string().optional(), stopReason: z.string().optional() }),
+  z.object({ type: z.literal('tier_changed'), tierFrom: z.enum(['free','solo','team','enterprise']).optional(), tierTo: z.enum(['free','solo','team','enterprise']).optional() }),
 ]);
 export type Trigger = z.infer<typeof TriggerSchema>;
 
@@ -81,6 +87,9 @@ export const EffectSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('complete_quest'), questId: z.string() }),
   z.object({ type: z.literal('fail_quest'), questId: z.string(), reason: z.string() }),
   z.object({ type: z.literal('push_toast'), kind: z.enum(['inventory', 'quest', 'currency', 'info', 'warning']), message: z.string(), dismissAfterMs: z.number().int().positive().default(3000) }),
+  // NP v0.2.0 additions
+  z.object({ type: z.literal('scene_change'), sceneKey: z.string(), transitionMs: z.number().int().nonnegative().default(500) }),
+  z.object({ type: z.literal('request_ma_session'), promptTemplate: z.string(), model: z.enum(['claude-opus-4-7','claude-sonnet-4-6','claude-haiku-4-5']).default('claude-opus-4-7'), budgetUsdCap: z.number().positive().default(5.0), tools: z.array(z.string()).default([]) }),
 ]);
 export type Effect = z.infer<typeof EffectSchema>;
 

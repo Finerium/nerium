@@ -1,10 +1,11 @@
 # Game State (Zustand Stores)
 
-**Contract Version:** 0.1.0
-**Owner Agent(s):** Pythia-v2 (cross-agent authority for store shape). Per-store authorities: Nyx (questStore), Linus (dialogueStore), Erato-v2 (uiStore plus inventoryStore surface), Euterpe (audioStore)
-**Consumer Agent(s):** Nyx (reads plus writes questStore), Linus (reads plus writes dialogueStore), Erato-v2 (reads all five stores through narrow selectors for HUD rendering), Thalia-v2 (reads questStore plus uiStore via `getState()` inside scenes, writes via bridge), Hesperus (reads uiStore for chrome rendering), Euterpe (reads plus writes audioStore), Harmonia-RV-A (integration check across stores), Kalypso (reads none, writes none)
-**Stability:** draft
-**Last Updated:** 2026-04-23 (RV Day 0, Pythia-v2 round 2)
+**Contract Version:** 0.2.0
+**Owner Agent(s):** Pythia-v3 (cross-agent authority for store shape, NP round 3 amendment). Per-store authorities: Nyx (questStore), Linus (dialogueStore), Erato-v2 (uiStore plus inventoryStore surface, DEPRECATED on `/play` per NP Gate 5 pivot), Euterpe (audioStore), Boreas (chatStore, NP W3), Helios-v2 (useGameStore, NP W3 top-level authoritative store)
+**Consumer Agent(s):** Nyx (reads plus writes questStore), Linus (reads plus writes dialogueStore), Erato-v2 (reads stores on non-`/play` routes only), Thalia-v2 / Helios-v2 (reads via `getState()` inside scenes, writes via bridge), Hesperus (DEPRECATED on `/play`), Euterpe (reads plus writes audioStore), Boreas (owns chatStore, reads useGameStore.chatMode for focus arbitration), Harmonia-RV-A (integration check across stores), Harmonia-v3 (NP round 3 integration check), Epimetheus (Wave 0 bridge consolidates duplicate singleton per Section 4.2)
+**Stability:** stable for NP
+**Last Updated:** 2026-04-24 (NP Wave 1, Pythia-v3 round 3 amendment)
+**Changelog v0.2.0:** Added `useGameStore` (6th store, Helios-v2 authority) covering player position + facing + currentScene + chatMode top-level fields. Added `useChatStore` (7th store, Boreas authority) for Minecraft chat UIScene per `chat_ui.contract.md`. Documented Epimetheus W0 bridge re-export consolidation at Section 4.6. DEPRECATED Erato-v2 React HUD stores on `/play` route (components + stores preserved for non-`/play` routes).
 
 ## 1. Purpose
 
@@ -143,7 +144,92 @@ export interface UIStore {
 }
 ```
 
-### 3.5 audioStore (Euterpe authority)
+### 3.5 useGameStore (Helios-v2 authority, NP v0.2.0)
+
+Top-level authoritative store for player + scene + chat mode coordination. Distinct from the domain-scoped stores (quest/dialogue/inventory/ui/audio/chat) to provide a single source of truth for cross-system state that Phaser scenes + focus arbitration + Playwright test hooks all read.
+
+```typescript
+export type ChatMode = 'movement' | 'chat' | 'dialogue';
+
+export type SceneKey =
+  | 'BootScene'
+  | 'PreloadScene'
+  | 'ApolloVillageScene'
+  | 'CaravanRoadScene'
+  | 'CyberpunkShanghaiScene'
+  | 'SteampunkStubScene'
+  | 'UIScene';
+
+export type Facing = 'up' | 'down' | 'left' | 'right';
+
+export interface PlayerState {
+  x: number;
+  y: number;
+  facing: Facing;
+  speed_px_s: number;                                 // default 96
+}
+
+export interface GameStore {
+  player: PlayerState;
+  currentScene: SceneKey;
+  chatMode: ChatMode;
+  isPaused: boolean;
+  debug: boolean;
+  setPlayer: (update: Partial<PlayerState>) => void;
+  setCurrentScene: (scene: SceneKey) => void;
+  setChatMode: (mode: ChatMode) => void;
+  setPaused: (paused: boolean) => void;
+  toggleDebug: () => void;
+}
+```
+
+Accessed from Phaser scenes via `useGameStore.getState()` and updated via `setPlayer` on scene shutdown:
+
+```typescript
+this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+  useGameStore.getState().setPlayer({
+    x: this.player.x,
+    y: this.player.y,
+    facing: this.player.facing,
+  });
+  useGameStore.getState().setCurrentScene(nextSceneKey);
+});
+```
+
+### 3.6 chatStore (Boreas authority, NP v0.2.0)
+
+Chat UIScene state. Separate from `dialogueStore` (which governs in-world NPC dialogue trees). `chatStore` is the Minecraft chat surface driving MA session streams + slash commands per `chat_ui.contract.md`.
+
+```typescript
+export interface ChatMessage {
+  id: string;                                          // uuid v7
+  role: 'user' | 'assistant' | 'system' | 'command';
+  content: string;
+  timestamp: string;
+  session_id?: string;
+  streaming?: boolean;
+  cost_usd?: number;
+}
+
+export interface ChatStore {
+  messages: ChatMessage[];
+  input: string;
+  history: string[];                                   // last 100 user inputs
+  history_index: number;
+  streaming_buffer: Record<string, string>;            // session_id → accumulated delta
+  active_session_id: string | null;
+  appendMessage: (msg: ChatMessage) => void;
+  appendDelta: (session_id: string, delta: string) => void;
+  finishStream: (session_id: string) => void;
+  setInput: (s: string) => void;
+  pushHistory: (s: string) => void;
+  recallHistory: (direction: -1 | 1) => string;
+  clearMessages: () => void;
+  setActiveSession: (session_id: string | null) => void;
+}
+```
+
+### 3.7 audioStore (Euterpe authority)
 
 ```typescript
 export interface AudioStore {
@@ -169,7 +255,13 @@ export interface AudioStore {
 ## 4. Interface / API Contract
 
 ```typescript
-// src/state/stores.ts
+// src/stores/questStore.ts          (Nyx authority, canonical)
+// src/stores/dialogueStore.ts       (Linus authority, canonical)
+// src/stores/inventoryStore.ts      (Erato-v2 authority, used non-/play routes only per NP pivot)
+// src/stores/uiStore.ts             (Erato-v2 authority, used non-/play routes only per NP pivot)
+// src/stores/audioStore.ts          (Euterpe authority)
+// src/stores/gameStore.ts           (Helios-v2 authority, NP v0.2.0 NEW)
+// src/stores/chatStore.ts           (Boreas authority, NP v0.2.0 NEW)
 
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
@@ -179,6 +271,8 @@ export const useDialogueStore = create<DialogueStore>()(subscribeWithSelector((s
 export const useInventoryStore = create<InventoryStore>()(subscribeWithSelector((set, get) => ({ /* ... */ })));
 export const useUIStore = create<UIStore>()(subscribeWithSelector((set, get) => ({ /* ... */ })));
 export const useAudioStore = create<AudioStore>()(subscribeWithSelector((set, get) => ({ /* ... */ })));
+export const useGameStore = create<GameStore>()(subscribeWithSelector((set, get) => ({ /* ... */ })));  // NP v0.2.0
+export const useChatStore = create<ChatStore>()(subscribeWithSelector((set, get) => ({ /* ... */ })));  // NP v0.2.0
 ```
 
 - Every store uses `subscribeWithSelector` middleware. No exceptions.
@@ -186,6 +280,28 @@ export const useAudioStore = create<AudioStore>()(subscribeWithSelector((set, ge
 - Phaser scenes read via `useQuestStore.getState()` and subscribe via `useQuestStore.subscribe(selector, callback, { fireImmediately: false })` per `zustand_bridge.contract.md`. Cleanup on `Phaser.Scenes.Events.SHUTDOWN` is mandatory.
 - Mutating actions accept plain serializable arguments only (primitives, plain objects, arrays). No class instances, no functions, no DOM nodes, no Phaser.GameObject references passed into store state.
 - Derived state (e.g., "is Apollo an ally?", "current quest progress percent") is computed in selectors or components, not cached in the store.
+
+### 4.6 Epimetheus W0 bridge consolidation (v0.2.0 amendment)
+
+Harmonia-RV-A identified duplicate divergent `useQuestStore` + `useDialogueStore` singletons in `src/state/stores.ts` (inline `create<QuestStore>()(...)` blocks) alongside the canonical `src/stores/questStore.ts` + `src/stores/dialogueStore.ts` files. Bridge subscribers and Phaser scenes resolved inconsistent state depending on import path.
+
+**Resolution (Epimetheus W0):** Replace the inline `create` blocks in `src/state/stores.ts` with re-export shims:
+
+```typescript
+// src/state/stores.ts (post-consolidation)
+
+export { useQuestStore } from '../stores/questStore';
+export { useDialogueStore } from '../stores/dialogueStore';
+export { useInventoryStore } from '../stores/inventoryStore';
+export { useUIStore } from '../stores/uiStore';
+export { useAudioStore } from '../stores/audioStore';
+export { useGameStore } from '../stores/gameStore';             // NP v0.2.0
+export { useChatStore } from '../stores/chatStore';             // NP v0.2.0
+```
+
+Every downstream import site (grep `useQuestStore|useDialogueStore|useInventoryStore|useUIStore|useAudioStore|useGameStore|useChatStore` across `src/`) MUST resolve to the canonical `src/stores/*.ts` singleton post-Epimetheus. Zustand bridge + Phaser scenes + React HUD all subscribe to the same instance.
+
+Mirror pattern from existing audio re-export. Verified via Nemea-RV-v2 re-run expected 23/23 green.
 
 ## 5. Event Signatures
 

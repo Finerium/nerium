@@ -1,10 +1,11 @@
 # Game Event Bus (Phaser `game.events`)
 
-**Contract Version:** 0.1.0
-**Owner Agent(s):** Thalia-v2 (primary emitter from Phaser scene layer). Secondary emitters: Erato-v2 (React HUD interactions), Nyx (quest lifecycle), Linus (dialogue lifecycle), Euterpe (audio cue echo)
-**Consumer Agent(s):** Nyx (subscribes to trigger-yielding events), Linus (subscribes to dialogue advance plus Phaser hook resume), Erato-v2 (subscribes for HUD reactions), Euterpe (subscribes for sfx mapping), Thalia-v2 (subscribes to quest plus dialogue state changes to render scene feedback), Harmonia-RV-A (integration check event name registry conformance)
-**Stability:** draft
-**Last Updated:** 2026-04-23 (RV Day 0, Pythia-v2 round 2)
+**Contract Version:** 0.2.0
+**Owner Agent(s):** Helios-v2 (primary emitter from Phaser scene layer, NP W3 takeover from Thalia-v2). Secondary emitters: Boreas (chat UIScene), Erato-v2 (React HUD interactions, DEPRECATED on `/play`), Nyx (quest lifecycle), Linus (dialogue lifecycle), Euterpe (audio cue echo), Marshall (treasurer NPC + tier sync).
+**Consumer Agent(s):** Nyx (subscribes to trigger-yielding events), Linus (subscribes to dialogue advance plus Phaser hook resume), Erato-v2 (non-`/play` routes only), Euterpe (subscribes for sfx mapping), Helios-v2 (subscribes to quest plus dialogue state changes to render scene feedback + ambient FX + lighting), Boreas (subscribes to chat mode changes, forwards SSE deltas), Harmonia-RV-A / Harmonia-v3 (integration check), Epimetheus (W0 bridge routes `game.dialogue.node_entered` → quest `fireTrigger`)
+**Stability:** stable for NP
+**Last Updated:** 2026-04-24 (NP Wave 1, Pythia-v3 round 3 amendment)
+**Changelog v0.2.0:** Added NP-era topics for scene transition enrichment, chat surface, tier changes, budget alerts, and scene manifest lifecycle. Added payload types for NPC variant + ambient FX + lighting + day-night cycle. Registered `game.chat.*` subject namespace for Boreas Minecraft chat UIScene. Registered `game.system.*` tier + budget subjects for Marshall + Moros integration. Epimetheus W0 consolidates `game.dialogue.node_entered` BusBridge routing per `agent_orchestration_runtime.contract.md` Section 2 B4 fix.
 
 ## Rename note
 
@@ -119,7 +120,35 @@ export type GameEventTopic =
   // ---- System ----
   | 'game.system.paused'
   | 'game.system.resumed'
-  | 'game.system.shutdown_requested';
+  | 'game.system.shutdown_requested'
+
+  // ---- NP v0.2.0 additions ----
+  // Chat UIScene (Boreas)
+  | 'game.chat.opened'
+  | 'game.chat.closed'
+  | 'game.chat.mode_changed'
+  | 'game.chat.message_submitted'
+  | 'game.chat.message_received'
+  | 'game.chat.stream_chunk'
+  | 'game.chat.stream_complete'
+  | 'game.chat.command_executed'
+
+  // Scene manifest + visual (Helios-v2)
+  | 'game.scene.manifest_loaded'
+  | 'game.scene.ambient_fx_changed'
+  | 'game.scene.lighting_tick'
+  | 'game.scene.npc_spawned'
+  | 'game.scene.npc_despawned'
+
+  // NPC ambient wander (Helios-v2)
+  | 'game.npc.variant_spoke'
+  | 'game.npc.wander_state_changed'
+
+  // Tier + billing (Marshall + Plutus)
+  | 'game.system.tier_changed'
+  | 'game.system.budget_alert'
+  | 'game.system.flag_updated'
+  | 'game.system.maintenance_mode_changed';
 
 export interface GameEvent<TPayload = unknown> {
   topic: GameEventTopic;
@@ -202,6 +231,35 @@ export interface WorldActiveChangedPayload { previous: WorldId | null; next: Wor
 export interface SystemPausedPayload { reason: 'user' | 'overlay' | 'lost_focus' }
 export interface SystemResumedPayload {}
 export interface SystemShutdownRequestedPayload { reason: string }
+
+// ---- NP v0.2.0 additions ----
+
+// Chat
+export interface ChatOpenedPayload {}
+export interface ChatClosedPayload { reason: 'esc' | 'submit' | 'command' | 'mode_change' }
+export interface ChatModeChangedPayload { from: 'movement' | 'chat' | 'dialogue'; to: 'movement' | 'chat' | 'dialogue' }
+export interface ChatMessageSubmittedPayload { content: string; isCommand: boolean; commandName: string | null }
+export interface ChatMessageReceivedPayload { sessionId: string; messageId: string; role: 'assistant' | 'system'; contentPreview: string; costUsd: number | null }
+export interface ChatStreamChunkPayload { sessionId: string; delta: string; blockIndex: number }
+export interface ChatStreamCompletePayload { sessionId: string; stopReason: string; totalChars: number }
+export interface ChatCommandExecutedPayload { command: string; args: string; result: 'ok' | 'error'; durationMs: number }
+
+// Scene manifest + visual
+export interface SceneManifestLoadedPayload { sceneKey: string; worldId: string; npcCount: number; atlasCount: number }
+export interface SceneAmbientFxChangedPayload { sceneKey: string; kind: string; particleCount: number }
+export interface SceneLightingTickPayload { sceneKey: string; alpha: number; cycleProgressS: number }
+export interface SceneNpcSpawnedPayload { sceneKey: string; instanceId: string; variantId: string; x: number; y: number }
+export interface SceneNpcDespawnedPayload { sceneKey: string; instanceId: string }
+
+// NPC ambient
+export interface NpcVariantSpokePayload { npcId: string; variantId: string; flavorLine: string }
+export interface NpcWanderStateChangedPayload { npcId: string; from: 'idle' | 'walk' | 'arrived'; to: 'idle' | 'walk' | 'arrived' }
+
+// Tier + billing
+export interface SystemTierChangedPayload { userId: string; tenantId: string; fromTier: string | null; toTier: string; triggeredBy: 'subscription' | 'admin' | 'trial_end' }
+export interface SystemBudgetAlertPayload { tenantId: string; thresholdPct: 50 | 75 | 90 | 100; spentUsdToday: number; capUsdToday: number; builderDisabled: boolean }
+export interface SystemFlagUpdatedPayload { flagName: string; scopeKind: 'user' | 'tenant' | 'global'; scopeId: string | null; newValueSummary: string }
+export interface SystemMaintenanceModeChangedPayload { enabled: boolean; startsAt: string | null; message: string | null }
 ```
 
 ### 3.2 Topic-to-payload mapping
@@ -263,6 +321,26 @@ export type PayloadFor<T extends GameEventTopic> =
   T extends 'game.system.paused' ? SystemPausedPayload :
   T extends 'game.system.resumed' ? SystemResumedPayload :
   T extends 'game.system.shutdown_requested' ? SystemShutdownRequestedPayload :
+  // NP v0.2.0
+  T extends 'game.chat.opened' ? ChatOpenedPayload :
+  T extends 'game.chat.closed' ? ChatClosedPayload :
+  T extends 'game.chat.mode_changed' ? ChatModeChangedPayload :
+  T extends 'game.chat.message_submitted' ? ChatMessageSubmittedPayload :
+  T extends 'game.chat.message_received' ? ChatMessageReceivedPayload :
+  T extends 'game.chat.stream_chunk' ? ChatStreamChunkPayload :
+  T extends 'game.chat.stream_complete' ? ChatStreamCompletePayload :
+  T extends 'game.chat.command_executed' ? ChatCommandExecutedPayload :
+  T extends 'game.scene.manifest_loaded' ? SceneManifestLoadedPayload :
+  T extends 'game.scene.ambient_fx_changed' ? SceneAmbientFxChangedPayload :
+  T extends 'game.scene.lighting_tick' ? SceneLightingTickPayload :
+  T extends 'game.scene.npc_spawned' ? SceneNpcSpawnedPayload :
+  T extends 'game.scene.npc_despawned' ? SceneNpcDespawnedPayload :
+  T extends 'game.npc.variant_spoke' ? NpcVariantSpokePayload :
+  T extends 'game.npc.wander_state_changed' ? NpcWanderStateChangedPayload :
+  T extends 'game.system.tier_changed' ? SystemTierChangedPayload :
+  T extends 'game.system.budget_alert' ? SystemBudgetAlertPayload :
+  T extends 'game.system.flag_updated' ? SystemFlagUpdatedPayload :
+  T extends 'game.system.maintenance_mode_changed' ? SystemMaintenanceModeChangedPayload :
   never;
 ```
 
