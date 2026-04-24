@@ -33,17 +33,15 @@ def test_046_revision_chains_off_045() -> None:
     assert module.down_revision == "045_realtime_connection_audit"
 
 
-def test_046_is_single_head_after_apply() -> None:
-    """No other migration in the tree declares ``down_revision=046_...``.
+def test_046_has_exactly_one_child() -> None:
+    """046 parents exactly one child: ``047_marketplace_search`` (Hyperion).
 
-    Regression guard: if a future revision silently parents off 046 we
-    want the test to fail loudly so the author can decide whether to
-    chain further or introduce a merge.
+    This test originally asserted 046 was the single head until the next
+    W2 pillar landed. Hyperion's 047 marketplace_search migration is
+    that next pillar; the invariant narrows to "exactly one child so the
+    chain does not fork".
     """
 
-    # We iterate the versions directory and parse each file's
-    # ``down_revision`` string via import. A module that fails to import
-    # is NOT silently skipped; we surface the error.
     children: list[str] = []
     for path in _VERSIONS.glob("*.py"):
         if path.name.startswith("__"):
@@ -54,10 +52,9 @@ def test_046_is_single_head_after_apply() -> None:
         rev = getattr(module, "revision", None)
         if dr == "046_marketplace_listing_schema" and rev != "046_marketplace_listing_schema":
             children.append(rev)
-    assert children == [], (
-        "046_marketplace_listing_schema must remain the single head until the "
-        "next W2 pillar migration lands. Found children: "
-        + repr(children)
+    assert children == ["047_marketplace_search"], (
+        "046 must have exactly one direct child (047_marketplace_search). "
+        "Found children: " + repr(children)
     )
 
 

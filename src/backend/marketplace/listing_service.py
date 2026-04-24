@@ -657,6 +657,22 @@ async def publish_listing(
         logger.exception(
             "marketplace.listing.submitted_emit_failed id=%s", listing_id
         )
+
+    # Hyperion W2 NP P1 S1: schedule an embedding reindex so the listing
+    # becomes searchable via the semantic branch. The enqueue helper
+    # fails soft when Arq is offline so the publish path stays 200-OK
+    # even in degraded test environments.
+    try:
+        # Local import keeps the listing_service import graph free of the
+        # Arq worker registry when the search stack is not mounted (tests
+        # patching listing_service do not pay the import cost).
+        from src.backend.marketplace.indexer import enqueue_reindex
+
+        await enqueue_reindex(listing_id)
+    except Exception:  # pragma: no cover - enqueue swallows its own errors
+        logger.exception(
+            "marketplace.reindex.enqueue_failed id=%s", listing_id
+        )
     return row_to_detail(updated)
 
 

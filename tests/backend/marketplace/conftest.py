@@ -135,15 +135,29 @@ def fake_listing_pool(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
     pool.acquire = MagicMock(return_value=_FakeAcquireCtx(conn))
     pool.close = AsyncMock(return_value=None)
 
-    # Patch both the pool module (for fallback callers) and the service's
-    # imported ``get_pool`` reference so ``await listing_service.create_listing``
-    # sees the fake.
+    # Patch both the pool module (for fallback callers) and every
+    # consumer's imported ``get_pool`` reference so both listing + search
+    # + indexer paths see the fake.
     monkeypatch.setattr(
         "src.backend.db.pool.get_pool", lambda: pool
     )
     monkeypatch.setattr(
         "src.backend.marketplace.listing_service.get_pool", lambda: pool
     )
+    # Hyperion W2 NP P1 S1: search + indexer also pull get_pool directly
+    # from src.backend.db.pool; patch their module-level refs too.
+    import importlib
+
+    for dotted in (
+        "src.backend.marketplace.search",
+        "src.backend.marketplace.indexer",
+    ):
+        try:
+            mod = importlib.import_module(dotted)
+        except ImportError:
+            continue
+        if hasattr(mod, "get_pool"):
+            monkeypatch.setattr(f"{dotted}.get_pool", lambda: pool)
 
     # Expose conn on the pool for easier mutation in tests.
     pool._test_conn = conn

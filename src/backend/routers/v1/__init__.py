@@ -137,6 +137,10 @@ _PILLAR_REGISTRY: tuple[tuple[str, str, str], ...] = (
     # ``/v1/marketplace/listings`` with the 7-category schema + draft/
     # publish/archive lifecycle per docs/contracts/marketplace_listing.
     ("marketplace.listing", "src.backend.routers.v1.marketplace", "listing_router"),
+    # Hyperion W2 NP P1 Session 1: marketplace hybrid search. Mounts at
+    # ``/v1/marketplace/search`` + ``/v1/marketplace/search/autocomplete``
+    # per docs/contracts/marketplace_search.contract.md.
+    ("marketplace.search", "src.backend.routers.v1.marketplace", "search_router"),
     # Future W2 slots. Keeping the label namespace so Nemea can assert
     # pillars are mounted before their dependent tests run.
     # ("billing.invoice", "src.backend.routers.v1.billing", "invoice_router"),
