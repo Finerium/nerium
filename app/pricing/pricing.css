@@ -1,0 +1,415 @@
+/*
+ * app/pricing/pricing.css
+ *
+ * Owner: Marshall (W2 NP P6 S1).
+ *
+ * Pricing-page extensions to the Claude Design landing CSS module. Every
+ * rule here is scoped under `.nerium-landing` so the /play route and the
+ * marketplace surfaces are unaffected. All colours + typography reference
+ * the existing --nl-* tokens declared in app/landing.css so the pricing
+ * surface inherits the Kalypso W3 Claude Design aesthetic verbatim.
+ *
+ * Contrast notes
+ * --------------
+ * - CTA "Subscribe" uses `.nl-btn-primary` (ink on phosphor-green) which
+ *   measures ~13.5:1 under WCAG 2.2 contrast math, well above the 4.5:1
+ *   AA minimum. The primary-CTA contrast fix is already in app/landing.css
+ *   via `background: var(--nl-phos); color: var(--nl-ink)`. We preserve
+ *   that and add the recommended-tier phosphor halo without altering text
+ *   colour.
+ * - Ghost CTA "Manage plan" uses bone text on ink background, ~15:1.
+ * - Tier card body copy uses --nl-bone on --nl-ink-2, ~13:1.
+ *
+ * Responsive
+ * ----------
+ * Desktop (>= 1024px): 4-column row. Tablet (768 - 1023px): 2x2. Mobile
+ * (< 768px): single column stacked, price emphasis preserved.
+ */
+
+/* ================= PAGE SHELL ================= */
+.nerium-landing .mp-page {
+  position: relative;
+  z-index: 3;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 140px 6vw 120px;
+}
+
+.nerium-landing .mp-page-stub {
+  min-height: 70vh;
+  text-align: center;
+}
+
+.nerium-landing .mp-hero {
+  text-align: center;
+  max-width: 820px;
+  margin: 0 auto 72px;
+}
+
+.nerium-landing .mp-hero-title {
+  font-family: var(--nl-font-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-size: clamp(40px, 6.5vw, 88px);
+  line-height: 0.98;
+  color: var(--nl-bone);
+  margin: 18px 0 20px;
+}
+
+.nerium-landing .mp-hero-sub {
+  font-family: var(--nl-font-display);
+  font-size: clamp(15px, 1.4vw, 18px);
+  line-height: 1.55;
+  color: var(--nl-fog);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.nerium-landing .mp-loading {
+  text-align: center;
+  font-family: var(--nl-font-mono);
+  font-size: 12px;
+  color: var(--nl-phos-dim);
+  padding: 60px 0;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ================= 4-TIER GRID ================= */
+.nerium-landing .mp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.nerium-landing .mp-grid-cell {
+  display: flex;
+}
+
+/* ================= TIER CARD ================= */
+.nerium-landing .mp-tier-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: var(--nl-ink-2);
+  border: 1px solid var(--nl-line);
+  padding: 28px 24px 24px;
+  gap: 18px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.nerium-landing .mp-tier-card:hover {
+  border-color: var(--nl-phos);
+  transform: translateY(-3px);
+  box-shadow: 0 0 40px rgba(130, 240, 160, 0.12);
+}
+
+.nerium-landing .mp-tier-highlighted {
+  border-color: oklch(0.45 0.12 140);
+  background: linear-gradient(
+      160deg,
+      rgba(130, 240, 160, 0.1),
+      transparent 65%
+    ),
+    var(--nl-ink-2);
+  box-shadow: 0 0 28px rgba(130, 240, 160, 0.12);
+}
+
+.nerium-landing .mp-tier-highlighted:hover {
+  box-shadow: 0 0 56px rgba(130, 240, 160, 0.22);
+}
+
+.nerium-landing .mp-tier-current {
+  outline: 2px solid var(--nl-phos);
+  outline-offset: -2px;
+}
+
+.nerium-landing .mp-ribbon {
+  position: absolute;
+  top: 12px;
+  right: -28px;
+  transform: rotate(35deg);
+  background: var(--nl-phos);
+  color: var(--nl-ink);
+  font-family: var(--nl-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 4px 32px;
+  z-index: 2;
+  box-shadow: 0 0 12px rgba(130, 240, 160, 0.5);
+}
+
+.nerium-landing .mp-current-badge {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  padding: 4px 10px;
+  background: var(--nl-phos);
+  color: var(--nl-ink);
+  font-family: var(--nl-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgba(130, 240, 160, 0.35);
+}
+
+.nerium-landing .mp-card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.nerium-landing .mp-tier-id {
+  font-family: var(--nl-font-mono);
+  font-size: 10px;
+  color: var(--nl-phos-dim);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.nerium-landing .mp-tier-name {
+  font-family: var(--nl-font-retro);
+  font-weight: 400;
+  font-size: 48px;
+  line-height: 0.95;
+  color: var(--nl-phos);
+  letter-spacing: 0.02em;
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.nerium-landing .mp-tier-tagline {
+  font-family: var(--nl-font-display);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--nl-fog);
+  margin: 0;
+  min-height: 42px;
+}
+
+.nerium-landing .mp-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 18px 0 14px;
+  border-top: 1px dashed var(--nl-line);
+  border-bottom: 1px dashed var(--nl-line);
+}
+
+.nerium-landing .mp-price-inner {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.nerium-landing .mp-price-usd {
+  font-family: var(--nl-font-retro);
+  font-size: 64px;
+  color: var(--nl-bone);
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.nerium-landing .mp-tier-highlighted .mp-price-usd {
+  color: var(--nl-phos);
+}
+
+.nerium-landing .mp-price-tail {
+  font-family: var(--nl-font-mono);
+  font-size: 12px;
+  color: var(--nl-fog);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.nerium-landing .mp-feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.nerium-landing .mp-feature-list li {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 8px;
+  font-family: var(--nl-font-display);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--nl-bone);
+}
+
+.nerium-landing .mp-feature-list .mp-bullet {
+  color: var(--nl-phos);
+  font-family: var(--nl-font-retro);
+  font-size: 16px;
+  line-height: 1.1;
+}
+
+.nerium-landing .mp-cta-row {
+  margin-top: 6px;
+}
+
+.nerium-landing .mp-cta-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 14px 18px;
+  font-size: 13px;
+}
+
+.nerium-landing .mp-cta-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.nerium-landing .mp-card-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 14px;
+  margin-top: 4px;
+  border-top: 1px solid var(--nl-line);
+  font-family: var(--nl-font-mono);
+  font-size: 11px;
+}
+
+.nerium-landing .mp-cap-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--nl-fog);
+}
+
+.nerium-landing .mp-cap-label {
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+}
+
+.nerium-landing .mp-cap-value {
+  color: var(--nl-phos-dim);
+}
+
+/* ================= CTA ERROR + FINEPRINT ================= */
+.nerium-landing .mp-cta-error {
+  max-width: 720px;
+  margin: 26px auto 0;
+  padding: 14px 18px;
+  background: rgba(130, 240, 160, 0.06);
+  border: 1px solid var(--nl-phos-deep);
+  font-family: var(--nl-font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--nl-bone);
+  text-align: center;
+}
+
+.nerium-landing .mp-fineprint {
+  margin: 36px auto 0;
+  max-width: 720px;
+  text-align: center;
+  font-family: var(--nl-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--nl-fog);
+  line-height: 1.7;
+}
+
+/* ================= FAQ ================= */
+.nerium-landing .mp-faq {
+  max-width: 900px;
+  margin: 100px auto 0;
+  padding-top: 60px;
+  border-top: 1px solid var(--nl-line);
+}
+
+.nerium-landing .mp-faq-title {
+  font-family: var(--nl-font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-size: clamp(28px, 4vw, 44px);
+  color: var(--nl-bone);
+  margin: 0 0 36px;
+}
+
+.nerium-landing .mp-faq-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px 40px;
+  margin: 0;
+}
+
+.nerium-landing .mp-faq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nerium-landing .mp-faq-row dt {
+  font-family: var(--nl-font-display);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--nl-phos);
+  letter-spacing: -0.005em;
+}
+
+.nerium-landing .mp-faq-row dd {
+  font-family: var(--nl-font-display);
+  font-size: 14px;
+  color: var(--nl-fog);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 1023px) {
+  .nerium-landing .mp-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .nerium-landing .mp-faq-list {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+}
+
+@media (max-width: 767px) {
+  .nerium-landing .mp-grid {
+    grid-template-columns: 1fr;
+  }
+  .nerium-landing .mp-tier-card {
+    padding: 24px 20px 22px;
+  }
+  .nerium-landing .mp-tier-name {
+    font-size: 40px;
+  }
+  .nerium-landing .mp-price-usd {
+    font-size: 52px;
+  }
+  .nerium-landing .mp-ribbon {
+    top: 10px;
+    right: -24px;
+    padding: 3px 26px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nerium-landing .mp-tier-card {
+    transition: none;
+  }
+  .nerium-landing .mp-tier-card:hover {
+    transform: none;
+  }
+}
