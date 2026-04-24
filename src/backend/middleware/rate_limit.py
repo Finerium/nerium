@@ -130,6 +130,22 @@ class RateLimitRegistry:
     def register(self, pattern: str, policy: RateLimitPolicy) -> None:
         self._entries.append((pattern, policy))
 
+    def replace(self, pattern: str, policy: RateLimitPolicy) -> None:
+        """Update the policy for an existing pattern, or register fresh.
+
+        Used by the Hemera flag service to refresh runtime policies when
+        ``mcp.rate_limit_override`` changes. First-match wins in
+        :meth:`resolve`, so replacing the exact entry in place is the
+        only way to make a second registration with the same pattern
+        visible. Entries added for the first time are appended.
+        """
+
+        for idx, (existing_pattern, _) in enumerate(self._entries):
+            if existing_pattern == pattern:
+                self._entries[idx] = (pattern, policy)
+                return
+        self._entries.append((pattern, policy))
+
     def reset(self) -> None:
         self._entries.clear()
 
@@ -163,6 +179,18 @@ def register_rate_limit_policy(pattern: str, policy: RateLimitPolicy) -> None:
     """
 
     REGISTRY.register(pattern, policy)
+
+
+def replace_rate_limit_policy(pattern: str, policy: RateLimitPolicy) -> None:
+    """Update an existing pattern's policy, or register fresh if new.
+
+    Thin wrapper around :meth:`RateLimitRegistry.replace`. Downstream
+    code (Hemera flag refresh) calls this when it needs to swap the
+    runtime policy for a pattern without pushing a duplicate entry that
+    would be shadowed by the first-match win in :meth:`resolve`.
+    """
+
+    REGISTRY.replace(pattern, policy)
 
 
 def _client_ip(request: Request) -> str:
@@ -375,4 +403,5 @@ __all__ = [
     "TOKEN_BUCKET_LUA",
     "install_rate_limit",
     "register_rate_limit_policy",
+    "replace_rate_limit_policy",
 ]
