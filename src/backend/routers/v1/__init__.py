@@ -141,6 +141,11 @@ _PILLAR_REGISTRY: tuple[tuple[str, str, str], ...] = (
     # ``/v1/marketplace/search`` + ``/v1/marketplace/search/autocomplete``
     # per docs/contracts/marketplace_search.contract.md.
     ("marketplace.search", "src.backend.routers.v1.marketplace", "search_router"),
+    # Astraea W2 NP P1 Session 1: registry trust score GET endpoints
+    # under ``/v1/registry/trust/*`` + admin-only force-refresh POSTs
+    # under ``/v1/admin/trust/*`` per docs/contracts/trust_score.contract.md.
+    ("registry.trust", "src.backend.routers.v1.registry", "trust_router"),
+    ("admin.trust", "src.backend.routers.v1.registry.trust", "admin_trust_router"),
     # Future W2 slots. Keeping the label namespace so Nemea can assert
     # pillars are mounted before their dependent tests run.
     # ("billing.invoice", "src.backend.routers.v1.billing", "invoice_router"),

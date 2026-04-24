@@ -31,8 +31,14 @@ def test_047_chains_off_046() -> None:
     assert module.down_revision == "046_marketplace_listing_schema"
 
 
-def test_047_is_the_new_head() -> None:
-    """No revision in the tree parents off 047. Regression guard."""
+def test_047_has_exactly_one_child() -> None:
+    """047 parents exactly one child: ``048_trust_score_snapshot`` (Astraea).
+
+    This test originally asserted 047 was the single head until the next
+    W2 pillar landed. Astraea's 048 trust_score_snapshot migration is
+    that next pillar; the invariant narrows to "exactly one child so the
+    chain does not fork".
+    """
 
     children: list[str] = []
     for path in _VERSIONS.glob("*.py"):
@@ -44,9 +50,9 @@ def test_047_is_the_new_head() -> None:
         rev = getattr(module, "revision", None)
         if dr == "047_marketplace_search" and rev != "047_marketplace_search":
             children.append(rev)
-    assert children == [], (
-        "047_marketplace_search must remain the head until the next "
-        "pillar revision lands. Found children: " + repr(children)
+    assert children == ["048_trust_score_snapshot"], (
+        "047 must have exactly one direct child (048_trust_score_snapshot). "
+        "Found children: " + repr(children)
     )
 
 
