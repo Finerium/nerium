@@ -18,6 +18,7 @@
 
 import dynamic from 'next/dynamic';
 import GameHUD from '../hud/GameHUD';
+import QuestBootstrap from './QuestBootstrap';
 
 const PhaserCanvas = dynamic(() => import('./PhaserCanvas'), {
   ssr: false,
@@ -37,6 +38,7 @@ export default function GameShell() {
       <div className="absolute inset-0" data-hud-role="phaser-host">
         <PhaserCanvas />
       </div>
+      <QuestBootstrap />
       <GameHUD />
     </div>
   );
