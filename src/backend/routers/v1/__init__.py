@@ -119,11 +119,13 @@ _PILLAR_REGISTRY: tuple[tuple[str, str, str], ...] = (
     # prefix (e.g. Eunomia's future SQLAdmin panel).
     ("admin.flags", "src.backend.routers.v1.admin", "flags_router"),
     ("me.flags", "src.backend.routers.v1.me", "flags_router"),
+    # Kratos W2 P2 Session 1: MA session CRUD. SSE stream endpoint
+    # lands at the same prefix in Session 3.
+    ("ma.sessions", "src.backend.routers.v1.ma", "sessions_router"),
     # Future W2 slots. Keeping the label namespace so Nemea can assert
     # pillars are mounted before their dependent tests run.
     # ("marketplace.listing", "src.backend.routers.v1.marketplace", "listing_router"),
     # ("billing.invoice", "src.backend.routers.v1.billing", "invoice_router"),
-    # ("ma.sessions", "src.backend.routers.v1.ma_sessions", "sessions_router"),
     # ("registry.identity", "src.backend.routers.v1.registry", "identity_router"),
 )
 
