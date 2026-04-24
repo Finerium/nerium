@@ -55,7 +55,10 @@ export class ApolloVillageScene extends Phaser.Scene {
   private atlasKey = 'atlas_medieval_desert';
   private player?: Player;
   private apolloNpc?: NPC;
+  private caravanVendorNpc?: NPC;
   private caravan?: Caravan;
+  private caravanZone?: Phaser.GameObjects.Zone;
+  private caravanZoneEntered = false;
   private unsubscribers: Array<() => void> = [];
 
   constructor() {
@@ -78,6 +81,8 @@ export class ApolloVillageScene extends Phaser.Scene {
     this.spawnPlayer();
     this.spawnApollo();
     this.spawnCaravan();
+    this.spawnCaravanVendor();
+    this.spawnCaravanArrivalZone();
     this.configureCamera(width, height);
     this.registerSceneCleanup();
 
@@ -118,6 +123,9 @@ export class ApolloVillageScene extends Phaser.Scene {
     this.player?.update(time, delta);
     if (this.player && this.apolloNpc) {
       this.apolloNpc.updateProximity(this.player);
+    }
+    if (this.player && this.caravanVendorNpc) {
+      this.caravanVendorNpc.updateProximity(this.player);
     }
   }
 
@@ -250,6 +258,53 @@ export class ApolloVillageScene extends Phaser.Scene {
       targetWorld: 'cyberpunk_shanghai',
       displayLabel: 'Caravan: Shanghai',
     });
+  }
+
+  private spawnCaravanVendor() {
+    // Caravan vendor NPC for lumio_onboarding step 8 (caravan_interact). The
+    // vendor stands a tile south of the caravan sigil; pointer-follow and
+    // interact prompt reuse the generic NPC class so the Press-E pattern
+    // matches Apollo.
+    const vendorX = (VILLAGE_COLS - 5) * TILE_PX;
+    const vendorY = (VILLAGE_ROWS / 2 + 1) * TILE_PX;
+    this.caravanVendorNpc = new NPC(this, vendorX, vendorY, {
+      npcId: 'caravan_vendor',
+      displayName: 'Caravan Vendor',
+      textureKey: this.atlasKey,
+      frame: FRAME_AGENT_IDLE,
+      interactRadius: 48,
+    });
+  }
+
+  private spawnCaravanArrivalZone() {
+    // Caravan arrival zone for lumio_onboarding step 7 (caravan_spawned). An
+    // invisible physics zone east of village center; first overlap with the
+    // player emits game.zone.entered, which the bridge translates into the
+    // zone_enter trigger. The once-flag keeps the emission single-shot so
+    // the bus is not spammed during sustained overlap.
+    const zoneX = (VILLAGE_COLS - 4) * TILE_PX;
+    const zoneY = (VILLAGE_ROWS / 2 + 0.5) * TILE_PX;
+    const zoneWidth = 4 * TILE_PX;
+    const zoneHeight = 3 * TILE_PX;
+    const zone = this.add.zone(zoneX, zoneY, zoneWidth, zoneHeight);
+    this.physics.add.existing(zone, true);
+    this.caravanZone = zone;
+    if (this.player) {
+      this.physics.add.overlap(this.player, zone, () => {
+        if (this.caravanZoneEntered) return;
+        this.caravanZoneEntered = true;
+        const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
+        const payload = {
+          zoneId: 'caravan_arrival_zone',
+          sceneKey: this.scene.key,
+        };
+        if (bus) {
+          bus.emit('game.zone.entered', payload);
+        } else {
+          this.game.events.emit('game.zone.entered', payload);
+        }
+      });
+    }
   }
 
   private configureCamera(worldWidth: number, worldHeight: number) {

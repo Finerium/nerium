@@ -1,0 +1,51 @@
+{
+  "id": "caravan_vendor_greet",
+  "source": "custom",
+  "speaker": "caravan_vendor",
+  "start": "greet",
+  "tags": ["caravan", "multi_vendor", "onboarding"],
+  "vars": {
+    "vendor_name": "Tamar"
+  },
+  "nodes": {
+    "greet": {
+      "lines": [
+        { "text": "Halt, traveler. The caravan trades with every faction, every model." },
+        { "text": "Opus. Sonnet. Haiku. Gemini. Llama. All flow through this route." }
+      ],
+      "choices": [
+        { "label": "Tell me about multi-vendor trade.", "next": "trade_intro" },
+        { "label": "How do translations stay faithful?", "next": "protocol_explain" },
+        { "label": "Farewell for now.", "next": "farewell" }
+      ]
+    },
+    "trade_intro": {
+      "lines": [
+        { "text": "Each vendor ships agents in their own dialect. We normalize the tongue." },
+        { "text": "Your coin works with every dialect. The caravan is the ledger." }
+      ],
+      "choices": [
+        { "label": "And the translation layer?", "next": "protocol_explain" },
+        { "label": "Understood. Farewell.", "next": "farewell" }
+      ]
+    },
+    "protocol_explain": {
+      "lines": [
+        { "text": "NERIUM Protocol maps each dialect onto one common IR." },
+        { "text": "Your agents speak across vendors without rewriting a line." }
+      ],
+      "choices": [
+        { "label": "That is the gift I needed. Farewell.", "next": "farewell" }
+      ]
+    },
+    "farewell": {
+      "lines": [
+        { "text": "Travel safe. The road to Shanghai opens next." }
+      ],
+      "effects": [
+        { "type": "set_variable", "scope": "quest", "name": "caravan_greeted", "value": true }
+      ],
+      "end": true
+    }
+  }
+}
