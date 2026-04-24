@@ -297,3 +297,49 @@ def minimal_middleware_app(test_settings: Settings) -> FastAPI:
         return {"status": "ok"}
 
     return app
+
+
+# ----- Session 3 specific helpers -----
+
+
+_PG_TEST_ENV = "NERIUM_TEST_DATABASE_URL"
+"""Env var consumers set to opt into real-Postgres integration tests.
+
+The variable value must be a full DSN (``postgresql://user:pw@host/db``).
+Tests that touch DDL or the migration tree are gated on this being set
+so CI without a live Postgres 16 cluster still passes.
+"""
+
+
+@pytest_asyncio.fixture
+async def pg_test_pool() -> AsyncIterator[Any]:
+    """Yield a real asyncpg pool bound to ``NERIUM_TEST_DATABASE_URL``.
+
+    Skips the test when the env var is absent so developers running
+    ``pytest`` without a local Postgres cluster see a clean skip rather
+    than a failure. The pool is sized minimally (1 connection, cache
+    off) so the migration + seed tests do not hold extra handles.
+    """
+
+    import os
+
+    import asyncpg
+
+    dsn = os.environ.get(_PG_TEST_ENV)
+    if not dsn:
+        pytest.skip(
+            f"{_PG_TEST_ENV} not set; skipping real-Postgres integration test."
+        )
+
+    pool = await asyncpg.create_pool(
+        dsn=dsn,
+        min_size=1,
+        max_size=2,
+        statement_cache_size=0,
+        command_timeout=30.0,
+        server_settings={"application_name": "nerium-test-aether"},
+    )
+    try:
+        yield pool
+    finally:
+        await pool.close()

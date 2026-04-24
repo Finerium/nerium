@@ -41,7 +41,7 @@ import logging
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
@@ -138,18 +138,71 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.redis_pool = redis_pool
     app.state.arq_redis = arq_redis
 
+    # 4) Hemera flag bootstrap + invalidation listener.
+    # Bootstrap preloads every flag default into a process-local dict
+    # so sync consumers (Khronos rate-limit boot-time registration) can
+    # read without hitting DB. The listener drops cached entries +
+    # refreshes the bootstrap when any worker publishes on
+    # ``flag:invalidate``. Both are best-effort: if the hemera_flag
+    # table has not been migrated yet (fresh dev DB before first
+    # ``alembic upgrade``) the bootstrap swallows the failure so the
+    # API still boots.
+    flag_listener = None
+    try:
+        from src.backend.flags.invalidator import start_invalidation_listener
+        from src.backend.flags.service import bootstrap_all_flags
+
+        try:
+            await bootstrap_all_flags()
+        except Exception as exc:
+            logger.warning(
+                "lifespan.flags.bootstrap_deferred err=%s; "
+                "run alembic upgrade + apply default_flags seed",
+                exc,
+            )
+        flag_listener = await start_invalidation_listener()
+
+        # Refresh MCP rate-limit policies now that Hemera DB values are
+        # loaded. Khronos's boot-time registration used env-var fallback;
+        # the refresh path reads the live default from the bootstrap
+        # cache and re-registers via REGISTRY.replace.
+        try:
+            from src.backend.middleware.rate_limit_mcp import (
+                refresh_mcp_rate_limit_policies_from_flags,
+            )
+
+            await refresh_mcp_rate_limit_policies_from_flags()
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.warning(
+                "lifespan.flags.mcp_policy_refresh_failed err=%s", exc
+            )
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.warning("lifespan.flags.bootstrap_failed err=%s", exc)
+
+    app.state.flag_listener = flag_listener
+
     logger.info(
-        "lifespan.startup.complete pool_min=%d pool_max=%d redis_max=%d arq=%s",
+        "lifespan.startup.complete pool_min=%d pool_max=%d redis_max=%d arq=%s flags=%s",
         settings.database_pool_min_size,
         settings.database_pool_max_size,
         settings.redis_max_connections,
         "up" if arq_redis is not None else "off",
+        "up" if flag_listener is not None else "off",
     )
 
     try:
         yield
     finally:
         logger.info("lifespan.shutdown.begin")
+        if flag_listener is not None:
+            try:
+                from src.backend.flags.invalidator import (
+                    stop_invalidation_listener,
+                )
+
+                await stop_invalidation_listener()
+            except Exception as exc:  # pragma: no cover - defensive
+                logger.warning("lifespan.flags.listener_stop_failed err=%s", exc)
         if arq_redis is not None:
             try:
                 await arq_redis.close(close_connection_pool=True)
@@ -161,6 +214,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.db_pool = None
         app.state.redis_pool = None
         app.state.arq_redis = None
+        app.state.flag_listener = None
         logger.info("lifespan.shutdown.complete")
 
 
@@ -255,15 +309,23 @@ def _build_v1_placeholder_router() -> APIRouter:
         summary="Router mount probe",
         include_in_schema=False,
     )
-    async def placeholder() -> dict[str, object]:
+    async def placeholder(request: Request) -> dict[str, object]:
+        # Surface the Session 3 mount report so Nemea E2E can assert
+        # that a given pillar loaded. ``app.state.v1_mount_report`` is
+        # populated by ``mount_v1_routers`` at app construction time.
+        raw_report = getattr(request.app.state, "v1_mount_report", []) or []
+        mounted = [label for (label, status) in raw_report if status == "mounted"]
         return {
             "api_version": "v1",
-            "mounted_subrouters": [],
+            "mounted_subrouters": mounted,
+            "mount_report": [
+                {"label": label, "status": status} for (label, status) in raw_report
+            ],
             "note": (
                 "Downstream NP agents (Khronos, Phanes, Hyperion, Kratos, Nike, "
                 "Plutus, Iapetus, Tethys, Crius, Astraea, Chione, Pheme, Hemera, "
-                "Eunomia, Moros, Marshall) replace this placeholder with their "
-                "own sub-routers."
+                "Eunomia, Moros, Marshall) register their routers via "
+                "src.backend.routers.v1.mount_v1_routers."
             ),
         }
 
@@ -347,7 +409,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(_email_preview_router)
 
     # /v1 placeholder so downstream agents can mount without repo churn.
+    # Kept for back-compat with Session 1 + 2 mount-probe tests; the
+    # Session 3 mount index below supersedes it for real pillar
+    # routers. The placeholder remains ``include_in_schema=False`` so
+    # OpenAPI stays clean.
     app.include_router(_build_v1_placeholder_router(), prefix=API_V1_PREFIX)
+
+    # Session 3 resilient pillar router mount. Each registered router
+    # imports lazily; a pillar that has not shipped yet is logged and
+    # skipped rather than crashing the app factory. Production mount
+    # order is deterministic per ``_PILLAR_REGISTRY``.
+    from src.backend.routers.v1 import mount_v1_routers
+
+    app.state.v1_mount_report = mount_v1_routers(app, prefix=API_V1_PREFIX)
 
     return app
 

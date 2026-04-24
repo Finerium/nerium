@@ -15,6 +15,10 @@ dependencies = [
 
   # Configuration + validation
   "pydantic>=2.9.0,<3.0.0",
+  # pydantic[email] brings in email-validator so ``pydantic.EmailStr`` can
+  # validate addresses in the User model. Aether Session 3 added this for
+  # ``src/backend/models/user.py``; downstream agents reuse.
+  "email-validator>=2.2.0,<3.0.0",
   "pydantic-settings>=2.6.0,<3.0.0",
 
   # Database
