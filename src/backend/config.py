@@ -162,6 +162,72 @@ class Settings(BaseSettings):
     grafana_otlp_token: SecretStr = Field(default=SecretStr(""))
     glitchtip_dsn: SecretStr = Field(default=SecretStr(""))
 
+    # Transactional email (Pheme consumer; Aether exposes config knobs so the
+    # Settings class stays the single source of truth per the add-only rule).
+    # Per email_transactional.contract.md Section 3.3 + 4.1 we ship Resend as
+    # the primary provider with Mailtrap available in dev via EMAIL_ENV=dev.
+    # The API key + DKIM CNAME are applied by Ghaisan post-deploy; the code
+    # fails closed at send time with a clear error when the key is unset.
+    resend_api_key: SecretStr = Field(
+        default=SecretStr(""),
+        description=(
+            "Resend API key (re_...). Populated by Ghaisan after the "
+            "mail.nerium.com DKIM CNAME propagates and the domain verifies "
+            "in the Resend dashboard. Empty string fails closed at send."
+        ),
+    )
+    resend_from_email: str = Field(
+        default="noreply@mail.nerium.com",
+        description=(
+            "Default From header for system transactional mail. Must sit on "
+            "the mail.nerium.com subdomain so DKIM + SPF align."
+        ),
+    )
+    resend_reply_to_email: str = Field(
+        default="support@nerium.com",
+        description=(
+            "Default Reply-To header. Separate from From so replies land on "
+            "the main domain (Cloudflare Email Routing forwards to Ghaisan)."
+        ),
+    )
+    resend_webhook_secret: SecretStr = Field(
+        default=SecretStr(""),
+        description=(
+            "HMAC secret used by Resend to sign webhook payloads. Populated "
+            "by Ghaisan from the Resend dashboard Webhooks tab."
+        ),
+    )
+    email_env: Literal["dev", "staging", "production"] = Field(
+        default="dev",
+        description=(
+            "Email routing environment. 'dev' pipes all sends to Mailtrap "
+            "(no real delivery). 'staging' + 'production' use Resend."
+        ),
+    )
+    email_warmup_start: str = Field(
+        default="",
+        description=(
+            "ISO-8601 date (YYYY-MM-DD) capturing when warmup began. Empty "
+            "string disables the warmup cap (pre-launch dev mode). Pheme "
+            "consults this to compute the per-day cap schedule."
+        ),
+    )
+    email_unsubscribe_base_url: str = Field(
+        default="https://nerium.com",
+        description=(
+            "Base URL used to construct one-click unsubscribe tokens. "
+            "Combined with ``/unsubscribe?token=<hmac>`` per contract 4.3."
+        ),
+    )
+    mailtrap_inbox_id: str = Field(
+        default="",
+        description="Mailtrap sandbox inbox id. Only read when EMAIL_ENV=dev.",
+    )
+    mailtrap_api_token: SecretStr = Field(
+        default=SecretStr(""),
+        description="Mailtrap sandbox API token. Only read when EMAIL_ENV=dev.",
+    )
+
     # Downstream hooks (optional, not used in Session 1)
     anthropic_api_key: SecretStr = Field(default=SecretStr(""))
     hemera_bootstrap_builder_live: bool = Field(default=False)

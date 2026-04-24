@@ -27,6 +27,7 @@ from pydantic import BaseModel, Field
 
 from src.backend.config import Settings, get_settings
 from src.backend.db.pool import ping as db_ping
+from src.backend.redis_client import ping as redis_ping
 
 logger = logging.getLogger(__name__)
 
@@ -83,15 +84,18 @@ async def healthz() -> LivenessResponse:
     },
 )
 async def readyz(response: Response) -> ReadinessResponse:
-    """Deep readiness. Pings Postgres via the asyncpg pool.
+    """Deep readiness. Pings Postgres + Redis via their shared pools.
 
-    Extended in Session 2 to also ping Redis. Returns 503 when any
-    dependency is down so load balancers route traffic away from the pod.
+    Returns 503 when any dependency is down so load balancers route
+    traffic away from the pod. Extended in Aether W1 Session 2 to also
+    ping Redis alongside the asyncpg pool.
     """
 
     db_up = await db_ping()
+    redis_up = await redis_ping()
     dependencies: dict[str, str] = {
         "postgres": "up" if db_up else "down",
+        "redis": "up" if redis_up else "down",
     }
     all_ok = all(state == "up" for state in dependencies.values())
 
