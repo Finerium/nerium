@@ -67,6 +67,19 @@ class Settings(BaseSettings):
         description="Signing key for session cookies and CSRF tokens.",
     )
 
+    # Nike realtime ticket signing key. In development an empty value
+    # falls back to :attr:`secret_key` so the dev + test harness keeps
+    # working; in production the lifespan hook validates this is set to
+    # a non-empty dedicated secret (see :meth:`validate_production_secrets`).
+    # Environment variable: ``NERIUM_REALTIME_TICKET_SECRET``.
+    realtime_ticket_secret: SecretStr = Field(
+        default=SecretStr(""),
+        description=(
+            "Nike realtime ticket HS256 signing key. Empty = dev fallback "
+            "to secret_key. Production MUST override via env."
+        ),
+    )
+
     # HTTP server
     http_host: str = Field(default="0.0.0.0", description="uvicorn bind host.")
     http_port: int = Field(default=3100, ge=1, le=65535, description="uvicorn bind port.")
@@ -296,6 +309,27 @@ class Settings(BaseSettings):
                 "NERIUM_DATABASE_URL points at localhost in production. "
                 "Update to the Hetzner CX32 internal DSN."
             )
+        realtime_secret = self.realtime_ticket_secret.get_secret_value()
+        if not realtime_secret:
+            raise RuntimeError(
+                "NERIUM_REALTIME_TICKET_SECRET is unset in production. "
+                "Generate a dedicated 64-byte key: "
+                "python -c 'import secrets; print(secrets.token_urlsafe(64))'"
+            )
+
+    def effective_realtime_ticket_secret(self) -> str:
+        """Return the realtime ticket signing key.
+
+        Production returns :attr:`realtime_ticket_secret` (guaranteed
+        non-empty by :meth:`validate_production_secrets`). Development
+        + test fall back to :attr:`secret_key` so the fixture harness
+        keeps working without a dedicated env var.
+        """
+
+        explicit = self.realtime_ticket_secret.get_secret_value()
+        if explicit:
+            return explicit
+        return self.secret_key.get_secret_value()
 
 
 @lru_cache(maxsize=1)

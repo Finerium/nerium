@@ -80,7 +80,11 @@ from src.backend.ma.event_bus import (
 )
 from src.backend.ma.queries import select_session_by_id
 from src.backend.ma.state_machine import MASessionStatus, is_terminal
-from src.backend.ma.ticket_verifier import verify_bearer, verify_ticket
+from src.backend.ma.ticket_verifier import (
+    verify_bearer,
+    verify_ticket,
+    verify_ticket_async,
+)
 from src.backend.middleware.auth import AuthPrincipal
 from src.backend.redis_client import get_redis_client
 
@@ -128,7 +132,7 @@ async def resolve_sse_principal(
             return verify_bearer(token, get_settings())
 
     if ticket:
-        return verify_ticket(ticket)
+        return await verify_ticket_async(ticket)
 
     raise UnauthorizedProblem(
         detail=(

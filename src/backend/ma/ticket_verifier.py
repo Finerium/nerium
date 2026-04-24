@@ -48,8 +48,10 @@ Contract references
 
 from __future__ import annotations
 
+import asyncio
+import inspect
 import logging
-from typing import Any, Callable, Optional
+from typing import Any, Awaitable, Callable, Optional, Union
 
 from src.backend.errors import (
     ProblemException,
@@ -71,22 +73,35 @@ subclass with a more specific slug.
 """
 
 
-_verifier: TicketVerifier | None = None
+AsyncTicketVerifier = Callable[[str], Awaitable[AuthPrincipal]]
+"""Async variant of :data:`TicketVerifier`.
+
+Nike S2 installs an async verifier because validation touches Redis
+(revocation lookup) which must not run on a worker thread. The legacy
+sync shape is still accepted for backward compatibility with the S1
+dev-mode HS256 verifier.
+"""
 
 
-def set_ticket_verifier(verifier: TicketVerifier | None) -> None:
+_verifier: Union[TicketVerifier, AsyncTicketVerifier, None] = None
+
+
+def set_ticket_verifier(
+    verifier: Union[TicketVerifier, AsyncTicketVerifier, None],
+) -> None:
     """Install (or uninstall) the process-wide ticket verifier.
 
     Nike calls this during its lifespan startup once its JWT signing
     key + JWKS endpoint are ready. Passing ``None`` resets to the
-    "not configured" state used in unit tests.
+    "not configured" state used in unit tests. The verifier may be
+    sync OR async; :func:`verify_ticket_async` handles both.
     """
 
     global _verifier
     _verifier = verifier
 
 
-def get_ticket_verifier() -> TicketVerifier | None:
+def get_ticket_verifier() -> Union[TicketVerifier, AsyncTicketVerifier, None]:
     """Return the currently installed verifier, or ``None``.
 
     Exposed so tests can inspect the seam + so admin diagnostics
@@ -94,6 +109,22 @@ def get_ticket_verifier() -> TicketVerifier | None:
     """
 
     return _verifier
+
+
+def _require_verifier() -> Union[TicketVerifier, AsyncTicketVerifier]:
+    """Return the installed verifier or raise 503."""
+
+    verifier = _verifier
+    if verifier is None:
+        raise ServiceUnavailableProblem(
+            detail=(
+                "Realtime ticket verification is not configured. "
+                "The Nike realtime service must install a ticket verifier "
+                "via src.backend.ma.ticket_verifier.set_ticket_verifier "
+                "before this endpoint can authenticate ticket-bearing requests."
+            )
+        )
+    return verifier
 
 
 def verify_ticket(ticket: str) -> AuthPrincipal:
@@ -111,22 +142,56 @@ def verify_ticket(ticket: str) -> AuthPrincipal:
       is dropped so JWT internals do not leak to the wire).
     """
 
-    verifier = _verifier
-    if verifier is None:
-        raise ServiceUnavailableProblem(
-            detail=(
-                "Realtime ticket verification is not configured. "
-                "The Nike realtime service must install a ticket verifier "
-                "via src.backend.ma.ticket_verifier.set_ticket_verifier "
-                "before this endpoint can authenticate ticket-bearing requests."
+    verifier = _require_verifier()
+    if inspect.iscoroutinefunction(verifier):
+        # Sync caller, async verifier: we cannot block an already
+        # running event loop safely. The FastAPI path that used to
+        # reach this function now prefers :func:`verify_ticket_async`;
+        # this branch remains for legacy sync callers (tests, CLI).
+        try:
+            return asyncio.run(verifier(ticket))  # type: ignore[arg-type]
+        except ProblemException:
+            raise
+        except Exception as exc:
+            logger.warning(
+                "ma.ticket.async_verifier_sync_bridge_failed", exc_info=exc
             )
-        )
+            raise UnauthorizedProblem(
+                detail="Realtime ticket could not be verified."
+            )
     try:
-        return verifier(ticket)
+        return verifier(ticket)  # type: ignore[misc]
     except ProblemException:
         raise
     except Exception as exc:
         logger.warning("ma.ticket.verifier_exception", exc_info=exc)
+        raise UnauthorizedProblem(
+            detail="Realtime ticket could not be verified."
+        )
+
+
+async def verify_ticket_async(ticket: str) -> AuthPrincipal:
+    """Async ticket verification.
+
+    Preferred entry point from FastAPI routes (Kratos SSE uses this
+    after Nike S2 lands). Falls back to the sync verifier when the
+    installed callable is sync so the legacy HS256 dev verifier keeps
+    working.
+
+    Error handling mirrors :func:`verify_ticket` exactly: all
+    :class:`ProblemException` subclasses pass through unchanged; any
+    other exception is logged and translated to a generic 401.
+    """
+
+    verifier = _require_verifier()
+    try:
+        if inspect.iscoroutinefunction(verifier):
+            return await verifier(ticket)  # type: ignore[misc]
+        return verifier(ticket)  # type: ignore[misc]
+    except ProblemException:
+        raise
+    except Exception as exc:
+        logger.warning("ma.ticket.verifier_exception_async", exc_info=exc)
         raise UnauthorizedProblem(
             detail="Realtime ticket could not be verified."
         )
@@ -160,10 +225,12 @@ def install_default_hs256_ticket_verifier(settings: Any) -> None:
 
 
 __all__ = [
+    "AsyncTicketVerifier",
     "TicketVerifier",
     "get_ticket_verifier",
     "install_default_hs256_ticket_verifier",
     "set_ticket_verifier",
     "verify_bearer",
     "verify_ticket",
+    "verify_ticket_async",
 ]

@@ -126,6 +126,9 @@ _PILLAR_REGISTRY: tuple[tuple[str, str, str], ...] = (
     # ``/v1/realtime/ws``. Session 2 adds ``/v1/realtime/ticket`` mint
     # endpoint + optional generic SSE wrapper to this same package.
     ("realtime.ws", "src.backend.routers.v1.realtime", "ws_router"),
+    # Nike W2 NP P3 Session 2: HTTP ticket mint + revoke.
+    # ``POST /v1/realtime/ticket`` + ``POST /v1/realtime/ticket/revoke``.
+    ("realtime.ticket", "src.backend.routers.v1.realtime", "ticket_router"),
     # Future W2 slots. Keeping the label namespace so Nemea can assert
     # pillars are mounted before their dependent tests run.
     # ("marketplace.listing", "src.backend.routers.v1.marketplace", "listing_router"),
