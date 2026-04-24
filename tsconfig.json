@@ -33,6 +33,7 @@
     "node_modules",
     "_skills_staging",
     "_deprecated",
+    "_Reference",
     "cache"
   ]
 }
