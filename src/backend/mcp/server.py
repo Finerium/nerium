@@ -29,7 +29,6 @@ def _build_mcp_server() -> "Any":
 
     return FastMCP(
         name="nerium",
-        version="0.1.0",
         instructions=(
             "NERIUM infrastructure for the AI agent economy. Tools expose "
             "project + agent listings, marketplace search, trust scores, and "
