@@ -133,9 +133,12 @@ _PILLAR_REGISTRY: tuple[tuple[str, str, str], ...] = (
     # Nike W2 NP P3 Session 2: HTTP ticket mint + revoke.
     # ``POST /v1/realtime/ticket`` + ``POST /v1/realtime/ticket/revoke``.
     ("realtime.ticket", "src.backend.routers.v1.realtime", "ticket_router"),
+    # Phanes W2 NP P1 Session 1: marketplace listing CRUD. Mounts at
+    # ``/v1/marketplace/listings`` with the 7-category schema + draft/
+    # publish/archive lifecycle per docs/contracts/marketplace_listing.
+    ("marketplace.listing", "src.backend.routers.v1.marketplace", "listing_router"),
     # Future W2 slots. Keeping the label namespace so Nemea can assert
     # pillars are mounted before their dependent tests run.
-    # ("marketplace.listing", "src.backend.routers.v1.marketplace", "listing_router"),
     # ("billing.invoice", "src.backend.routers.v1.billing", "invoice_router"),
     # ("registry.identity", "src.backend.routers.v1.registry", "identity_router"),
 )
