@@ -5,7 +5,7 @@
 // The single sanctioned Phaser-to-Zustand bridge per
 // docs/contracts/zustand_bridge.contract.md.
 //
-// Owner: Thalia-v2 (this module), consumed by Erato-v2 (React HUD) and every
+// Owner: Thalia-v2 (this module). Consumers: Erato-v2 (React HUD) and every
 // scene authored under src/game/scenes/. No other file is permitted to call
 // game.events.on/off from outside a scene.
 //
@@ -17,6 +17,13 @@
 //   4. fireImmediately defaults to false. Any true value MUST have a comment
 //      on the line above explaining why (contract Section 3 review gate).
 //
+// Epimetheus W0 B3 fix: the questEffectBus handler is now an exhaustive
+// 13-branch switch per quest_schema.contract.md EffectSchema. Effects that
+// questStore.applyEffect handles synchronously (unlock_world, add_trust,
+// complete_quest, fail_quest, quest-scope set_variable) never reach this
+// bus; their cases remain for exhaustiveness and guard against future drift
+// where Nyx might opt to emit instead of handle internally.
+//
 
 import type * as Phaser from 'phaser';
 import { attachBusTo, type GameEventBus } from './GameEventBus';
@@ -27,7 +34,8 @@ import {
   useUIStore,
   useAudioStore,
 } from './stores';
-import type { Trigger, WorldId } from './types';
+import type { WorldId } from './types';
+import type { Trigger } from '../data/quests/_schema';
 import { questEffectBus } from '../lib/questRunner';
 import { MINI_BUILDER_SCENE_KEY } from '../game/scenes/MiniBuilderCinematicScene';
 import { audioEngine } from '../lib/audioEngine';
@@ -46,6 +54,13 @@ export class BridgeAlreadyWiredError extends Error {
 }
 
 const WIRED = new WeakSet<Phaser.Game>();
+
+function generateToastId(): string {
+  if (typeof globalThis !== 'undefined' && 'crypto' in globalThis && typeof globalThis.crypto?.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID();
+  }
+  return `toast_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
 
 /**
  * Wire one Phaser.Game instance to the five Zustand stores. Returns the
@@ -118,47 +133,135 @@ export function wireBridge(game: Phaser.Game): GameBridge {
     }),
   );
 
-  // ---- Quest effect bus to Phaser scene manager ----
+  disposers.push(
+    bus.on('game.dialogue.node_entered', (payload) => {
+      // Typed-bus path for dialogue node entry (belt-and-suspenders with
+      // BusBridge window-CustomEvent path for DialogueOverlay emissions that
+      // fall back to window dispatch when __NERIUM_GAME_BUS__ is not yet
+      // registered). Both paths converge on the same fireTrigger call; the
+      // questStore is idempotent on already-matched triggers because step
+      // advance gates on the current stepIndex.
+      useQuestStore.getState().fireTrigger({
+        type: 'dialogue_node_reached',
+        dialogueId: payload.dialogueId,
+        nodeId: payload.nodeId,
+      });
+    }),
+  );
+
+  // ---- Quest effect bus to Phaser scene manager + cross-store dispatch ----
   //
-  // The quest `play_cinematic` effect flows through questEffectBus (see
-  // src/lib/questRunner.ts Section 10) rather than directly mutating a
-  // store. The bridge forwards it into the Phaser scene manager by
-  // launching MiniBuilderCinematicScene against whichever "lobby" scene is
-  // currently active. This is the sole launch site for the cinematic so
-  // the scope of scene orchestration stays inside the bridge layer per
-  // zustand_bridge.contract.md Section 4.
+  // Per quest_schema.contract.md EffectSchema the Effect union has 13
+  // branches. questStore.applyEffect routes 5 branches internally
+  // (unlock_world, add_trust, complete_quest, fail_quest, quest-scope
+  // set_variable) and emits the remaining 8 plus dialogue-scope
+  // set_variable onto this bus. The switch below handles every bus-reachable
+  // branch; internal-only branches are no-op cases guarded for exhaustiveness
+  // so TypeScript's discriminated-union narrowing keeps this bridge pinned
+  // to the contract shape.
   disposers.push(
     questEffectBus.on((payload) => {
-      if (payload.effect.type !== 'play_cinematic') return;
-      const key = payload.effect.key;
-      const sceneManager = game.scene;
-      // Identify the lobby scene currently running so the cinematic can
-      // resume it after completion. ApolloVillage is the only lobby in
-      // the vertical slice; post-hackathon expansion can walk the active
-      // scene list and pick the highest-priority lobby-typed scene.
-      const lobbyKey = 'ApolloVillage';
-      const lobby = sceneManager.getScene(lobbyKey) as Phaser.Scene | null;
-      if (!lobby || !sceneManager.isActive(lobbyKey)) {
-        console.warn(
-          `[gameBridge] play_cinematic ignored: lobby scene ${lobbyKey} not active`,
-        );
-        return;
+      const { effect } = payload;
+      switch (effect.type) {
+        case 'play_cinematic': {
+          const sceneManager = game.scene;
+          // ApolloVillage is the only lobby in the vertical slice;
+          // post-hackathon expansion walks the active scene list and picks
+          // the highest-priority lobby-typed scene.
+          const lobbyKey = 'ApolloVillage';
+          const lobby = sceneManager.getScene(lobbyKey) as Phaser.Scene | null;
+          if (!lobby || !sceneManager.isActive(lobbyKey)) {
+            console.warn(
+              `[gameBridge] play_cinematic ignored: lobby scene ${lobbyKey} not active`,
+            );
+            break;
+          }
+          sceneManager.pause(lobbyKey);
+          useUIStore.getState().startCinematic(effect.key);
+          lobby.scene.launch(MINI_BUILDER_SCENE_KEY, {
+            key: effect.key,
+            returnToScene: lobbyKey,
+          });
+          break;
+        }
+        case 'award_item': {
+          useInventoryStore.getState().award(effect.itemId, effect.quantity);
+          // Cascade an item_acquired trigger so downstream quest steps
+          // listening for the pickup-time trigger advance without an extra
+          // user action. lumio_onboarding step 6 depends on this cascade
+          // because the award lands from play_cinematic completion rather
+          // than from a world-pickup interaction.
+          useQuestStore.getState().fireTrigger({
+            type: 'item_acquired',
+            itemId: effect.itemId,
+          });
+          break;
+        }
+        case 'consume_item': {
+          useInventoryStore.getState().consume(effect.itemId, effect.quantity);
+          break;
+        }
+        case 'add_currency': {
+          useInventoryStore.getState().addCurrency(effect.code, effect.amount);
+          break;
+        }
+        case 'push_toast': {
+          useUIStore.getState().pushToast({
+            toast_id: generateToastId(),
+            kind: effect.kind,
+            message: effect.message,
+            dismissAfterMs: effect.dismissAfterMs,
+          });
+          break;
+        }
+        case 'open_dialogue': {
+          useDialogueStore.getState().openDialogue(effect.dialogueId, effect.startNode);
+          break;
+        }
+        case 'stream_apollo_response': {
+          // Apollo stream backend is owned by the future Nike worker; the
+          // bridge acknowledges the request by marking the dialogue store
+          // ready to receive chunks. Until the stream producer is wired,
+          // the handshake is no-op but observable so downstream QA can
+          // detect the start signal.
+          useDialogueStore.getState().appendStreamChunk('');
+          break;
+        }
+        case 'emit_event': {
+          // emit_event forwards to the typed bus. Cast the loose string
+          // eventName into the topic union; unknown topics are a runtime
+          // no-op because the typed bus rejects emissions without a
+          // registered payload shape.
+          const topic = effect.eventName as Parameters<GameEventBus['emit']>[0];
+          bus.emit(topic, (effect.payload ?? {}) as never);
+          break;
+        }
+        case 'set_variable': {
+          // quest-scope set_variable is handled inside questStore.applyEffect
+          // and never reaches this bus; dialogue-scope lands here for the
+          // dialogue runtime projection.
+          if (effect.scope === 'dialogue') {
+            useDialogueStore.getState().setVar(effect.name, effect.value);
+          }
+          break;
+        }
+        case 'unlock_world':
+        case 'add_trust':
+        case 'complete_quest':
+        case 'fail_quest': {
+          // Internal quest-store effects. questStore.applyEffect handles
+          // these synchronously and they do not reach this bus. Cases
+          // retained for exhaustive union narrowing.
+          break;
+        }
+        default: {
+          const exhaustive: never = effect;
+          void exhaustive;
+          console.warn(
+            `[gameBridge] questEffectBus: unknown effect type (unreachable)`,
+          );
+        }
       }
-      // Pause the lobby so its input and update ticks stall while the
-      // cinematic overlays the canvas.
-      sceneManager.pause(lobbyKey);
-      // ui.cinematicPlaying flips via startCinematic; the
-      // subscribeWithSelector below then emits game.cinematic.start on
-      // behalf of React so HUD dim logic reads from Zustand, not Phaser.
-      useUIStore.getState().startCinematic(key);
-      // ScenePlugin.launch (distinct from SceneManager.start) runs the
-      // target scene alongside the caller without shutting the caller
-      // down. Routing through the lobby scene's ScenePlugin keeps the
-      // parent relationship explicit for a clean resume on completion.
-      lobby.scene.launch(MINI_BUILDER_SCENE_KEY, {
-        key,
-        returnToScene: lobbyKey,
-      });
     }),
   );
 
@@ -191,7 +294,10 @@ export function wireBridge(game: Phaser.Game): GameBridge {
       (s) => s.unlockedWorlds,
       (next, prev) => {
         const added = next.filter((w) => !prev.includes(w));
-        added.forEach((worldId: WorldId) => bus.emit('game.world.unlocked', { worldId }));
+        // WorldId in the canonical store widens to string for post-hackathon
+        // marketplace expansion; the narrow union still types the payload so
+        // consumers get autocompletion on the three shipped worlds.
+        added.forEach((worldId) => bus.emit('game.world.unlocked', { worldId: worldId as WorldId }));
       },
       { fireImmediately: false },
     ),
@@ -237,6 +343,26 @@ export function wireBridge(game: Phaser.Game): GameBridge {
             reason: 'natural',
           });
         }
+      },
+      { fireImmediately: false },
+    ),
+  );
+
+  disposers.push(
+    useDialogueStore.subscribe(
+      (s) => s.currentNodeId,
+      (next) => {
+        const dialogueId = useDialogueStore.getState().activeDialogueId;
+        if (!dialogueId || !next) return;
+        // Emit on every node transition so BOTH the quest FSM and any other
+        // node-level consumer (audio cue, analytics) see the entry. The
+        // bridge back-into-questStore happens via the topic handler above so
+        // the quest FSM advances on dialogue_node_reached triggers without
+        // DialogueOverlay having to know about quests.
+        bus.emit('game.dialogue.node_entered', {
+          dialogueId,
+          nodeId: next,
+        });
       },
       { fireImmediately: false },
     ),
