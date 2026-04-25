@@ -1,0 +1,1293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NERIUM NP Agent Flow Diagram M3 (Metis-v3)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #04060C; color: #E8F0FF;
+    font-family: "SF Mono", "IBM Plex Mono", "Courier New", ui-monospace, monospace;
+    overflow-x: hidden; }
+  body { background:
+    radial-gradient(ellipse at 15% 8%, rgba(34, 232, 255, 0.09) 0%, transparent 55%),
+    radial-gradient(ellipse at 88% 88%, rgba(255, 46, 136, 0.07) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, rgba(181, 126, 255, 0.04) 0%, transparent 70%),
+    linear-gradient(180deg, #04060C 0%, #0A0E1A 100%); }
+  a { color: #22E8FF; }
+
+  /* ===== HEADER ===== */
+  header { position: sticky; top: 0; z-index: 50;
+    background: rgba(4, 6, 12, 0.94); backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(34, 232, 255, 0.22);
+    padding: 14px 24px; display: flex; align-items: center; gap: 18px; }
+  header .brand { font-size: 13px; letter-spacing: 3px; color: #22E8FF; font-weight: 700;
+    text-shadow: 0 0 8px rgba(34, 232, 255, 0.4); }
+  header .title { font-size: 11px; letter-spacing: 1.5px; color: #8FAACC;
+    padding-left: 18px; border-left: 1px solid rgba(143, 170, 204, 0.3); }
+  header .spacer { flex: 1; }
+  header button { background: rgba(34, 232, 255, 0.08); border: 1px solid #22E8FF;
+    color: #22E8FF; padding: 8px 18px; font-family: inherit; font-size: 11px;
+    letter-spacing: 2px; cursor: pointer; transition: all 0.2s;
+    text-transform: uppercase; }
+  header button:hover { background: rgba(34, 232, 255, 0.18); box-shadow: 0 0 16px rgba(34, 232, 255, 0.4); }
+  header button.active { background: #22E8FF; color: #04060C; box-shadow: 0 0 22px rgba(34, 232, 255, 0.7); }
+  header .legend { display: flex; gap: 12px; font-size: 9px; letter-spacing: 1px;
+    color: #8FAACC; padding-right: 8px; }
+  header .legend .chip { display: inline-flex; align-items: center; gap: 5px; }
+  header .legend .dot { width: 10px; height: 10px; display: inline-block; border-radius: 2px; }
+  header .legend .dot.max { background: #22E8FF; box-shadow: 0 0 10px #22E8FF; }
+  header .legend .dot.xhigh { background: rgba(34, 232, 255, 0.55); }
+  header .legend .dot.specialist { background: transparent; border: 2px solid #FF2E88; }
+  header .legend .dot.product { background: transparent; border: 2px solid #22E8FF; }
+  header .legend .dot.reuse { background: transparent; border: 2px dashed #B57EFF; }
+
+  /* ===== MAIN LAYOUT ===== */
+  main { display: grid; grid-template-columns: 1fr 380px; gap: 0;
+    min-height: calc(100vh - 60px); }
+  .canvas-wrap { position: relative; padding: 28px 18px 150px 18px; overflow: hidden; }
+  .canvas { position: relative; width: 100%; max-width: 1320px; margin: 0 auto; }
+  svg.arrows { position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 1; }
+  .wave-row { position: relative; padding: 14px 0; z-index: 2; min-height: 110px; }
+  .wave-label { position: absolute; left: -4px; top: 50%; transform: translateY(-50%) rotate(-90deg);
+    font-size: 10px; letter-spacing: 3px; color: #FF2E88; text-transform: uppercase;
+    opacity: 0.7; white-space: nowrap; transform-origin: center; }
+  .wave-row.active .wave-label { color: #22E8FF; opacity: 1; text-shadow: 0 0 10px #22E8FF; }
+  .wave-nodes { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
+    padding: 0 36px; }
+  .wave-timeline-hint { text-align: center; font-size: 9px; letter-spacing: 2px;
+    color: #4A6B8C; margin-top: 4px; text-transform: uppercase; }
+
+  /* ===== NODE CARD ===== */
+  .node { position: relative; width: 148px; min-height: 82px; padding: 8px 10px;
+    background: rgba(14, 20, 38, 0.86); border: 1px solid rgba(34, 232, 255, 0.22);
+    border-left: 3px solid #22E8FF; cursor: pointer; transition: all 0.22s;
+    display: flex; flex-direction: column; justify-content: space-between;
+    font-size: 10.5px; letter-spacing: 0.3px; z-index: 3; }
+  .node.specialist { border-left-color: #FF2E88; }
+  .node.product { border-left-color: #22E8FF; }
+  .node.reuse { border-left-color: #B57EFF; border-left-style: dashed; }
+  .node.entry { border: 1px solid #22E8FF; border-left: 3px solid #22E8FF;
+    background: rgba(34, 232, 255, 0.1); }
+  .node.exit { border: 1px solid #B57EFF; border-left: 3px solid #B57EFF;
+    background: rgba(181, 126, 255, 0.12); }
+  .node.effort-max { box-shadow: inset 0 0 18px rgba(34, 232, 255, 0.12); }
+  .node.effort-max .n-opus { box-shadow: 0 0 10px #22E8FF; background: #22E8FF; }
+  .node:hover { transform: translateY(-2px); background: rgba(14, 20, 38, 0.97);
+    border-color: #22E8FF; box-shadow: 0 4px 24px rgba(34, 232, 255, 0.4); z-index: 4; }
+  .node.selected { border-color: #FF2E88; box-shadow: 0 0 28px rgba(255, 46, 136, 0.6);
+    background: rgba(255, 46, 136, 0.08); }
+  .node .n-name { font-size: 11.5px; font-weight: 700; color: #E8F0FF;
+    letter-spacing: 0.5px; }
+  .node .n-role { font-size: 9px; color: #8FAACC; line-height: 1.32;
+    text-transform: uppercase; letter-spacing: 0.8px; }
+  .node .n-meta { display: flex; justify-content: space-between; align-items: center;
+    gap: 4px; margin-top: 3px; }
+  .node .n-wave { font-size: 8.5px; color: #FF2E88; letter-spacing: 1.4px; }
+  .node .n-sessions { font-size: 8.5px; color: #22E8FF; display: flex; gap: 2px; }
+  .node .n-sessions .dot { width: 4px; height: 4px; background: #22E8FF; border-radius: 50%;
+    box-shadow: 0 0 3px #22E8FF; }
+  .node .n-effort { font-size: 8px; color: #B57EFF; letter-spacing: 1px;
+    text-transform: uppercase; font-weight: 700; }
+  .node .n-effort.max { color: #22E8FF; text-shadow: 0 0 4px #22E8FF; }
+  .node .n-opus { position: absolute; top: 4px; right: 6px; width: 6px; height: 6px;
+    background: rgba(34, 232, 255, 0.55); border-radius: 50%; }
+
+  /* ===== PLAY MODE ===== */
+  .node.pulse { animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(34, 232, 255, 0.6); }
+    50% { box-shadow: 0 0 30px 6px rgba(34, 232, 255, 0.5); }
+  }
+  .node.dimmed { opacity: 0.28; filter: saturate(0.3); }
+  .node.completed { border-left-color: #B57EFF; }
+  .node.completed .n-opus { background: #B57EFF; box-shadow: 0 0 6px #B57EFF; }
+
+  /* ===== ARROWS ===== */
+  .arrows path { fill: none; stroke: rgba(34, 232, 255, 0.18); stroke-width: 1.1;
+    transition: stroke 0.2s, stroke-width 0.2s, opacity 0.2s; }
+  .arrows path.highlighted { stroke: #22E8FF; stroke-width: 2;
+    filter: drop-shadow(0 0 5px #22E8FF); }
+  .arrows path.dimmed { opacity: 0.06; }
+
+  /* ===== INSPECTOR PANEL ===== */
+  aside.inspector { background: rgba(8, 12, 22, 0.94);
+    border-left: 1px solid rgba(34, 232, 255, 0.22); padding: 22px 20px;
+    position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto;
+    font-size: 11px; line-height: 1.55; }
+  .inspector h2 { font-size: 11px; letter-spacing: 3px; color: #FF2E88;
+    text-transform: uppercase; margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 46, 136, 0.3); }
+  .inspector .empty { color: #4A6B8C; font-size: 11px; letter-spacing: 1px;
+    text-transform: uppercase; padding: 22px 0; text-align: center; line-height: 1.8; }
+  .inspector .i-name { font-size: 18px; color: #E8F0FF; font-weight: 700;
+    letter-spacing: 1px; margin-bottom: 2px; }
+  .inspector .i-subline { font-size: 10px; color: #8FAACC; letter-spacing: 1.5px;
+    text-transform: uppercase; margin-bottom: 14px; }
+  .inspector .i-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 14px; }
+  .inspector .badge { font-size: 9px; padding: 3px 7px; letter-spacing: 1.3px;
+    text-transform: uppercase; border: 1px solid; }
+  .badge.opus { border-color: #22E8FF; color: #22E8FF; }
+  .badge.wave { border-color: #FF2E88; color: #FF2E88; }
+  .badge.tier { border-color: #B57EFF; color: #B57EFF; }
+  .badge.effort-max { border-color: #22E8FF; color: #22E8FF;
+    background: rgba(34, 232, 255, 0.12); text-shadow: 0 0 4px #22E8FF; }
+  .badge.effort-xhigh { border-color: #8FAACC; color: #8FAACC; }
+  .badge.sessions { border-color: #22E8FF; color: #22E8FF; background: rgba(34, 232, 255, 0.06); }
+  .badge.dep { border-color: #8FAACC; color: #8FAACC; }
+  .inspector .i-section { margin-top: 13px; }
+  .inspector .i-section h3 { font-size: 10px; letter-spacing: 2px; color: #22E8FF;
+    text-transform: uppercase; margin-bottom: 6px; opacity: 0.85; }
+  .inspector .i-section p { color: #C8D8F0; font-size: 11px; }
+  .inspector .i-section ul { list-style: none; padding-left: 0; }
+  .inspector .i-section li { padding: 3px 0 3px 14px; position: relative;
+    color: #C8D8F0; font-size: 10.5px; line-height: 1.4; }
+  .inspector .i-section li::before { content: "▸"; position: absolute; left: 0;
+    color: #FF2E88; font-size: 9px; }
+  .inspector .i-expand { margin-top: 8px; cursor: pointer;
+    background: rgba(34, 232, 255, 0.06); padding: 7px 9px;
+    border: 1px dashed rgba(34, 232, 255, 0.3); font-size: 10px; letter-spacing: 1.4px;
+    color: #22E8FF; text-transform: uppercase; user-select: none; }
+  .inspector .i-expand:hover { background: rgba(34, 232, 255, 0.12); }
+  .inspector .i-expand.open { background: rgba(34, 232, 255, 0.14); border-style: solid; }
+  .inspector .i-expand-body { display: none; padding: 9px 6px 2px 6px; }
+  .inspector .i-expand.open .i-expand-body { display: block; }
+
+  /* ===== TIMELINE ===== */
+  .timeline { position: fixed; left: 0; right: 380px; bottom: 0;
+    background: rgba(4, 6, 12, 0.97); border-top: 1px solid rgba(34, 232, 255, 0.22);
+    padding: 12px 24px; z-index: 40; }
+  .timeline-rail { position: relative; height: 32px; background: rgba(34, 232, 255, 0.04);
+    border: 1px solid rgba(34, 232, 255, 0.14); overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; bottom: 0; border-left: 1px solid rgba(34, 232, 255, 0.22);
+    padding: 6px 7px; font-size: 8.5px; color: #8FAACC; letter-spacing: 0.8px;
+    text-transform: uppercase; white-space: nowrap; }
+  .timeline-marker.start { color: #22E8FF; }
+  .timeline-marker.submit { color: #FF2E88; border-left-color: #FF2E88;
+    background: rgba(255, 46, 136, 0.1); }
+  .timeline-progress { position: absolute; top: 0; bottom: 0; left: 0; width: 0;
+    background: linear-gradient(90deg, rgba(34, 232, 255, 0) 0%, rgba(34, 232, 255, 0.28) 100%);
+    border-right: 2px solid #22E8FF; transition: width 0.3s linear;
+    box-shadow: 4px 0 18px rgba(34, 232, 255, 0.55); }
+  .timeline-clock { position: absolute; top: -22px; font-size: 9.5px; letter-spacing: 1.4px;
+    color: #22E8FF; text-transform: uppercase; transform: translateX(-50%);
+    white-space: nowrap; text-shadow: 0 0 6px #22E8FF; }
+
+  .foot-meta { text-align: center; font-size: 9px; color: #4A6B8C; letter-spacing: 1.8px;
+    padding: 6px 0 0 0; text-transform: uppercase; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: rgba(34, 232, 255, 0.03); }
+  ::-webkit-scrollbar-thumb { background: rgba(34, 232, 255, 0.3); }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(34, 232, 255, 0.5); }
+
+  @media (max-width: 1100px) {
+    main { grid-template-columns: 1fr; }
+    aside.inspector { position: relative; height: auto; top: 0;
+      border-left: none; border-top: 1px solid rgba(34, 232, 255, 0.22); }
+    .timeline { right: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">NERIUM // NP</div>
+  <div class="title">M3 NP AGENT FLOW // METIS-V3 // OPUS 4.7 JALUR A FULL BACKEND</div>
+  <div class="spacer"></div>
+  <div class="legend">
+    <span class="chip"><span class="dot max"></span>Effort max</span>
+    <span class="chip"><span class="dot xhigh"></span>xhigh</span>
+    <span class="chip"><span class="dot product"></span>Product</span>
+    <span class="chip"><span class="dot specialist"></span>Specialist</span>
+    <span class="chip"><span class="dot reuse"></span>Reuse</span>
+  </div>
+  <button id="play-btn">▶ Play</button>
+  <button id="reset-btn">Reset</button>
+</header>
+
+<main>
+  <div class="canvas-wrap">
+    <div class="canvas" id="canvas">
+      <svg class="arrows" id="arrows"></svg>
+
+      <!-- Wave ferry: Metis-v3 entry -->
+      <div class="wave-row" data-wave="-1">
+        <div class="wave-label">Ferry</div>
+        <div class="wave-nodes">
+          <div class="node entry" data-id="metis-v3">
+            <span class="n-opus"></span>
+            <div class="n-name">Metis-v3</div>
+            <div class="n-role">M1 + M2 + M3 NP arch</div>
+            <div class="n-meta">
+              <span class="n-wave">Ferry</span>
+              <span class="n-effort">Max plan</span>
+            </div>
+          </div>
+        </div>
+        <div class="wave-timeline-hint">Jumat 25 Apr pagi WIB, research + structure + diagram</div>
+      </div>
+
+      <!-- Wave Pre: Pythia-v3 + Hephaestus-v3 (specialist batch) -->
+      <div class="wave-row" data-wave="0pre">
+        <div class="wave-label">Pre-W1</div>
+        <div class="wave-nodes">
+          <div class="node specialist effort-max" data-id="pythia-v3">
+            <span class="n-opus"></span>
+            <div class="n-name">Pythia-v3</div>
+            <div class="n-role">Contracts round 3</div>
+            <div class="n-meta">
+              <span class="n-wave">W1</span>
+              <span class="n-sessions"><span class="dot"></span></span>
+              <span class="n-effort max">max</span>
+            </div>
+          </div>
+          <div class="node specialist effort-max" data-id="hephaestus-v3">
+            <span class="n-opus"></span>
+            <div class="n-name">Hephaestus-v3</div>
+            <div class="n-role">Prompt batch 22 agents</div>
+            <div class="n-meta">
+              <span class="n-wave">W1</span>
+              <span class="n-sessions"><span class="dot"></span></span>
+              <span class="n-effort max">max</span>
+            </div>
+          </div>
+        </div>
+        <div class="wave-timeline-hint">Jumat pagi-siang, sequential blockers sebelum Wave 0+1 spawn</div>
+      </div>
+
+      <!-- Wave 0: Epimetheus Bridge -->
+      <div class="wave-row" data-wave="0">
+        <div class="wave-label">W0 Bridge</div>
+        <div class="wave-nodes">
+          <div class="node product" data-id="epimetheus">
+            <span class="n-opus"></span>
+            <div class="n-name">Epimetheus</div>
+            <div class="n-role">B1-B5 + caravan + store fix</div>
+            <div class="n-meta">
+              <span class="n-wave">W0</span>
+              <span class="n-sessions"><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+          <div class="node reuse" data-id="nemea-rv-v2-w0">
+            <span class="n-opus"></span>
+            <div class="n-name">Nemea-RV-v2 W0</div>
+            <div class="n-role">Verify 23/23 E2E green</div>
+            <div class="n-meta">
+              <span class="n-wave">W0</span>
+              <span class="n-sessions"><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+        </div>
+        <div class="wave-timeline-hint">Jumat siang-sore, isolated dep chain parallel dengan W1</div>
+      </div>
+
+      <!-- Wave 1: Infrastructure -->
+      <div class="wave-row" data-wave="1">
+        <div class="wave-label">W1 Infra</div>
+        <div class="wave-nodes">
+          <div class="node product effort-max" data-id="aether">
+            <span class="n-opus"></span>
+            <div class="n-name">Aether</div>
+            <div class="n-role">FastAPI + Postgres + Redis</div>
+            <div class="n-meta">
+              <span class="n-wave">W1</span>
+              <span class="n-sessions"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+              <span class="n-effort max">max</span>
+            </div>
+          </div>
+          <div class="node product effort-max" data-id="khronos">
+            <span class="n-opus"></span>
+            <div class="n-name">Khronos</div>
+            <div class="n-role">Remote MCP + OAuth DCR</div>
+            <div class="n-meta">
+              <span class="n-wave">W1</span>
+              <span class="n-sessions"><span class="dot"></span><span class="dot"></span></span>
+              <span class="n-effort max">max</span>
+            </div>
+          </div>
+          <div class="node product" data-id="chione">
+            <span class="n-opus"></span>
+            <div class="n-name">Chione</div>
+            <div class="n-role">R2 storage + ClamAV</div>
+            <div class="n-meta">
+              <span class="n-wave">W1</span>
+              <span class="n-sessions"><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+          <div class="node product" data-id="pheme">
+            <span class="n-opus"></span>
+            <div class="n-name">Pheme</div>
+            <div class="n-role">Resend + React Email</div>
+            <div class="n-meta">
+              <span class="n-wave">W1</span>
+              <span class="n-sessions"><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+          <div class="node product" data-id="hemera">
+            <span class="n-opus"></span>
+            <div class="n-name">Hemera</div>
+            <div class="n-role">Feature flag Postgres</div>
+            <div class="n-meta">
+              <span class="n-wave">W1</span>
+              <span class="n-sessions"><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+          <div class="node product" data-id="selene">
+            <span class="n-opus"></span>
+            <div class="n-name">Selene</div>
+            <div class="n-role">Logs + OTel + GlitchTip</div>
+            <div class="n-meta">
+              <span class="n-wave">W1</span>
+              <span class="n-sessions"><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+        </div>
+        <div class="wave-timeline-hint">Jumat 25 Apr full day WIB, 6 parallel (Aether blocks others on schema)</div>
+      </div>
+
+      <!-- Wave 2: Commerce + Protocol + Admin -->
+      <div class="wave-row" data-wave="2">
+        <div class="wave-label">W2 Core</div>
+        <div class="wave-nodes">
+          <div class="node product" data-id="phanes">
+            <span class="n-opus"></span>
+            <div class="n-name">Phanes</div>
+            <div class="n-role">7-cat listing schema</div>
+            <div class="n-meta">
+              <span class="n-wave">W2</span>
+              <span class="n-sessions"><span class="dot"></span><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+          <div class="node product" data-id="hyperion">
+            <span class="n-opus"></span>
+            <div class="n-name">Hyperion</div>
+            <div class="n-role">FTS + pgvector RRF</div>
+            <div class="n-meta">
+              <span class="n-wave">W2</span>
+              <span class="n-sessions"><span class="dot"></span><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+          <div class="node product effort-max" data-id="kratos">
+            <span class="n-opus"></span>
+            <div class="n-name">Kratos</div>
+            <div class="n-role">Agent SDK + MA runtime</div>
+            <div class="n-meta">
+              <span class="n-wave">W2</span>
+              <span class="n-sessions"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+              <span class="n-effort max">max</span>
+            </div>
+          </div>
+          <div class="node product" data-id="nike">
+            <span class="n-opus"></span>
+            <div class="n-name">Nike</div>
+            <div class="n-role">WebSocket + SSE realtime</div>
+            <div class="n-meta">
+              <span class="n-wave">W2</span>
+              <span class="n-sessions"><span class="dot"></span><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+          <div class="node product" data-id="plutus">
+            <span class="n-opus"></span>
+            <div class="n-name">Plutus</div>
+            <div class="n-role">Stripe test + ledger</div>
+            <div class="n-meta">
+              <span class="n-wave">W2</span>
+              <span class="n-sessions"><span class="dot"></span><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+          <div class="node product" data-id="iapetus">
+            <span class="n-opus"></span>
+            <div class="n-name">Iapetus</div>
+            <div class="n-role">Stripe Connect + purchase</div>
+            <div class="n-meta">
+              <span class="n-wave">W2</span>
+              <span class="n-sessions"><span class="dot"></span><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+          <div class="node product" data-id="tethys">
+            <span class="n-opus"></span>
+            <div class="n-name">Tethys</div>
+            <div class="n-role">Ed25519 identity</div>
+            <div class="n-meta">
+              <span class="n-wave">W2</span>
+              <span class="n-sessions"><span class="dot"></span><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+          <div class="node product" data-id="crius">
+            <span class="n-opus"></span>
+            <div class="n-name">Crius</div>
+            <div class="n-role">Vendor adapter AES-GCM</div>
+            <div class="n-meta">
+              <span class="n-wave">W2</span>
+              <span class="n-sessions"><span class="dot"></span><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+          <div class="node product" data-id="astraea">
+            <span class="n-opus"></span>
+            <div class="n-name">Astraea</div>
+            <div class="n-role">Trust Bayesian + Wilson</div>
+            <div class="n-meta">
+              <span class="n-wave">W2</span>
+              <span class="n-sessions"><span class="dot"></span><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+          <div class="node product" data-id="eunomia">
+            <span class="n-opus"></span>
+            <div class="n-name">Eunomia</div>
+            <div class="n-role">SQLAdmin + GDPR + legal</div>
+            <div class="n-meta">
+              <span class="n-wave">W2</span>
+              <span class="n-sessions"><span class="dot"></span><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+          <div class="node product" data-id="moros">
+            <span class="n-opus"></span>
+            <div class="n-name">Moros</div>
+            <div class="n-role">Chronos budget daemon</div>
+            <div class="n-meta">
+              <span class="n-wave">W2</span>
+              <span class="n-sessions"><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+          <div class="node product" data-id="marshall">
+            <span class="n-opus"></span>
+            <div class="n-name">Marshall</div>
+            <div class="n-role">Pricing + treasurer + CTA fix</div>
+            <div class="n-meta">
+              <span class="n-wave">W2</span>
+              <span class="n-sessions"><span class="dot"></span><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+        </div>
+        <div class="wave-timeline-hint">Sabtu 26 Apr full day WIB, 6-7 concurrent practical (12 agents total)</div>
+      </div>
+
+      <!-- Wave 3: Game Visual + Chat + Skill Transplant -->
+      <div class="wave-row" data-wave="3">
+        <div class="wave-label">W3 Game</div>
+        <div class="wave-nodes">
+          <div class="node product effort-max" data-id="helios-v2">
+            <span class="n-opus"></span>
+            <div class="n-name">Helios-v2</div>
+            <div class="n-role">Visual revamp 4 scenes</div>
+            <div class="n-meta">
+              <span class="n-wave">W3</span>
+              <span class="n-sessions"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+              <span class="n-effort max">max</span>
+            </div>
+          </div>
+          <div class="node product" data-id="boreas">
+            <span class="n-opus"></span>
+            <div class="n-name">Boreas</div>
+            <div class="n-role">Minecraft chat UIScene</div>
+            <div class="n-meta">
+              <span class="n-wave">W3</span>
+              <span class="n-sessions"><span class="dot"></span><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+          <div class="node reuse" data-id="talos-v2">
+            <span class="n-opus"></span>
+            <div class="n-name">Talos-v2</div>
+            <div class="n-role">Oak-Woods skill port</div>
+            <div class="n-meta">
+              <span class="n-wave">W3</span>
+              <span class="n-sessions"><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+        </div>
+        <div class="wave-timeline-hint">Minggu 26 Apr morning-afternoon WIB, 3 parallel (Helios-v2 largest 7 sessions)</div>
+      </div>
+
+      <!-- Wave 4: Final QA + Submission -->
+      <div class="wave-row" data-wave="4">
+        <div class="wave-label">W4 QA</div>
+        <div class="wave-nodes">
+          <div class="node reuse" data-id="nemea-rv-v2-w4">
+            <span class="n-opus"></span>
+            <div class="n-name">Nemea-RV-v2 W4</div>
+            <div class="n-role">E2E + a11y + /ultrareview</div>
+            <div class="n-meta">
+              <span class="n-wave">W4</span>
+              <span class="n-sessions"><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+          <div class="node reuse" data-id="kalypso-w4">
+            <span class="n-opus"></span>
+            <div class="n-name">Kalypso W4</div>
+            <div class="n-role">Landing + demo + README</div>
+            <div class="n-meta">
+              <span class="n-wave">W4</span>
+              <span class="n-sessions"><span class="dot"></span></span>
+              <span class="n-effort">xhigh</span>
+            </div>
+          </div>
+        </div>
+        <div class="wave-timeline-hint">Minggu evening + Senin 00:00-06:00 WIB, sequential final</div>
+      </div>
+
+      <!-- Wave 5: Submit -->
+      <div class="wave-row" data-wave="5">
+        <div class="wave-label">W5 Ship</div>
+        <div class="wave-nodes">
+          <div class="node exit" data-id="ghaisan-submit">
+            <span class="n-opus" style="background:#B57EFF;box-shadow:0 0 8px #B57EFF;"></span>
+            <div class="n-name">Ghaisan Submit</div>
+            <div class="n-role">Cerebral Valley + Anthropic</div>
+            <div class="n-meta">
+              <span class="n-wave">W5</span>
+              <span class="n-sessions"><span class="dot" style="background:#B57EFF;box-shadow:0 0 4px #B57EFF;"></span></span>
+              <span class="n-effort">06:00 WIB</span>
+            </div>
+          </div>
+        </div>
+        <div class="wave-timeline-hint">Senin 27 Apr 06:00 WIB target (hard deadline 07:00 WIB)</div>
+      </div>
+
+    </div>
+    <div class="foot-meta">20 active + 2 reuse-execute + 3 specialist // 100% Opus 4.7 // 4 effort max // 5 waves Kamis evening through Senin 06:00 WIB</div>
+  </div>
+
+  <aside class="inspector" id="inspector">
+    <h2>HUD Inspector</h2>
+    <div id="i-content">
+      <div class="empty">Hover any node to inspect<br>Click to pin<br>Play to animate wave timeline</div>
+    </div>
+  </aside>
+
+  <div class="timeline">
+    <div class="timeline-rail" id="timeline-rail">
+      <div class="timeline-progress" id="timeline-progress">
+        <div class="timeline-clock" id="timeline-clock">WAITING</div>
+      </div>
+      <div class="timeline-marker start" style="left: 0%;">Jumat 09:00</div>
+      <div class="timeline-marker" style="left: 12%;">Jumat 14:00 W0+W1</div>
+      <div class="timeline-marker" style="left: 32%;">Sabtu 07:00 W2</div>
+      <div class="timeline-marker" style="left: 60%;">Minggu 07:00 W3</div>
+      <div class="timeline-marker" style="left: 85%;">Minggu 22:00 W4</div>
+      <div class="timeline-marker submit" style="left: 96%;">Senin 06:00 SUBMIT</div>
+    </div>
+  </div>
+</main>
+
+<script>
+/* ==================== AGENT DATA ==================== */
+const AGENTS = {
+  'metis-v3': {
+    name: 'Metis-v3', tier: 'Specialist', layer: 'Orchestration', model: 'Opus 4.7',
+    wave: -1, sessions: 3, effort: 'Max plan',
+    role: 'NP phase architecture: M1 research (48 topics comprehensive), M2 agent structure (20 active + 2 reuse + 3 specialist), M3 this flow diagram. Continuation of Metis-v2 RV lineage. 3-phase ferry pattern halt per Ghaisan approval.',
+    upstream: ['V4 NP kickoff + RV shipped baseline', 'Ghaisan 5 gate answers + bonus directives'],
+    downstream: ['Pythia-v3 (contracts input)', 'Hephaestus-v3 (roster spec)', 'All 20 active agents (mandatory reading)'],
+    halt: ['M1 ferry halt', 'M2 ferry halt', 'M3 ferry halt', 'Context 97%'],
+    stops: ['Skip halt gate without V4 ferry approval', 'Token budget estimate fabrication per V4 directive']
+  },
+  'pythia-v3': {
+    name: 'Pythia-v3', tier: 'Specialist', layer: 'Contracts', model: 'Opus 4.7',
+    wave: 1, sessions: 1, effort: 'max',
+    role: 'Contract round 3 NP additions. Expected 15-20 new contracts: mcp_protocol, oauth_dcr, ma_session, realtime_bus, stripe_integration, ledger_double_entry, stripe_connect, marketplace_purchase, creator_dashboard, marketplace_listing, search_index, agent_identity, key_rotation, vendor_adapter, ir_schema, trust_score, file_storage, email_transactional, feature_flag, observability, admin_panel, gdpr_compliance, pricing_tier, treasurer_npc, chat_ui, command_parser, visual_manifest, scene_transition, budget_monitor.',
+    upstream: ['M2 RV_NP_AGENT_STRUCTURE.md', 'M1 RV_NP_RESEARCH.md', 'Existing RV + P0 contracts'],
+    downstream: ['Hephaestus-v3', 'ALL 20 active agents', 'Talos-v2 + Nemea-RV-v2 reuse-execute'],
+    halt: ['Contract ambiguity unresolvable from M1 or M2', 'Circular dependency between contracts', 'Schema conflict with shipped RV contracts'],
+    stops: ['Revising V4 lock without ferry approval', 'Introducing tech stack component beyond CLAUDE.md lock']
+  },
+  'hephaestus-v3': {
+    name: 'Hephaestus-v3', tier: 'Specialist', layer: 'Prompt authoring', model: 'Opus 4.7',
+    wave: 1, sessions: 1, effort: 'max',
+    role: 'Single-batch session authors all 22 .claude/agents/*.md prompt files (20 active + Talos-v2 reuse-execute + Nemea-RV-v2 reuse-execute). Enforces anti-pattern 6 (no per-file ferry) per CLAUDE.md. Each prompt target 200-400 lines, halt at 400 cap.',
+    upstream: ['Pythia-v3 all NP contracts ready', 'M2 RV_NP_AGENT_STRUCTURE.md', 'NarasiGhaisan v1.1', 'CLAUDE.md'],
+    downstream: ['ALL 20 active + 2 reuse-execute agents (receive prompt file)'],
+    halt: ['Context 97% threshold (MedWatch V5 lesson)', 'Any single prompt exceeds 400 lines', 'Contract reference unresolvable in Pythia-v3 output'],
+    stops: ['Per-file ferry (anti-pattern 6)', 'Separate session per agent', 'Omitting mandatory reading list per Tier A/B/C mapping']
+  },
+  'epimetheus': {
+    name: 'Epimetheus', tier: 'Product-side', layer: 'Bridge', model: 'Opus 4.7',
+    wave: 0, sessions: 1, effort: 'xhigh',
+    role: 'W0 RV regression bridge. Surgical fixes: B1 autostartFromCatalog mount, B2 registerDialogues([apollo_intro]) mount, B3 gameBridge.questEffectBus 8-branch switch full effect routing, B4 BusBridge dialogue_node_reached trigger propagation. Plus Harmonia-RV-A duplicate store consolidation (replace inline create blocks in src/state/stores.ts with re-export shims from src/stores/questStore.ts + src/stores/dialogueStore.ts, mirror audio pattern). Plus B5 Option (a) FULL BUILD caravan_vendor NPC + caravan_arrival_zone + caravan_vendor_greet.json.',
+    upstream: ['M1 + M2 + Hephaestus-v3 prompt', 'Nemea-RV-A regression report', 'Harmonia-RV-A state integration report'],
+    downstream: ['Nemea-RV-v2 W0 (verify 23/23 green)', 'All Wave 2+ game-adjacent agents (stable quest runtime foundation)'],
+    halt: ['Context 97% split into Epimetheus-A/B', 'B3 effect switch reveals contract schema gap', 'Duplicate store consolidation breaks re-export path', 'Caravan dialogue fails zod validation', 'Nemea verify returns less than 20/23 green'],
+    stops: ['Changing quest_schema or dialogue_schema shape', 'Moving caravan beyond ApolloVillageScene', 'New store singleton beyond 5 contract-specified', 'React HUD for caravan interaction']
+  },
+  'nemea-rv-v2-w0': {
+    name: 'Nemea-RV-v2 W0', tier: 'Reuse-execute', layer: 'Regression QA', model: 'Opus 4.7',
+    wave: 0, sessions: 1, effort: 'xhigh',
+    role: 'Verify Epimetheus W0 output by re-running full Playwright E2E suite. Target 23/23 green (up from RV 9/23). Tier B Oak-Woods mandatory reading (playwright-testing skill + __TEST__.ready pattern + Phaser.Math.RandomDataGenerator seeded RNG).',
+    upstream: ['Epimetheus commit'],
+    downstream: ['Ghaisan go/no-go for Wave 2 spawn'],
+    halt: ['E2E less than 20/23 green (escalate back to Epimetheus)', 'Flaky test (retry with deterministic seed)'],
+    stops: ['Recommending test disable (require investigation first)']
+  },
+  'aether': {
+    name: 'Aether', tier: 'Product-side', layer: 'Backend core', model: 'Opus 4.7',
+    wave: 1, sessions: 3, effort: 'max',
+    role: 'FastAPI production core. Postgres 16 multi-tenant with RLS defense-in-depth (shared schema + tenant_id + RLS policies via current_setting app.tenant_id). Redis 7 session + cache + rate limit + pub/sub. Arq background job queue. Lifespan-managed asyncpg pools. Middleware stack CORS + TrustedHost + request-id + access log + auth. OpenAPI 3.1 + Pydantic v2. URL versioning /v1/. Cursor pagination opaque base64 JSON. RFC 7807 problem+json errors. UUID v7 ids. Alembic async migrations covering full NP schema (users, sessions, quest_progress, inventory, marketplace_listing, transaction_ledger, trust_score, agent_identity, vendor_adapter, file_storage_manifest, hemera_flag, hemera_override, hemera_audit, ma_session, ma_event, ma_step).',
+    upstream: ['Pythia-v3 all NP contracts', 'M1 Part A', 'CLAUDE.md'],
+    downstream: ['ALL other 19 NP active agents (every agent writes/reads Aether DB + Redis + routes)'],
+    halt: ['Context 97% (split 3 sessions)', 'Pythia-v3 contract schema gap', 'Alembic migration circular dep', 'RLS policy breaks test isolation'],
+    stops: ['Adding ORM (asyncpg raw locked)', 'Switching to schema-per-tenant', 'Adding pgbouncer pre-submit', 'Moving queue off Arq']
+  },
+  'khronos': {
+    name: 'Khronos', tier: 'Product-side', layer: 'MCP', model: 'Opus 4.7',
+    wave: 1, sessions: 2, effort: 'max',
+    role: 'Remote MCP server at https://nerium.com/mcp. Python FastMCP mounted into FastAPI lifespan. OAuth 2.1 DCR (RFC 7591) + PKCE S256 + Resource Indicators (RFC 8707) + Protected Resource Metadata (RFC 9728) + Streamable HTTP transport (2025-06-18 MCP spec). JWT RS256 rotating JWKS, aud canonical MCP URL, iss nerium.com, 1h access + refresh rotation with reuse detection. Tools exposure list_projects + list_agents + search_marketplace + get_agent_identity + create_ma_session. Rate limit Lua Redis token bucket per-token + per-IP. Cloudflare WAF allowlist 160.79.104.0/21 Anthropic egress for /mcp/*.',
+    upstream: ['Aether lifespan stable', 'Pythia-v3 mcp_protocol + oauth_dcr contracts', 'M1 Sections A.1 + A.2'],
+    downstream: ['Claude.ai custom connector catalog', 'Kratos (MCP tool calls MA sessions)'],
+    halt: ['FastMCP FastAPI lifespan incompatibility', 'Claude.ai ofid_* error (fallback oauth_anthropic_creds)', 'JWT JWKS rotation breaks verifier', 'Rate limit false-positive on judge traffic'],
+    stops: ['Switching Python FastMCP to Node TypeScript SDK', 'Adding Local MCP mode (deferred)', 'Exposing mutating billing tools', 'Changing OAuth flow from DCR']
+  },
+  'chione': {
+    name: 'Chione', tier: 'Product-side', layer: 'Storage', model: 'Opus 4.7',
+    wave: 1, sessions: 1, effort: 'xhigh',
+    role: 'Cloudflare R2 file storage (10 GB + 1M Class A + 10M Class B free/mo, zero egress). Presigned POST upload cap 25 MB. ClamAV sidecar virus scan. Images via Cloudflare CDN (free egress). Profile avatar, custom prompt library, Built app output archive, sprite pack ZIP for Marketplace Assets.',
+    upstream: ['Aether', 'Pythia-v3 file_storage.contract.md', 'M1 Section E.28'],
+    downstream: ['Phanes (asset uploads)', 'Iapetus (creator custom_build_service uploads)', 'Eunomia (archive access for moderation)'],
+    halt: ['ClamAV Docker image too heavy for CX32 (defer scan to Arq async)', 'R2 egress metrics spike unexpected'],
+    stops: ['Switching off R2 to MinIO self-host without justification', 'Removing virus scan layer']
+  },
+  'pheme': {
+    name: 'Pheme', tier: 'Product-side', layer: 'Email', model: 'Opus 4.7',
+    wave: 1, sessions: 1, effort: 'xhigh',
+    role: 'Resend Free tier (3k/mo, 100/day) + React Email templates. DKIM + SPF + DMARC on mail.nerium.com subdomain. Templates welcome + quest_completion + marketplace_sale + billing_reminder + password_reset + invoice_receipt. Warm-up schedule new domain under 50/day week 1. Unsubscribe compliance.',
+    upstream: ['Aether', 'Pythia-v3 email_transactional.contract.md', 'M1 Section C.20'],
+    downstream: ['Plutus (invoice email)', 'Iapetus (sale notification)', 'Tethys (key rotation alert)', 'Eunomia (GDPR export email)'],
+    halt: ['Resend free tier quota approaching mid-pitch', 'DMARC quarantine on new domain', 'DNS record propagation delay'],
+    stops: ['Switching to SendGrid/Postmark without justification', 'Composing non-transactional marketing emails (scope lock)']
+  },
+  'hemera': {
+    name: 'Hemera', tier: 'Product-side', layer: 'Feature flags', model: 'Opus 4.7',
+    wave: 1, sessions: 1, effort: 'xhigh',
+    role: 'Postgres-backed feature flag service (custom per spec). Schema hemera_flag (name PK, default_value jsonb) + hemera_override (user_id + flag_name + value + expires_at) + hemera_audit (actor + action + old + new). Redis 10s cache. APScheduler TTL sweep nightly. Audit trigger on insert/update/delete writes actor_id from current_setting. Whitelist gate builder.live flag default false, judges + Ghaisan + demo user permanent overrides.',
+    upstream: ['Aether', 'Pythia-v3 feature_flag.contract.md', 'M1 Section E.34'],
+    downstream: ['Kratos (builder.live gate)', 'Moros (cap auto-disable)', 'Crius (vendor kill switch)', 'Eunomia (flag UI admin)', 'ALL NP agents (any feature gated)'],
+    halt: ['Redis cache invalidation lag on multi-worker', 'Audit trigger infinite recursion (guard via pg_trigger_depth)'],
+    stops: ['Switching to Unleash or PostHog flags', 'Removing audit trail']
+  },
+  'selene': {
+    name: 'Selene', tier: 'Product-side', layer: 'Observability', model: 'Opus 4.7',
+    wave: 1, sessions: 1, effort: 'xhigh',
+    role: 'Structured logging + tracing + metrics. structlog JSON + opentelemetry-instrumentation-logging + asgi-correlation-id for X-Request-ID. Ship to Grafana Cloud Free via Alloy agent or direct Loki push (50 GB logs + 50 GB traces + 10k series + 14-day retention). GlitchTip self-host for error tracking (Sentry wire-protocol compatible). OpenTelemetry SDK across FastAPI + httpx + SQLAlchemy + Redis + Arq.',
+    upstream: ['Aether', 'Pythia-v3 observability.contract.md', 'M1 Sections E.29 + E.31 + E.32'],
+    downstream: ['ALL agents (shared logger)', 'Eunomia (dashboard Grafana link)', 'Moros (OTel metric source for spend)'],
+    halt: ['Grafana Cloud free quota exceeded pre-launch', 'GlitchTip self-host RAM pressure on CX32 (fallback Sentry Cloud Developer free)'],
+    stops: ['Dropping trace correlation', 'Running Loki self-host instead of Grafana Cloud (defer post-hackathon)']
+  },
+  'phanes': {
+    name: 'Phanes', tier: 'Product-side', layer: 'Marketplace listings', model: 'Opus 4.7',
+    wave: 2, sessions: 2, effort: 'xhigh',
+    role: '7-category Marketplace listing schema. Category enum (Core Agent + Content + Infrastructure + Assets + Services + Data + Premium) + subtype (agent, prompt, skill, quest_template, dialogue_tree, mcp_config, connector, workflow, voice_profile, visual_theme, sprite_pack, sound_pack, dataset, etc). Pricing model (free, one_time, subscription_monthly, subscription_yearly, usage_based, tiered). License (MIT, CC0, CC_BY_4, CC_BY_SA_4, CC_BY_NC_4, APACHE_2, CUSTOM_COMMERCIAL, PROPRIETARY). Category-specific jsonb sub-schema validation. Creator submission flow draft-to-publish, version history.',
+    upstream: ['Aether', 'Chione (asset uploads)', 'Pythia-v3 marketplace_listing.contract.md', 'M1 Section C.21'],
+    downstream: ['Hyperion (search index)', 'Iapetus (purchase reads)', 'Astraea (trust per listing)', 'Eunomia (moderation queue)'],
+    halt: ['Category enum ambiguity (escalate Pythia-v3)', 'Creator submission UX complexity (progressive disclosure)'],
+    stops: ['Collapsing 7 categories', 'Opening Premium issuance pre-GA']
+  },
+  'hyperion': {
+    name: 'Hyperion', tier: 'Product-side', layer: 'Marketplace search', model: 'Opus 4.7',
+    wave: 2, sessions: 2, effort: 'xhigh',
+    role: 'Hybrid FTS + pgvector search. Postgres tsvector + GIN + pg_trgm lexical + pgvector cosine semantic + Reciprocal Rank Fusion (RRF k=60) merge. Bilingual ID+EN via simple config. Voyage voyage-3.5 (1024-dim) embedding primary + OpenAI text-embedding-3-small (1536-dim) fallback via Crius adapter chain. Search API /v1/marketplace/search with category + subtype + license + price_range + sort filters. Autocomplete endpoint.',
+    upstream: ['Aether', 'Phanes (listing data)', 'Crius (embedding fallback)', 'Pythia-v3 search_index.contract.md', 'M1 Section C.18'],
+    downstream: ['Iapetus (purchase filter)', 'Kratos (MCP tool search_marketplace via Khronos)'],
+    halt: ['pgvector extension unavailable (fallback FTS-only)', 'Voyage API rate limit (Crius circuit breaker fallback)'],
+    stops: ['Moving off Postgres to Algolia/Typesense/Meilisearch']
+  },
+  'kratos': {
+    name: 'Kratos', tier: 'Product-side', layer: 'Builder runtime', model: 'Opus 4.7',
+    wave: 2, sessions: 3, effort: 'max',
+    role: 'Agent orchestration runtime. Inner loop via Claude Agent SDK (query + ClaudeSDKClient, Opus 4.7 v0.2.111+). Outer DAG via custom Python state machine (asyncio + Postgres ma_step). MA session lifecycle (queued/running/streaming/completed/cancelled/failed/budget_capped). Hemera whitelist gate pre-call. Chronos budget integration via Moros Redis cap flag. SSE streaming via Nike infra. Parallel tool_use aggregation. Model routing heuristic per M1 Section B.15 (Opus 4.7 planning/synthesis/hard code, Sonnet 4.6 tool calls/RAG/compose, Haiku 4.5 classification/extraction).',
+    upstream: ['Aether', 'Nike (SSE infra)', 'Hemera (builder.live flag)', 'Moros (chronos:ma_capped flag)', 'Tethys (identity verify tool_use)', 'Crius (vendor fallback)', 'Pythia-v3 ma_session.contract.md', 'M1 Part B'],
+    downstream: ['Nike (event publish)', 'Boreas (chat UIScene consumer)', 'Plutus (post-session cost ledger)', 'Selene (OTel traces)'],
+    halt: ['Claude Agent SDK version mismatch (need v0.2.111+)', 'tool_use parallel aggregation race', 'SSE drop mid-stream (resume via Last-Event-ID)', 'Budget cap triggered mid-session (clean cancel)'],
+    stops: ['Running live Builder without Hemera whitelist', 'Model routing non-Anthropic default', 'Bypassing Chronos budget daemon']
+  },
+  'nike': {
+    name: 'Nike', tier: 'Product-side', layer: 'Realtime', model: 'Opus 4.7',
+    wave: 2, sessions: 2, effort: 'xhigh',
+    role: 'WebSocket server /ws/realtime + per-route SSE endpoints. FastAPI native WebSocket + ConnectionManager + Redis pub/sub fanout. Auth via 60s JWT ticket query param (browser cannot set Authorization on WS). Heartbeat 25s. Reconnection exponential backoff 1s/2s/4s/max 30s. State snapshot send via Last-Event-ID mapped to Redis Stream replay. Broadcast rooms per user + per session.',
+    upstream: ['Aether (Redis)', 'Kratos (event publish)', 'Pythia-v3 realtime_bus.contract.md', 'M1 Section A.9 + B.13'],
+    downstream: ['Boreas (chat SSE consumer)', 'frontend Builder UI streaming', 'push notifications'],
+    halt: ['ConnectionManager memory leak on mass disconnect', 'Redis Stream trim policy (XADD MAXLEN ~ 10000)', 'JWT ticket expiry race on slow mobile'],
+    stops: ['Switching to SignalR or Ably hosted', 'Dropping heartbeat + reconnect contract']
+  },
+  'plutus': {
+    name: 'Plutus', tier: 'Product-side', layer: 'Banking', model: 'Opus 4.7',
+    wave: 2, sessions: 2, effort: 'xhigh',
+    role: 'Stripe test mode. Subscription tier CRUD (Free, Solo, Team, Enterprise). Stripe Checkout Session hosted flow Mode A web. Double-entry transaction ledger (NERIUM owns, not Stripe-derived). Stripe webhook handler idempotent (event_id as ledger idempotency_key). Proration via Stripe native. Mode B Tauri deep link return via nerium://auth/callback. Invoice PDF via WeasyPrint + Jinja2. SCA compliance automatic via Stripe Elements.',
+    upstream: ['Aether', 'Pheme (invoice email)', 'Pythia-v3 stripe_integration + ledger_double_entry contracts', 'M1 Sections C.16 + C.19'],
+    downstream: ['Iapetus (Stripe client share)', 'Eunomia (admin refund UI)', 'Moros (revenue metric)'],
+    halt: ['Stripe test API 500 (retry backoff)', 'SCA challenge flow 3DS test cards', 'Deep link return URL Tauri WebView'],
+    stops: ['Enabling live mode pre-Stripe Atlas verification', 'Skipping internal ledger', 'Using Stripe metadata as source-of-truth']
+  },
+  'iapetus': {
+    name: 'Iapetus', tier: 'Product-side', layer: 'Marketplace commerce', model: 'Opus 4.7',
+    wave: 2, sessions: 2, effort: 'xhigh',
+    role: 'Stripe Connect Express creator onboarding (Stripe-hosted branded onboarding, platform controls payouts). Marketplace purchase flow. Creator dashboard (sales analytics + earnings + payout history via Recharts). Review + rating system (feeds Astraea Wilson score). Revenue split platform take rate 20% default, configurable per-category. Payout schedule monthly default + weekly Verified sellers.',
+    upstream: ['Aether', 'Plutus (Stripe client + ledger)', 'Phanes (listing data)', 'Hyperion (search results)', 'Pythia-v3 stripe_connect + marketplace_purchase + creator_dashboard contracts', 'M1 C.16 + C.17'],
+    downstream: ['Astraea (review data)', 'Eunomia (admin refund override)', 'Kratos (purchased listings available to buyer MA)'],
+    halt: ['Stripe Connect Express onboarding too complex (split session stub then production)', 'Revenue split math rounding (BIGINT smallest unit)'],
+    stops: ['Activating Connect live mode pre-Atlas', 'Running Premium listing purchase pre-GA']
+  },
+  'tethys': {
+    name: 'Tethys', tier: 'Product-side', layer: 'Registry identity', model: 'Opus 4.7',
+    wave: 2, sessions: 2, effort: 'xhigh',
+    role: 'Ed25519 agent identity via PyNaCl (libsodium). Public key pinning at registration. Raw detached signatures (64-byte sig, 32-byte pubkey, side-channel resistant, deterministic). Key rotation 14-day grace (retiring status accepts old+new, cron flips revoked at retires_at). JWT EdDSA only for short-lived bearer under 5 min (NOT primary identity). Identity CRUD endpoints.',
+    upstream: ['Aether', 'Pythia-v3 agent_identity + key_rotation contracts', 'M1 Section D.23'],
+    downstream: ['Astraea (verified flag boost trust score)', 'Crius (key pattern reuse for vendor)', 'Kratos (verify tool_use execution)', 'Khronos (MCP expose get_agent_identity)'],
+    halt: ['PyNaCl libsodium linking issue on Docker Alpine (use Debian)', 'Signature side-channel (constant-time comparison)'],
+    stops: ['Switching to RSA or ECDSA (Ed25519 locked)', 'Using JWT as primary identity path']
+  },
+  'crius': {
+    name: 'Crius', tier: 'Product-side', layer: 'Protocol multi-vendor', model: 'Opus 4.7',
+    wave: 2, sessions: 2, effort: 'xhigh',
+    role: 'Multi-vendor adapter registry. Per-record AES-256-GCM DEK envelope, KEK in Hetzner systemd env (chmod 600). Circuit breaker pybreaker (fail_max=5 + reset_timeout=30 + success_threshold=2) + Tenacity retry exponential jitter (initial 0.5s + max 8s + jitter 0.25). Ordered fallback OpenAI > Anthropic > local vLLM with per-vendor Hemera flag disable. IR schema preserved from P0 Proteus. Request router per request-type (chat, embedding, image_gen, tts).',
+    upstream: ['Aether', 'Hemera (per-vendor kill switch)', 'Hyperion (embedding consumer)', 'Pythia-v3 vendor_adapter + ir_schema contracts', 'M1 Section D.24'],
+    downstream: ['Kratos (model routing fallback)', 'Hyperion (embedding fallback chain)'],
+    halt: ['Circuit breaker state leak across workers (Redis-backed instead)', 'KEK rotation breaks existing DEKs (dual-KEK grace window)'],
+    stops: ['Running live runtime execution on non-Anthropic default', 'Storing plaintext API keys in DB']
+  },
+  'astraea': {
+    name: 'Astraea', tier: 'Product-side', layer: 'Registry trust', model: 'Opus 4.7',
+    wave: 2, sessions: 2, effort: 'xhigh',
+    role: 'Trust score. Bayesian smoothed mean marketplace sort (m=15 prior + C=3.5 baseline seeded nightly). Wilson lower bound binary helpful/spam signals. Per-category formula (agent=execution+success+review; sprite_pack=download+review; skill=usage+review). New-agent boost (score + 0.2 * exp(-age_days/3) first 7 days). pg_cron nightly refresh precomputed agent_trust_score column. Verified badge grant (auto via threshold or manual Eunomia).',
+    upstream: ['Aether', 'Tethys (verified flag)', 'Iapetus (review data)', 'Phanes (listing metadata)', 'Pythia-v3 trust_score.contract.md', 'M1 Section D.22'],
+    downstream: ['Hyperion (trust boost search)', 'Eunomia (badge grant override)', 'Marketplace UI (sort by trust)'],
+    halt: ['pg_cron extension unavailable (APScheduler fallback)', 'Wilson math precision edge case (mpmath or numpy.float64)'],
+    stops: ['Gaming-vulnerable formula (sibyl-resistant not in NP scope, flag post-pitch)']
+  },
+  'eunomia': {
+    name: 'Eunomia', tier: 'Product-side', layer: 'Admin + ops', model: 'Opus 4.7',
+    wave: 2, sessions: 2, effort: 'xhigh',
+    role: 'SQLAdmin panel /admin. User management (ban, unban, impersonate read-only). Moderation queue (listing approvals, review reports, abuse flags). Hemera flag UI (CRUD + override + audit view). Maintenance mode toggle. GDPR endpoints POST /v1/me/export (async Arq + ZIP to R2 + signed URL via Pheme) + DELETE /v1/me (30-day soft-delete + purge cron). Klaro consent banner self-hosted BSD-3 (57 KB + script type text/plain unlock). ToS + Privacy + Credits pages served static (Termly draft, lawyer-review pre-GA banner).',
+    upstream: ['Aether', 'Hemera (flag UI)', 'Chione (R2 export ZIP)', 'Pheme (export link email)', 'Selene (admin dashboard link)', 'ALL other agents (data surfaces in admin CRUD)', 'Pythia-v3 admin_panel + gdpr_compliance', 'M1 Sections E.33 + F.35 + F.36 + F.37'],
+    downstream: ['Ghaisan (admin user self)', 'Marshall (legal pages reference)', 'Kalypso W4 (landing legal links)'],
+    halt: ['SQLAdmin auth collision with main session cookie', 'Klaro script replacement bug with CSP nonce', 'Legal text lawyer-review delay (ship Termly draft + prominent pending banner)'],
+    stops: ['Removing draft/pending banner on legal pages pre-lawyer review', 'Hiding maintenance mode toggle from Ghaisan']
+  },
+  'moros': {
+    name: 'Moros', tier: 'Product-side', layer: 'Budget daemon', model: 'Opus 4.7',
+    wave: 2, sessions: 1, effort: 'xhigh',
+    role: 'Chronos budget monitor daemon. Admin Usage API poll every 5 min (/v1/organizations/usage_report/messages). Hybrid local accounting (record after each Kratos stream close via message_delta.usage). Redis key chronos:ma_capped=1 flips on overspend threshold (USD 100/day default per Ghaisan Gate A Q7). Kratos short-circuits on cap. Auto-disable Hemera builder.live flag on cap, auto-re-enable next day 00:00 UTC via Arq cron. Rate limiter coordination (Lua Redis token bucket co-owner).',
+    upstream: ['Aether', 'Hemera (flag auto-disable)', 'Kratos (reads cap flag pre-call)', 'Pythia-v3 budget_monitor.contract.md', 'M1 Section B.12 + D.25'],
+    downstream: ['Kratos (cap check)', 'Eunomia (admin spend dashboard)', 'Selene (OTel metric)'],
+    halt: ['Anthropic Admin Usage API rate limit (increase poll to 10 min)', 'Local accountant skew vs API report > 5% (alert manual reconcile)', 'Cap flag race on Redis read (atomic Lua check)'],
+    stops: ['Disabling auto-re-enable cron without Ghaisan approval', 'Raising daily cap above USD 100/day pre-pitch']
+  },
+  'marshall': {
+    name: 'Marshall', tier: 'Product-side', layer: 'Pricing + treasurer', model: 'Opus 4.7',
+    wave: 2, sessions: 2, effort: 'xhigh',
+    role: 'Pricing section landing 4-tier (Free, Solo, Team, Enterprise) matching Claude Design CRT + phosphor aesthetic. In-game treasurer NPC Phaser scene sprite + dialogue + tier upgrade prompt + subscription state HUD sync. Cross-pillar tier-state consistency (Marketplace + Banking + Registry + Protocol UI show correct tier everywhere). BONUS CTA contrast fix: landing Play In Browser button WCAG 2.1 AA 4.5:1 (currently ~2.5:1 white on phosphor-green). Change approach dark text --ink oklch(0.14 0.012 250) on phosphor-green bg OR invert (phosphor-green text on dark + phosphor border). Preserve Claude Design hierarchy primary > secondary.',
+    upstream: ['Plutus (subscription tier data)', 'Helios-v2 partial (treasurer sprite)', 'Kalypso W3 landing source', 'Pythia-v3 pricing_tier + treasurer_npc contracts', 'Tier B Oak-Woods TARGETED READ'],
+    downstream: ['Kalypso W4 (final landing)', 'Eunomia (manual tier grant)'],
+    halt: ['CTA contrast fix breaks Claude Design hierarchy (alternate invert option)', 'Treasurer interaction conflicts Boreas chat mode (focus arbitration coordinate)'],
+    stops: ['Adding 5th tier beyond 4', 'Changing Claude Design palette']
+  },
+  'helios-v2': {
+    name: 'Helios-v2', tier: 'Product-side', layer: 'Game visual revamp', model: 'Opus 4.7',
+    wave: 3, sessions: 7, effort: 'max',
+    role: 'Phaser visual revamp tier Sea of Stars / Crosscode / Stardew / Hyper Light Drifter / Moonlighter / To The Moon. 4 scenes (3 active ApolloVillage Medieval Desert + CaravanRoad Transition + CyberpunkShanghai District + 1 stub SteampunkVictorian). 5-layer depth (sky_gradient -100, parallax_bg -50, ground_tiles -10, world_tiles 0, above_tiles 100 canopy overhang). Dynamic y-sort setDepth(sprite.y). 20-40 props per 10x10 tile area (320x320 px). Per-world palette 32-48 colors saturated. Phaser Lights2D ambient + 2-3 point lights per scene. Day-night overlay gradient MULTIPLY blend alpha-tweened 5-min cycle. Ambient FX per-scene emitter (Apollo dust motes, Caravan leaves, Cyberpunk rain+neon smog, Steampunk steam+sparks; 30-60 particles low alpha slow drift). Character animation 4-direction state machine (down/left/right/up x 4 walk + 4 idle breathing + 1-3 interact), 9 fps walk + 4 fps idle + 10 fps interact. NPC variety 5-10 populated + 2-3 stub per scene, 4-5 variant sprite pool per world. 7 sessions: research+architecture, ApolloVillage revamp, CyberpunkShanghai, CaravanRoad+cinematic, Steampunk stub+animation rigging, Minecraft chat coordination, polish+E2E.',
+    upstream: ['Epimetheus W0 complete', 'Aether + Nike stable', 'all W2 done', 'Talos-v2 skill transplant done', 'Pythia-v3 visual_manifest + scene_transition contracts', 'Tier A Oak-Woods FULL READ mandatory'],
+    downstream: ['Boreas (scene coordination)', 'Marshall (treasurer NPC sprite)', 'Nemea-RV-v2 W4 (visual E2E)'],
+    halt: ['Context 97% (split sessions)', 'Asset budget concern despite CC0 (Opus procedural fallback)', 'Phaser Lights2D below 60fps (fallback gradient overlay)', 'Day-night cycle overlaps quest timing (decouple)'],
+    stops: ['Inverting asset hierarchy to fal.ai primary', 'Pivoting side-scroll perspective', 'Adding 5th scene', 'Embedding React HUD on /play', 'Opus procedural for sprite character (CC0 Kenney primary)']
+  },
+  'boreas': {
+    name: 'Boreas', tier: 'Product-side', layer: 'Chat UIScene', model: 'Opus 4.7',
+    wave: 3, sessions: 2, effort: 'xhigh',
+    role: 'Minecraft chat-style UIScene. Scene.launch UIScene from BootScene, persists across world transitions. Phaser GameObjects.DOMElement HTML input embed (IME composition critical for ID+CN+JP users; compositionstart/end guard before Enter). Chat history scrollable (ArrowUp/Down recall + Ctrl+L clear + sessionStorage last 100). Command parser prefix / (/clear /help /save /model opus-4.7 /model sonnet-4.6 /debug). Typewriter effect NPC response from Nike SSE into DOM text node (configurable cps default 60 + scrollTop auto-scroll). Focus arbitration state machine (movement/chat/dialogue modes, focusin/focusout DOM bubbling listener global, scene.input.keyboard.enabled toggle).',
+    upstream: ['Nike (SSE source)', 'Kratos (MA session events)', 'Helios-v2 session 1 (scene coordination spec)', 'Pythia-v3 chat_ui + command_parser contracts', 'M1 Sections G.43 + G.44', 'Tier B Oak-Woods TARGETED READ'],
+    downstream: ['all /play route UX (sole input surface, React HUD deprecated)', 'Marshall (treasurer dialogue via chat)'],
+    halt: ['IME composition edge case Safari macOS (fallback BitmapText + ship announcement)', 'DOMElement z-index below Phaser canvas (dom createContainer true config)', 'Typewriter streaming race with user input (buffer per-message lock)'],
+    stops: ['Using React HUD on /play', 'Skipping focus arbitration', 'Introducing 5th chat mode']
+  },
+  'talos-v2': {
+    name: 'Talos-v2', tier: 'Reuse-execute', layer: 'Skill transplant', model: 'Opus 4.7',
+    wave: 3, sessions: 1, effort: 'xhigh',
+    role: 'Oak-Woods skill port. Copy _Reference/phaserjs-oakwoods/.claude/skills/phaser-gamedev/ + playwright-testing/ to nerium/.claude/skills/. Co-commit .codex/skills/ mirror. Adapt top-down JRPG per M1 Section G.40 matrix (drop platformer one-way platform + gravity, keep setOrigin 0.5 1 ground anchor for y-sort, extend 4-direction character sheet, drop jump animation, keep decoration placement pattern, keep assets.json manifest, adopt window.__NERIUM__ primitive state exposure from __TEST__, adopt Phaser.Math.RandomDataGenerator seeded RNG). MIT license attribution header top-of-file pointing to origin repo.',
+    upstream: ['All Wave 2 complete', 'Hephaestus-v3 prompt', 'Tier A Oak-Woods FULL READ mandatory'],
+    downstream: ['Helios-v2 session 1 kickoff (skill available)', 'Boreas scene architecture', 'Nemea-RV-v2 W4 (playwright-testing skill reference)'],
+    halt: ['SKILL.md exceeds 500 lines (split or trim)', 'Adapted pattern conflict with existing RV Thalia-v2 shipped code'],
+    stops: ['Porting skills without attribution header', 'Diverging from Oak-Woods MIT license spirit']
+  },
+  'nemea-rv-v2-w4': {
+    name: 'Nemea-RV-v2 W4', tier: 'Reuse-execute', layer: 'Final QA', model: 'Opus 4.7',
+    wave: 4, sessions: 1, effort: 'xhigh',
+    role: 'W4 full E2E regression on NP surface + a11y sweep Lighthouse + WCAG + screen reader + copy violation scan em dash + emoji. Trigger /ultrareview Run #2 pre-submit Senin dini hari (scope full branch vs main, expected findings security CSRF + rate limit header + multi-tenant state bug + error handling gap). Target Lighthouse perf > 50 landing + > 40 /play + a11y 100 both.',
+    upstream: ['All Wave 3 complete', 'Tier B Oak-Woods playwright-testing skill'],
+    downstream: ['Ghaisan go/no-go for Kalypso W4 submission'],
+    halt: ['Critical path E2E failure (escalate to owning agent fix)', 'Lighthouse perf below threshold (optimize assets or defer to honest-claim)', 'Em dash or emoji detected (inline patch per Nemea-v1 surgical precedent)'],
+    stops: ['Recommending demo scope cut without V4 ferry approval', 'Disabling failing test without investigation']
+  },
+  'kalypso-w4': {
+    name: 'Kalypso W4', tier: 'Reuse-execute', layer: 'Landing + submission', model: 'Opus 4.7',
+    wave: 4, sessions: 1, effort: 'xhigh',
+    role: 'Landing polish + demo video script + README 15 honest-claim lines (per M1 Section 16 inventory) + submission package. Hero video final + 100-200 word summary final + demo_script.md + top-of-repo README synthesis. After Nemea-RV-v2 W4 + /ultrareview Run #2 pass. Positioning pitch per M1 Section H.46 + H.47 (OpenAI Workspace Agents differentiation + Cerebral Valley winner pattern). App Store vs iPhone framing primary + Unity Asset Store secondary analog.',
+    upstream: ['Nemea-RV-v2 W4 pass', '/ultrareview Run #2 pass', 'Recorded 3-min demo video', 'NarasiGhaisan voice anchor'],
+    downstream: ['Ghaisan submission Senin 06:00 WIB'],
+    halt: ['Em dash or emoji in final copy', 'OSS link broken at submission', 'Video over 3-min hard limit', 'Summary exceeds 200 words'],
+    stops: ['Embedding live Phaser canvas on landing (link to /play only)', 'Adding 3D WebGL effect', 'Diluting NERIUM built itself meta-narrative', 'Removing any of 15 honest-claim lines']
+  },
+  'ghaisan-submit': {
+    name: 'Ghaisan Submit', tier: 'Human', layer: 'Submission', model: 'n/a',
+    wave: 5, sessions: 1, effort: '06:00 WIB target',
+    role: 'Cerebral Valley + Anthropic Built with Opus 4.7 hackathon submission. 3-minute demo video MAX, 100 to 200 word written summary, public GitHub OSS link MIT licensed at github.com/Finerium/nerium. Target Senin 27 April 06:00 WIB (hard deadline 07:00 WIB). Submit Cerebral Valley form.',
+    upstream: ['Nemea-RV-v2 W4 green', '/ultrareview Run #2 green', 'Kalypso W4 submission package ready'],
+    downstream: ['Judging: Impact 30% + Demo 25% + Opus 4.7 Use 25% + Depth 20%', 'Prize target: main 1st-3rd plus Best Managed Agents Use $5K'],
+    halt: ['Submit complete at 06:00 WIB'],
+    stops: ['n/a']
+  }
+};
+
+/* ==================== EDGES ==================== */
+const EDGES = [
+  // Ferry -> Pre-W1
+  { from: 'metis-v3', to: 'pythia-v3' },
+  { from: 'metis-v3', to: 'hephaestus-v3' },
+
+  // Pre-W1 internal: Pythia-v3 -> Hephaestus-v3
+  { from: 'pythia-v3', to: 'hephaestus-v3' },
+
+  // Pre-W1 -> W0 + W1 (Hephaestus prompts feed all)
+  { from: 'hephaestus-v3', to: 'epimetheus' },
+  { from: 'hephaestus-v3', to: 'aether' },
+  { from: 'hephaestus-v3', to: 'khronos' },
+  { from: 'hephaestus-v3', to: 'chione' },
+  { from: 'hephaestus-v3', to: 'pheme' },
+  { from: 'hephaestus-v3', to: 'hemera' },
+  { from: 'hephaestus-v3', to: 'selene' },
+
+  // Pythia-v3 contracts -> W0 + W1
+  { from: 'pythia-v3', to: 'epimetheus' },
+  { from: 'pythia-v3', to: 'aether' },
+  { from: 'pythia-v3', to: 'khronos' },
+
+  // W0: Epimetheus -> Nemea-RV-v2 W0 verify
+  { from: 'epimetheus', to: 'nemea-rv-v2-w0' },
+
+  // W1 internal: Aether blocks others
+  { from: 'aether', to: 'khronos' },
+  { from: 'aether', to: 'chione' },
+  { from: 'aether', to: 'pheme' },
+  { from: 'aether', to: 'hemera' },
+  { from: 'aether', to: 'selene' },
+
+  // W0 + W1 -> W2 (through Aether schema + Hephaestus prompts)
+  { from: 'aether', to: 'phanes' },
+  { from: 'aether', to: 'hyperion' },
+  { from: 'aether', to: 'kratos' },
+  { from: 'aether', to: 'nike' },
+  { from: 'aether', to: 'plutus' },
+  { from: 'aether', to: 'iapetus' },
+  { from: 'aether', to: 'tethys' },
+  { from: 'aether', to: 'crius' },
+  { from: 'aether', to: 'astraea' },
+  { from: 'aether', to: 'eunomia' },
+  { from: 'aether', to: 'moros' },
+
+  // Nemea-RV-v2 W0 green -> W2 all unblock
+  { from: 'nemea-rv-v2-w0', to: 'phanes' },
+  { from: 'nemea-rv-v2-w0', to: 'kratos' },
+  { from: 'nemea-rv-v2-w0', to: 'marshall' },
+
+  // Hephaestus -> W2 remaining
+  { from: 'hephaestus-v3', to: 'phanes' },
+  { from: 'hephaestus-v3', to: 'hyperion' },
+  { from: 'hephaestus-v3', to: 'kratos' },
+  { from: 'hephaestus-v3', to: 'nike' },
+  { from: 'hephaestus-v3', to: 'plutus' },
+  { from: 'hephaestus-v3', to: 'iapetus' },
+  { from: 'hephaestus-v3', to: 'tethys' },
+  { from: 'hephaestus-v3', to: 'crius' },
+  { from: 'hephaestus-v3', to: 'astraea' },
+  { from: 'hephaestus-v3', to: 'eunomia' },
+  { from: 'hephaestus-v3', to: 'moros' },
+  { from: 'hephaestus-v3', to: 'marshall' },
+  { from: 'hephaestus-v3', to: 'helios-v2' },
+  { from: 'hephaestus-v3', to: 'boreas' },
+  { from: 'hephaestus-v3', to: 'talos-v2' },
+  { from: 'hephaestus-v3', to: 'nemea-rv-v2-w4' },
+  { from: 'hephaestus-v3', to: 'kalypso-w4' },
+
+  // W1 -> W2 specific deps
+  { from: 'hemera', to: 'kratos' },
+  { from: 'hemera', to: 'moros' },
+  { from: 'hemera', to: 'crius' },
+  { from: 'hemera', to: 'eunomia' },
+  { from: 'chione', to: 'phanes' },
+  { from: 'chione', to: 'iapetus' },
+  { from: 'chione', to: 'eunomia' },
+  { from: 'pheme', to: 'plutus' },
+  { from: 'pheme', to: 'iapetus' },
+  { from: 'pheme', to: 'tethys' },
+  { from: 'pheme', to: 'eunomia' },
+  { from: 'selene', to: 'eunomia' },
+  { from: 'selene', to: 'moros' },
+
+  // W2 internal
+  { from: 'phanes', to: 'hyperion' },
+  { from: 'phanes', to: 'iapetus' },
+  { from: 'phanes', to: 'astraea' },
+  { from: 'phanes', to: 'eunomia' },
+  { from: 'hyperion', to: 'iapetus' },
+  { from: 'nike', to: 'kratos' },
+  { from: 'kratos', to: 'moros' },
+  { from: 'kratos', to: 'plutus' },
+  { from: 'plutus', to: 'iapetus' },
+  { from: 'plutus', to: 'moros' },
+  { from: 'plutus', to: 'marshall' },
+  { from: 'plutus', to: 'eunomia' },
+  { from: 'iapetus', to: 'astraea' },
+  { from: 'iapetus', to: 'eunomia' },
+  { from: 'tethys', to: 'astraea' },
+  { from: 'tethys', to: 'crius' },
+  { from: 'tethys', to: 'kratos' },
+  { from: 'tethys', to: 'khronos' },
+  { from: 'crius', to: 'kratos' },
+  { from: 'crius', to: 'hyperion' },
+  { from: 'astraea', to: 'hyperion' },
+  { from: 'astraea', to: 'eunomia' },
+  { from: 'moros', to: 'kratos' },
+  { from: 'moros', to: 'eunomia' },
+  { from: 'khronos', to: 'kratos' },
+
+  // W2 -> W3
+  { from: 'kratos', to: 'boreas' },
+  { from: 'kratos', to: 'helios-v2' },
+  { from: 'nike', to: 'boreas' },
+  { from: 'nike', to: 'helios-v2' },
+  { from: 'marshall', to: 'helios-v2' },
+
+  // W3 internal
+  { from: 'talos-v2', to: 'helios-v2' },
+  { from: 'talos-v2', to: 'boreas' },
+  { from: 'talos-v2', to: 'nemea-rv-v2-w4' },
+  { from: 'helios-v2', to: 'boreas' },
+  { from: 'helios-v2', to: 'marshall' },
+
+  // W3 -> W4
+  { from: 'helios-v2', to: 'nemea-rv-v2-w4' },
+  { from: 'boreas', to: 'nemea-rv-v2-w4' },
+  { from: 'nemea-rv-v2-w4', to: 'kalypso-w4' },
+
+  // W4 -> W5
+  { from: 'kalypso-w4', to: 'ghaisan-submit' },
+  { from: 'nemea-rv-v2-w4', to: 'ghaisan-submit' }
+];
+
+/* ==================== ARROW RENDERING ==================== */
+function drawArrows() {
+  const svg = document.getElementById('arrows');
+  const canvas = document.getElementById('canvas');
+  const canvasRect = canvas.getBoundingClientRect();
+  svg.setAttribute('width', canvasRect.width);
+  svg.setAttribute('height', canvasRect.height);
+  svg.setAttribute('viewBox', `0 0 ${canvasRect.width} ${canvasRect.height}`);
+  svg.innerHTML = `
+    <defs>
+      <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="rgba(34, 232, 255, 0.55)"/>
+      </marker>
+      <marker id="arrowhead-hl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#22E8FF"/>
+      </marker>
+    </defs>`;
+
+  const positions = {};
+  document.querySelectorAll('.node[data-id]').forEach(n => {
+    const r = n.getBoundingClientRect();
+    positions[n.dataset.id] = {
+      cx: r.left - canvasRect.left + r.width / 2,
+      top: r.top - canvasRect.top,
+      bottom: r.bottom - canvasRect.top,
+      left: r.left - canvasRect.left,
+      right: r.right - canvasRect.left
+    };
+  });
+
+  EDGES.forEach(e => {
+    const from = positions[e.from];
+    const to = positions[e.to];
+    if (!from || !to) return;
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const fx = from.cx, fy = from.bottom + 2;
+    const tx = to.cx, ty = to.top - 2;
+    const dy = Math.max(40, (ty - fy) * 0.5);
+    const d = `M${fx},${fy} C${fx},${fy + dy} ${tx},${ty - dy} ${tx},${ty}`;
+    path.setAttribute('d', d);
+    path.setAttribute('data-from', e.from);
+    path.setAttribute('data-to', e.to);
+    path.setAttribute('marker-end', 'url(#arrowhead)');
+    path.classList.add('edge');
+    svg.appendChild(path);
+  });
+}
+
+/* ==================== INSPECTOR ==================== */
+function renderInspector(id) {
+  const a = AGENTS[id];
+  const panel = document.getElementById('i-content');
+  if (!a) {
+    panel.innerHTML = '<div class="empty">Hover any node to inspect<br>Click to pin<br>Play to animate wave timeline</div>';
+    return;
+  }
+  const waveLabel = a.wave === -1 ? 'Ferry'
+    : a.wave === 5 ? 'W5 Ship'
+    : 'Wave ' + a.wave;
+  const sessionsLabel = a.sessions + ' session' + (a.sessions > 1 ? 's' : '');
+  const effortBadge = a.effort === 'max' ? '<span class="badge effort-max">effort max</span>'
+    : a.effort === 'xhigh' ? '<span class="badge effort-xhigh">effort xhigh</span>'
+    : `<span class="badge effort-xhigh">${a.effort}</span>`;
+  const upstreamCount = a.upstream?.length ?? 0;
+  const downstreamCount = a.downstream?.length ?? 0;
+  panel.innerHTML = `
+    <div class="i-name">${a.name}</div>
+    <div class="i-subline">${a.tier} // ${a.layer}</div>
+    <div class="i-badges">
+      <span class="badge opus">${a.model}</span>
+      <span class="badge wave">${waveLabel}</span>
+      ${effortBadge}
+      <span class="badge sessions">${sessionsLabel}</span>
+      <span class="badge dep">up ${upstreamCount}</span>
+      <span class="badge dep">down ${downstreamCount}</span>
+    </div>
+    <div class="i-section">
+      <h3>Role</h3>
+      <p>${a.role}</p>
+    </div>
+    <div class="i-section">
+      <h3>Upstream (${upstreamCount})</h3>
+      <ul>${(a.upstream || []).map(u => '<li>' + u + '</li>').join('')}</ul>
+    </div>
+    <div class="i-section">
+      <h3>Downstream (${downstreamCount})</h3>
+      <ul>${(a.downstream || []).map(u => '<li>' + u + '</li>').join('')}</ul>
+    </div>
+    <div class="i-expand" data-target="halt-${id}">▸ Halt triggers (${a.halt?.length ?? 0})</div>
+    <div class="i-expand-body" id="halt-${id}">
+      <ul>${(a.halt || []).map(h => '<li>' + h + '</li>').join('')}</ul>
+    </div>
+    <div class="i-expand" data-target="stops-${id}">▸ Strategic hard-stops (${a.stops?.length ?? 0})</div>
+    <div class="i-expand-body" id="stops-${id}">
+      <ul>${(a.stops || []).map(s => '<li>' + s + '</li>').join('')}</ul>
+    </div>
+  `;
+  panel.querySelectorAll('.i-expand').forEach(btn => {
+    btn.addEventListener('click', () => btn.classList.toggle('open'));
+  });
+}
+
+/* ==================== INTERACTIONS ==================== */
+let pinnedId = null;
+
+function highlightEdges(id) {
+  const paths = document.querySelectorAll('.arrows path');
+  paths.forEach(p => {
+    p.classList.remove('highlighted');
+    p.classList.remove('dimmed');
+    if (!id) return;
+    const from = p.getAttribute('data-from');
+    const to = p.getAttribute('data-to');
+    if (from === id || to === id) {
+      p.classList.add('highlighted');
+      p.setAttribute('marker-end', 'url(#arrowhead-hl)');
+    } else {
+      p.classList.add('dimmed');
+      p.setAttribute('marker-end', 'url(#arrowhead)');
+    }
+  });
+  if (!id) {
+    paths.forEach(p => p.setAttribute('marker-end', 'url(#arrowhead)'));
+  }
+}
+
+function setupNodeInteractions() {
+  document.querySelectorAll('.node[data-id]').forEach(node => {
+    const id = node.dataset.id;
+    node.addEventListener('mouseenter', () => {
+      if (!pinnedId) {
+        renderInspector(id);
+        highlightEdges(id);
+      }
+    });
+    node.addEventListener('mouseleave', () => {
+      if (!pinnedId) {
+        renderInspector(null);
+        highlightEdges(null);
+      }
+    });
+    node.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.node.selected').forEach(n => n.classList.remove('selected'));
+      if (pinnedId === id) {
+        pinnedId = null;
+        renderInspector(null);
+        highlightEdges(null);
+      } else {
+        pinnedId = id;
+        node.classList.add('selected');
+        renderInspector(id);
+        highlightEdges(id);
+      }
+    });
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.node') && !e.target.closest('.inspector') && !e.target.closest('header')) {
+      pinnedId = null;
+      document.querySelectorAll('.node.selected').forEach(n => n.classList.remove('selected'));
+      renderInspector(null);
+      highlightEdges(null);
+    }
+  });
+}
+
+/* ==================== PLAY MODE ==================== */
+const TIMELINE_STEPS = [
+  { t: 0.00, wave: -1, clock: 'JUMAT 09:00 WIB', desc: 'Metis-v3 M1+M2+M3 ferry complete' },
+  { t: 0.04, wave: 1, clock: 'JUMAT 11:00 WIB', desc: 'Pre-W1 spawn: Pythia-v3 (contracts round 3)' },
+  { t: 0.08, wave: 1, clock: 'JUMAT 13:00 WIB', desc: 'Hephaestus-v3 batch prompt authoring 22 files' },
+  { t: 0.12, wave: 0, clock: 'JUMAT 14:00 WIB', desc: 'W0 Epimetheus spawn (parallel W1 start)' },
+  { t: 0.15, wave: 1, clock: 'JUMAT 15:00 WIB', desc: 'W1 Aether + Khronos + Chione + Pheme + Hemera + Selene' },
+  { t: 0.20, wave: 0, clock: 'JUMAT 17:00 WIB', desc: 'Nemea-RV-v2 W0 verify Epimetheus 23/23 green' },
+  { t: 0.28, wave: 1, clock: 'JUMAT 23:00 WIB', desc: 'W1 freeze, Ananke day_N log' },
+  { t: 0.32, wave: 2, clock: 'SABTU 07:00 WIB', desc: 'W2 spawn: Phanes + Hyperion + Kratos + Nike + Plutus + Iapetus + Tethys + Crius + Astraea + Eunomia + Moros + Marshall (6-7 concurrent)' },
+  { t: 0.58, wave: 2, clock: 'SABTU 23:00 WIB', desc: 'W2 freeze, vertical slices 5 pillars + admin + budget' },
+  { t: 0.62, wave: 3, clock: 'MINGGU 07:00 WIB', desc: 'W3 spawn: Talos-v2 skill port + Helios-v2 visual + Boreas chat' },
+  { t: 0.70, wave: 3, clock: 'MINGGU 12:00 WIB', desc: 'Helios-v2 sessions 2-4 (Apollo + Cyberpunk + Caravan scenes)' },
+  { t: 0.76, wave: 3, clock: 'MINGGU 15:00 WIB', desc: '/ultrareview Run #1 checkpoint post Helios-v2 session 4' },
+  { t: 0.82, wave: 3, clock: 'MINGGU 17:00 WIB', desc: 'W3 freeze, Helios-v2 session 7 polish complete' },
+  { t: 0.86, wave: 4, clock: 'MINGGU 19:00 WIB', desc: 'W4 Nemea-RV-v2 E2E + a11y sweep + /ultrareview Run #2' },
+  { t: 0.92, wave: 4, clock: 'MINGGU 22:00 WIB', desc: 'Kalypso W4 landing finalize + demo video + README honest-claim' },
+  { t: 0.97, wave: 5, clock: 'SENIN 06:00 WIB', desc: 'SUBMIT target (buffer 1 hour)' },
+  { t: 1.00, wave: 5, clock: 'SENIN 07:00 WIB', desc: 'HARD DEADLINE' }
+];
+
+let playing = false;
+let playStart = 0;
+let playAnimFrame = null;
+const PLAY_DURATION_MS = 26000;
+
+function resetPlayState() {
+  document.querySelectorAll('.node').forEach(n => {
+    n.classList.remove('pulse', 'dimmed', 'completed');
+  });
+  document.querySelectorAll('.wave-row').forEach(w => w.classList.remove('active'));
+  document.getElementById('timeline-progress').style.width = '0%';
+  document.getElementById('timeline-clock').textContent = 'WAITING';
+}
+
+function applyPlayState(t) {
+  const progress = document.getElementById('timeline-progress');
+  const clock = document.getElementById('timeline-clock');
+  progress.style.width = (t * 100) + '%';
+  const step = [...TIMELINE_STEPS].reverse().find(s => t >= s.t) || TIMELINE_STEPS[0];
+  clock.textContent = step.clock;
+
+  const activeWave = t < 0.04 ? -1 :
+    t < 0.12 ? 1 :
+    t < 0.20 ? 0 :
+    t < 0.32 ? 1 :
+    t < 0.62 ? 2 :
+    t < 0.86 ? 3 :
+    t < 0.97 ? 4 : 5;
+
+  document.querySelectorAll('.wave-row').forEach(w => {
+    const wv = w.dataset.wave;
+    w.classList.toggle('active',
+      (activeWave === -1 && wv === '-1') ||
+      (activeWave === 1 && (wv === '1' || wv === '0pre')) ||
+      (activeWave === 0 && wv === '0') ||
+      (activeWave === 2 && wv === '2') ||
+      (activeWave === 3 && wv === '3') ||
+      (activeWave === 4 && wv === '4') ||
+      (activeWave === 5 && wv === '5')
+    );
+  });
+
+  document.querySelectorAll('.node[data-id]').forEach(node => {
+    const id = node.dataset.id;
+    const agent = AGENTS[id];
+    if (!agent) return;
+    const aw = agent.wave;
+    node.classList.remove('pulse', 'dimmed', 'completed');
+    if (aw < activeWave && !(activeWave === 1 && aw === 0) && !(activeWave === 0 && aw === 1)) {
+      node.classList.add('completed');
+    } else if (aw === activeWave || (activeWave === 1 && aw === 0) || (activeWave === 0 && aw === 1)) {
+      node.classList.add('pulse');
+    } else {
+      node.classList.add('dimmed');
+    }
+  });
+}
+
+function playLoop(now) {
+  const elapsed = now - playStart;
+  let t = elapsed / PLAY_DURATION_MS;
+  if (t >= 1) {
+    t = 1;
+    applyPlayState(t);
+    playing = false;
+    document.getElementById('play-btn').classList.remove('active');
+    document.getElementById('play-btn').textContent = '▶ Play';
+    return;
+  }
+  applyPlayState(t);
+  playAnimFrame = requestAnimationFrame(playLoop);
+}
+
+document.getElementById('play-btn').addEventListener('click', () => {
+  const btn = document.getElementById('play-btn');
+  if (playing) {
+    playing = false;
+    cancelAnimationFrame(playAnimFrame);
+    btn.classList.remove('active');
+    btn.textContent = '▶ Play';
+    return;
+  }
+  playing = true;
+  playStart = performance.now();
+  btn.classList.add('active');
+  btn.textContent = '❚❚ Pause';
+  playAnimFrame = requestAnimationFrame(playLoop);
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  playing = false;
+  if (playAnimFrame) cancelAnimationFrame(playAnimFrame);
+  document.getElementById('play-btn').classList.remove('active');
+  document.getElementById('play-btn').textContent = '▶ Play';
+  resetPlayState();
+});
+
+/* ==================== INIT ==================== */
+window.addEventListener('load', () => {
+  drawArrows();
+  setupNodeInteractions();
+});
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(drawArrows, 120);
+});
+</script>
+
+</body>
+</html>
