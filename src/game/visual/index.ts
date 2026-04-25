@@ -5,6 +5,16 @@
 // import from `../visual` rather than reaching into individual files so a
 // later refactor (e.g., shader-driven palette swap) only changes this file.
 //
+// Helios-v2 W3 post-S4 cleanup: parallaxLayer, decoration, groundPaint, and
+// spriteTextures re-exports REMOVED. Their source files were renamed with a
+// `.deprecated.ts` suffix in the same atomic commit. The cutover from the
+// procedural SVG / pixel-rect composition to the AI-generated PNG asset
+// bundle completed at S4 (all 3 main scenes migrated). No live consumer
+// remains for any of those symbols. The deprecated source files are kept on
+// disk under their renamed names for archaeological reference and to
+// preserve git history; they are NOT re-exported from this barrel and are
+// NOT to be imported from any new code.
+//
 
 export {
   SHARED,
@@ -42,58 +52,7 @@ export {
 export { buildSkyGradient, type SkyGradientOptions } from './skyGradient';
 
 export {
-  buildParallaxLayer,
-  stairStepSilhouette,
-  type ParallaxLayerOptions,
-  type SilhouetteRect,
-} from './parallaxLayer';
-
-export {
   buildAmbientFx,
   type AmbientFxKind,
   type AmbientFxOptions,
 } from './ambientFx';
-
-export {
-  buildTent,
-  buildCactus,
-  buildWaterWell,
-  buildFirePit,
-  buildLampPost,
-  buildPalmTree,
-  buildRock,
-  buildMerchantStall,
-  type TentVariant,
-} from './decoration';
-
-export {
-  paintApolloVillageGround,
-  paintCaravanRoadGround,
-  paintCyberpunkShanghaiGround,
-  paintApolloCanopy,
-  paintCaravanCanopy,
-  paintCyberpunkOverhead,
-  paintHorizonHaze,
-} from './groundPaint';
-
-export {
-  buildPlayerTexture,
-  buildApolloTexture,
-  buildTreasurerTexture,
-  buildCaravanVendorTexture,
-  buildVillagerTexture,
-  buildGuardTexture,
-  buildChildTexture,
-  buildElderTexture,
-  buildTravelerTexture,
-  buildSynthVendorTexture,
-  buildCyborgGuardTexture,
-  buildStreetRatTexture,
-  buildSalarymanTexture,
-  buildApolloVillageSprites,
-  buildCaravanRoadSprites,
-  buildCyberpunkShanghaiSprites,
-  type ApolloSpriteKeys,
-  type CaravanRoadSpriteKeys,
-  type CyberpunkShanghaiSpriteKeys,
-} from './spriteTextures';
