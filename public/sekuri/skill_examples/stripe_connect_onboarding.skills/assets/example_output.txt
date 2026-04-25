@@ -1,0 +1,1 @@
+Account created successfully. Stripe account_id: acct_1XYZdemo. KYC document upload link sent to your email. Status: active, pending verification. You can start receiving payments after KYC is approved (typically 1-2 business days).

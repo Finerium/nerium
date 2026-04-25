@@ -1,0 +1,21 @@
+{
+  "listing_id": "lst_01HRA9X7K2P5M8N3Q6T4V8B0X3",
+  "creator_id": "demo_creator_001",
+  "creator_handle": "@warungpintar",
+  "skill_slug": "restaurant_automation_agent",
+  "category": "agent",
+  "tags": ["restaurant", "automation", "hospitality", "scheduling", "inventory"],
+  "price_usd": 25,
+  "pricing_model": "subscription_monthly",
+  "trust_score": 0,
+  "execution_count": 0,
+  "average_rating": null,
+  "review_count": 0,
+  "created_at": "2026-04-26T00:00:00Z",
+  "status": "active",
+  "runtime_compatibility": ["anthropic_opus_4.7", "anthropic_sonnet_4.6", "google_gemini_pro"],
+  "languages_supported": ["id", "en"],
+  "target_market": "Indonesian SMB restaurants",
+  "verified_creator": false,
+  "moderation_status": "approved"
+}

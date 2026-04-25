@@ -1,0 +1,56 @@
+{
+  "complexity": "medium",
+  "tier_rationale": "Multi-page basic auth simple billing single deploy",
+  "user_options": {
+    "vendor_choice": "anthropic",
+    "model_specific": "opus_4.7_strategic_with_sonnet_4.6_workers",
+    "claude_execution_mode": "hybrid",
+    "multi_vendor_routing_enabled": false,
+    "per_agent_vendor_overrides": {
+      "athena_scaffold": "anthropic_opus_4.7",
+      "demeter_db": "anthropic_opus_4.7",
+      "thalia_ui": "anthropic_sonnet_4.6",
+      "proteus_logic": "anthropic_sonnet_4.6",
+      "tyche_auth": "anthropic_sonnet_4.6",
+      "rhea_billing": "anthropic_sonnet_4.6",
+      "harmonia_polish": "anthropic_sonnet_4.6",
+      "nemea_qa": "anthropic_opus_4.7"
+    }
+  },
+  "agent_count": 8,
+  "parallel_groups": [
+    {
+      "group": "P1",
+      "agents": ["athena_scaffold", "thalia_ui", "demeter_db"],
+      "dependency_blocked_by": []
+    },
+    {
+      "group": "P2",
+      "agents": ["proteus_logic", "tyche_auth", "rhea_billing"],
+      "dependency_blocked_by": ["P1"]
+    },
+    {
+      "group": "P3",
+      "agents": ["harmonia_polish", "nemea_qa"],
+      "dependency_blocked_by": ["P2"]
+    }
+  ],
+  "estimated_duration_minutes": 15,
+  "estimated_cost_usd_per_vendor": {
+    "anthropic": 2.00
+  },
+  "user_revisable": true,
+  "spawned_terminal_count": 4,
+  "spawn_command_templates_per_role": {
+    "strategic": "claude --dangerously-skip-permissions /effort max",
+    "worker": "claude --dangerously-skip-permissions /effort xhigh"
+  },
+  "new_project_folder_pattern": "$HOME/Documents/{project_slug}",
+  "sample_prompts_matched": [
+    "create a mid-tier SaaS dashboard with auth and billing",
+    "blog platform with CMS and Stripe subscription",
+    "freelancer portfolio with admin panel",
+    "task management app with team collaboration",
+    "newsletter platform with email integration"
+  ]
+}

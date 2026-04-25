@@ -1,0 +1,39 @@
+{
+  "complexity": "small",
+  "tier_rationale": "Single feature single page no auth no payment",
+  "user_options": {
+    "vendor_choice": "anthropic",
+    "model_specific": "opus_4.7",
+    "claude_execution_mode": "terminal_spawn",
+    "multi_vendor_routing_enabled": false,
+    "per_agent_vendor_overrides": {}
+  },
+  "agent_count": 4,
+  "parallel_groups": [
+    {
+      "group": "P1",
+      "agents": ["athena_scaffold", "thalia_ui"],
+      "dependency_blocked_by": []
+    },
+    {
+      "group": "P2",
+      "agents": ["proteus_logic", "harmonia_polish"],
+      "dependency_blocked_by": ["P1"]
+    }
+  ],
+  "estimated_duration_minutes": 5,
+  "estimated_cost_usd_per_vendor": {
+    "anthropic": 0.50
+  },
+  "user_revisable": true,
+  "spawned_terminal_count": 2,
+  "spawn_command_template": "claude --dangerously-skip-permissions /effort xhigh",
+  "new_project_folder_pattern": "$HOME/Documents/{project_slug}",
+  "sample_prompts_matched": [
+    "make a landing page with signup form",
+    "todo app with local storage",
+    "single-page calculator with history",
+    "weather widget for my homepage",
+    "simple contact form with validation"
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "complexity": "large",
+  "tier_rationale": "Marketplace multi-tenant complex billing multi-vendor real-time",
+  "user_options": {
+    "vendor_choice": "auto",
+    "model_specific": "anthropic_strategic_plus_gemini_workers_plus_higgsfield_assets_plus_seedance_video",
+    "claude_execution_mode": "hybrid",
+    "multi_vendor_routing_enabled": true,
+    "per_agent_vendor_overrides": {
+      "athena_scaffold": "anthropic_opus_4.7",
+      "demeter_db": "anthropic_opus_4.7",
+      "thalia_marketplace_ui": "anthropic_sonnet_4.6",
+      "proteus_protocol": "anthropic_opus_4.7",
+      "tyche_identity": "anthropic_sonnet_4.6",
+      "rhea_payment": "google_gemini_pro",
+      "phoebe_trust": "google_gemini_flash",
+      "morpheus_adapter": "anthropic_sonnet_4.6",
+      "urania_blueprint_assets": "higgsfield",
+      "dionysus_demo_video": "seedance",
+      "hecate_orchestration": "anthropic_opus_4.7",
+      "harmonia_polish": "anthropic_sonnet_4.6",
+      "nemea_qa": "anthropic_opus_4.7",
+      "kalypso_landing": "anthropic_sonnet_4.6"
+    }
+  },
+  "agent_count": 14,
+  "parallel_groups": [
+    {
+      "group": "P1",
+      "agents": ["athena_scaffold", "demeter_db", "tyche_identity", "hecate_orchestration"],
+      "dependency_blocked_by": []
+    },
+    {
+      "group": "P2",
+      "agents": ["thalia_marketplace_ui", "proteus_protocol", "rhea_payment", "phoebe_trust"],
+      "dependency_blocked_by": ["P1"]
+    },
+    {
+      "group": "P3",
+      "agents": ["urania_blueprint_assets", "dionysus_demo_video", "morpheus_adapter"],
+      "dependency_blocked_by": ["P2"]
+    },
+    {
+      "group": "P4",
+      "agents": ["harmonia_polish", "nemea_qa", "kalypso_landing"],
+      "dependency_blocked_by": ["P3"]
+    }
+  ],
+  "estimated_duration_minutes": 45,
+  "estimated_cost_usd_per_vendor": {
+    "anthropic": 5.50,
+    "google": 1.20,
+    "higgsfield": 0.80,
+    "seedance": 0.50
+  },
+  "user_revisable": true,
+  "spawned_terminal_count": 6,
+  "spawn_command_templates_per_vendor": {
+    "anthropic": "claude --dangerously-skip-permissions /effort {tier}",
+    "google": "gemini --model {model_specific} --plan",
+    "openai": "codex --model {model_specific} --autonomous",
+    "higgsfield": "higgsfield generate --asset-spec {spec_file}",
+    "seedance": "seedance render --scene {scene_config}",
+    "meta": "llama-runner --model {model_specific} --workers {n}",
+    "mistral": "mistral-cli --model {model_specific} --plan"
+  },
+  "new_project_folder_pattern": "$HOME/Documents/{project_slug}",
+  "sample_prompts_matched": [
+    "build me a marketplace SaaS for indie agent creators",
+    "Tokopedia-tier multi-vendor e-commerce platform",
+    "real-time collaborative IDE with multi-tenant orgs",
+    "production-grade banking app with Stripe Connect and AML compliance",
+    "agent marketplace with trust score and escrow billing"
+  ]
+}

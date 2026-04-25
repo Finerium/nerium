@@ -1,0 +1,22 @@
+{
+  "listing_id": "lst_01HRA9X9M4R7P0Q5S8V6W0D2Z5",
+  "creator_id": "demo_creator_003",
+  "creator_handle": "@stripeworkflows",
+  "skill_slug": "stripe_connect_onboarding",
+  "category": "skill",
+  "tags": ["stripe", "onboarding", "marketplace", "payments", "kyc"],
+  "price_usd": 10,
+  "pricing_model": "per_invocation",
+  "trust_score": 0,
+  "execution_count": 0,
+  "average_rating": null,
+  "review_count": 0,
+  "created_at": "2026-04-26T00:00:00Z",
+  "status": "active",
+  "runtime_compatibility": ["anthropic_opus_4.7", "anthropic_sonnet_4.6", "openai_gpt_5"],
+  "countries_supported": ["US", "ID", "SG", "MY"],
+  "languages_supported": ["en", "id"],
+  "target_market": "Marketplace platforms with creator onboarding flow",
+  "verified_creator": false,
+  "moderation_status": "approved"
+}

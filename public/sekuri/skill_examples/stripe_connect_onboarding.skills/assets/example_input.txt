@@ -1,0 +1,1 @@
+Welcome. To accept payments through this marketplace, we need to set up your Stripe Connect account. This takes about 12 minutes. Ready to start?
