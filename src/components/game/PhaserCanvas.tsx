@@ -24,6 +24,9 @@ import * as Phaser from 'phaser';
 import { BootScene } from '../../game/scenes/BootScene';
 import { PreloadScene } from '../../game/scenes/PreloadScene';
 import { ApolloVillageScene } from '../../game/scenes/ApolloVillageScene';
+import { ApolloTempleInteriorScene } from '../../game/scenes/ApolloTempleInteriorScene';
+import { ApolloMarketplaceBazaarScene } from '../../game/scenes/ApolloMarketplaceBazaarScene';
+import { ApolloOasisScene } from '../../game/scenes/ApolloOasisScene';
 import { CaravanRoadScene } from '../../game/scenes/CaravanRoadScene';
 import { CyberpunkShanghaiScene } from '../../game/scenes/CyberpunkShanghaiScene';
 import { MiniBuilderCinematicScene } from '../../game/scenes/MiniBuilderCinematicScene';
@@ -85,6 +88,13 @@ export default function PhaserCanvas() {
       // manager (Helios-v2 S7 wiring) when the quest engine fires the
       // scene_transition effect; the cinematic launches on play_cinematic.
       //
+      // Helios-v2 W3 S5: ApolloTempleInteriorScene + ApolloMarketplaceBazaarScene
+      // + ApolloOasisScene are sub-area scenes reachable from
+      // ApolloVillageScene via the dual-path landmark choice prompt
+      // (Marketplace Stall, Trust Shrine) or future S7 landmark interaction
+      // (Temple Interior). Registered here so scene.start() can resolve them
+      // at sub-area entry. They do not auto-start.
+      //
       // UIScene is the persistent overlay that hosts the Minecraft chat-style
       // chrome (Boreas NP W3). BootScene launches it (scene.launch + bringToTop)
       // post-preload; it survives every world scene transition.
@@ -92,6 +102,9 @@ export default function PhaserCanvas() {
         BootScene,
         PreloadScene,
         ApolloVillageScene,
+        ApolloTempleInteriorScene,
+        ApolloMarketplaceBazaarScene,
+        ApolloOasisScene,
         CaravanRoadScene,
         CyberpunkShanghaiScene,
         MiniBuilderCinematicScene,

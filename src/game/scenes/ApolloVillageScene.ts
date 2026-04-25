@@ -83,6 +83,12 @@ import { ASSET_KEYS } from '../visual/asset_keys';
 interface ApolloVillageSceneData {
   worldId?: WorldId;
   spawn?: { x: number; y: number };
+  /**
+   * Set when the player is returning from an Apollo sub-area scene
+   * (Helios-v2 W3 S5). Lets create() respawn the player at the matching
+   * landmark approach instead of the default south-center spawn coord.
+   */
+  returnFromSubArea?: 'temple_interior' | 'marketplace_bazaar' | 'oasis';
 }
 
 // World dimensions match the apollo_village_bg.jpg native 1408 x 793 with a
@@ -133,6 +139,39 @@ interface LandmarkBinding {
   x: number;
   y: number;
   eventTopic: string;
+  /**
+   * Helios-v2 W3 S5 dual-path. When set, pressing E within range opens an
+   * in-game choice prompt offering both the existing UI-modal event topic
+   * (choice 0) and a sub-area scene transition (choice 1). Landmarks
+   * without this binding remain UI-modal-only.
+   */
+  subArea?: {
+    sceneKey: 'ApolloTempleInterior' | 'ApolloMarketplaceBazaar' | 'ApolloOasis';
+    optionUiLabel: string; // e.g. "Browse listings (UI)"
+    optionGameLabel: string; // e.g. "Enter bazaar (game)"
+    title: string; // prompt title text
+  };
+}
+
+/**
+ * Helios-v2 W3 S5 dual-path landmark choice prompt overlay.
+ *
+ * Container of native Phaser GameObjects (no DOMElement, no React) anchored
+ * to the camera viewport so it stays put while the camera follows. Renders a
+ * dim backdrop, a title line, and two option lines with a yellow caret arrow
+ * on the highlighted option. ArrowUp/ArrowDown swap the highlight, Enter
+ * confirms the highlighted option, Esc dismisses the prompt.
+ *
+ * The prompt belongs entirely to the game canvas; it does not coordinate
+ * with the Boreas chat focus arbitration because it is a transient modal
+ * (open + dismissed within seconds).
+ */
+interface LandmarkPromptState {
+  binding: LandmarkBinding;
+  container: Phaser.GameObjects.Container;
+  optionTexts: Phaser.GameObjects.Text[]; // [0] = UI option, [1] = game option
+  selectedIndex: 0 | 1;
+  openedAt: number;
 }
 
 export class ApolloVillageScene extends Phaser.Scene {
@@ -161,6 +200,18 @@ export class ApolloVillageScene extends Phaser.Scene {
   private eKey?: Phaser.Input.Keyboard.Key;
   private lastLandmarkEmitAt: Record<string, number> = {};
 
+  // Helios-v2 W3 S5 dual-path landmark choice prompt state. While non-null,
+  // E-key interaction polling is paused (player cannot open a second prompt).
+  // ArrowUp/Down swap selection, Enter confirms, Esc dismisses.
+  private landmarkPrompt: LandmarkPromptState | null = null;
+  private upKey?: Phaser.Input.Keyboard.Key;
+  private downKey?: Phaser.Input.Keyboard.Key;
+  private enterKey?: Phaser.Input.Keyboard.Key;
+  private escKey?: Phaser.Input.Keyboard.Key;
+  // Honor incoming S5 sub-area return spawn override. Set once in init() and
+  // consumed by spawnPlayer().
+  private spawnOverride?: { x: number; y: number };
+
   constructor() {
     super({ key: 'ApolloVillage' } satisfies Phaser.Types.Scenes.SettingsConfig);
   }
@@ -168,6 +219,18 @@ export class ApolloVillageScene extends Phaser.Scene {
   init(data: ApolloVillageSceneData) {
     if (data.worldId) this.worldId = data.worldId;
     this.atlasKey = `atlas_${this.worldId}`;
+    // Helios-v2 W3 S5: when the player returns from an Apollo sub-area scene
+    // (temple interior, marketplace bazaar, or oasis), the sub-area passes
+    // an explicit spawn coord at the matching landmark approach so the
+    // player visibly returns to where they left.
+    if (data.spawn) {
+      this.spawnOverride = { x: data.spawn.x, y: data.spawn.y };
+    } else {
+      this.spawnOverride = undefined;
+    }
+    // Reset dual-path prompt state on every fresh init so a previous
+    // sub-area roundtrip does not leak prompt UI artifacts.
+    this.landmarkPrompt = null;
   }
 
   create() {
@@ -216,9 +279,16 @@ export class ApolloVillageScene extends Phaser.Scene {
     this.ambientFx = buildAmbientFx(this, { kind: 'dust' });
 
     // E-key binding for landmark interaction (S7 wires UI overlays).
+    // Helios-v2 W3 S5 dual-path: ArrowUp / ArrowDown swap selection in the
+    // choice prompt; Enter confirms; Esc dismisses. The keys are bound here
+    // in create() so the prompt overlay can poll JustDown without re-binding.
     const keyboard = this.input.keyboard;
     if (keyboard) {
       this.eKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+      this.upKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
+      this.downKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+      this.enterKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+      this.escKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
     }
 
     this.configureCamera(width, height);
@@ -273,6 +343,15 @@ export class ApolloVillageScene extends Phaser.Scene {
     // Per-frame y-sort across all registered dynamic sprites + drop shadows.
     this.sorter?.tick();
 
+    // Helios-v2 W3 S5: when a dual-path choice prompt is open, route the
+    // landmark interaction polling to prompt input handling instead. The
+    // prompt is modal: arrow keys swap selection, Enter confirms, Esc
+    // dismisses; E-key landmark polling is paused until the prompt closes.
+    if (this.landmarkPrompt) {
+      this.handleLandmarkPromptInput(time);
+      return;
+    }
+
     // Landmark E-key interaction: when player is in range and E is just
     // pressed, emit `landmark.<name>.interact`. Cooldown gate prevents
     // double-fire on key auto-repeat.
@@ -287,7 +366,9 @@ export class ApolloVillageScene extends Phaser.Scene {
    * an entry in landmarkBindings for E-key interaction.
    */
   private spawnLandmarks(): void {
-    // Marketplace stall landmark (SE quadrant).
+    // Marketplace stall landmark (SE quadrant). Helios-v2 W3 S5 dual-path:
+    // E-key opens choice prompt for UI marketplace listings or sub-area
+    // bazaar scene.
     this.placeLandmark(
       'marketplace_stall',
       ASSET_KEYS.props.apollo_village.marketplace_stall_landmark,
@@ -295,9 +376,15 @@ export class ApolloVillageScene extends Phaser.Scene {
       660,
       SCALE_MARKETPLACE,
       { sw: 110, sh: 22, alpha: 0.32 },
+      {
+        sceneKey: 'ApolloMarketplaceBazaar',
+        optionUiLabel: 'Browse listings (UI)',
+        optionGameLabel: 'Enter bazaar (game)',
+        title: 'Marketplace Stall',
+      },
     );
 
-    // Builder workshop landmark (NW quadrant).
+    // Builder workshop landmark (NW quadrant). Single-path UI modal.
     this.placeLandmark(
       'builder_workshop',
       ASSET_KEYS.props.apollo_village.builder_workshop_landmark,
@@ -307,7 +394,7 @@ export class ApolloVillageScene extends Phaser.Scene {
       { sw: 100, sh: 20, alpha: 0.32 },
     );
 
-    // Registry pillar landmark (NE quadrant).
+    // Registry pillar landmark (NE quadrant). Single-path UI modal.
     this.placeLandmark(
       'registry_pillar',
       ASSET_KEYS.props.apollo_village.registry_pillar_landmark,
@@ -317,7 +404,8 @@ export class ApolloVillageScene extends Phaser.Scene {
       { sw: 60, sh: 14, alpha: 0.30 },
     );
 
-    // Trust shrine landmark (SW quadrant).
+    // Trust shrine landmark (SW quadrant). Helios-v2 W3 S5 dual-path: E-key
+    // opens choice prompt for UI trust audit or sub-area oasis scene.
     this.placeLandmark(
       'trust_shrine',
       ASSET_KEYS.props.apollo_village.trust_shrine_landmark,
@@ -325,12 +413,23 @@ export class ApolloVillageScene extends Phaser.Scene {
       660,
       SCALE_TRUST_SHRINE,
       { sw: 130, sh: 22, alpha: 0.32 },
+      {
+        sceneKey: 'ApolloOasis',
+        optionUiLabel: 'View trust audit (UI)',
+        optionGameLabel: 'Visit oasis shrine (game)',
+        title: 'Trust Shrine',
+      },
     );
   }
 
   /**
    * Helper for landmark placement. Authors the PNG sprite, attaches a drop
    * shadow ellipse anchored at the sprite base, and binds the E-key event.
+   *
+   * Helios-v2 W3 S5: optional `subArea` param wires the dual-path choice
+   * prompt for landmarks that have a sub-area scene (Marketplace Stall,
+   * Trust Shrine). Single-path landmarks omit the param and behave exactly
+   * as in S2 (E-key emits the UI event directly).
    */
   private placeLandmark(
     name: string,
@@ -339,6 +438,7 @@ export class ApolloVillageScene extends Phaser.Scene {
     y: number,
     scale: number,
     shadow: { sw: number; sh: number; alpha: number },
+    subArea?: LandmarkBinding['subArea'],
   ): void {
     const sprite = this.add.image(x, y, textureKey);
     sprite.setOrigin(0.5, 1);
@@ -368,6 +468,7 @@ export class ApolloVillageScene extends Phaser.Scene {
       x,
       y,
       eventTopic: `landmark.${name}.interact`,
+      subArea,
     });
   }
 
@@ -522,8 +623,11 @@ export class ApolloVillageScene extends Phaser.Scene {
   // ---- Player + named NPCs ----
 
   private spawnPlayer() {
-    const spawnX = 704;
-    const spawnY = 640;
+    // Helios-v2 W3 S5 sub-area roundtrip: if the player is returning from a
+    // sub-area scene the spawn coord is the matching landmark approach,
+    // otherwise the default south-center courtyard.
+    const spawnX = this.spawnOverride?.x ?? 704;
+    const spawnY = this.spawnOverride?.y ?? 640;
     this.player = new Player(this, spawnX, spawnY, {
       textureKey: ASSET_KEYS.characters.player_spritesheet,
       frame: 0,
@@ -814,22 +918,209 @@ export class ApolloVillageScene extends Phaser.Scene {
       const last = this.lastLandmarkEmitAt[lm.name] ?? 0;
       if (time - last < LANDMARK_INTERACT_COOLDOWN_MS) continue;
       this.lastLandmarkEmitAt[lm.name] = time;
-      this.events.emit(lm.eventTopic, {
-        landmarkName: lm.name,
-        x: lm.x,
-        y: lm.y,
-      });
-      const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
-      if (bus) {
-        bus.emit('game.landmark.interact' as never, {
-          landmarkName: lm.name,
-          sceneKey: this.scene.key,
-        } as never);
+
+      // Helios-v2 W3 S5 dual-path: if the landmark binds a sub-area scene,
+      // open the in-game choice prompt. Otherwise (single-path, S2 default)
+      // emit the UI event topic directly.
+      if (lm.subArea) {
+        this.openLandmarkPrompt(lm, time);
+      } else {
+        this.emitLandmarkInteract(lm);
       }
+
       // First match wins per frame (player only triggers one landmark on
       // a single E press even if multiple are within range).
       break;
     }
+  }
+
+  /**
+   * Helios-v2 W3 S5: emit the landmark UI event + the bus event topic. Used
+   * by single-path landmarks directly and by dual-path landmark choice 0
+   * (UI option) selection.
+   */
+  private emitLandmarkInteract(lm: LandmarkBinding): void {
+    this.events.emit(lm.eventTopic, {
+      landmarkName: lm.name,
+      x: lm.x,
+      y: lm.y,
+    });
+    const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
+    if (bus) {
+      bus.emit('game.landmark.interact' as never, {
+        landmarkName: lm.name,
+        sceneKey: this.scene.key,
+      } as never);
+    }
+  }
+
+  /**
+   * Helios-v2 W3 S5: open the dual-path choice prompt for a landmark with a
+   * sub-area scene binding. Renders a dim backdrop + title + 2 option lines
+   * anchored to the camera viewport center via setScrollFactor(0).
+   */
+  private openLandmarkPrompt(lm: LandmarkBinding, time: number): void {
+    if (!lm.subArea) return;
+    if (this.landmarkPrompt) return;
+
+    const cam = this.cameras.main;
+    const cx = cam.width / 2;
+    const cy = cam.height / 2 - 60;
+
+    const container = this.add.container(cx, cy);
+    container.setScrollFactor(0);
+    container.setDepth(9500); // above world + ambient FX, below UIScene chat
+
+    // Backdrop rectangle.
+    const backdrop = this.add.rectangle(0, 0, 480, 200, 0x000000, 0.7);
+    backdrop.setStrokeStyle(2, 0xe8c57d, 1);
+    container.add(backdrop);
+
+    // Title text.
+    const title = this.add.text(0, -60, lm.subArea.title, {
+      fontFamily: 'monospace',
+      fontSize: '20px',
+      color: '#e8c57d',
+      align: 'center',
+    });
+    title.setOrigin(0.5, 0.5);
+    container.add(title);
+
+    // Option 0 (UI modal). The "> " prefix slot is left for the caret arrow
+    // which moves between options on ArrowUp / ArrowDown.
+    const optUi = this.add.text(0, -10, `> ${lm.subArea.optionUiLabel}`, {
+      fontFamily: 'monospace',
+      fontSize: '16px',
+      color: '#ffd86b',
+      align: 'center',
+    });
+    optUi.setOrigin(0.5, 0.5);
+    optUi.setData('label', lm.subArea.optionUiLabel);
+    container.add(optUi);
+
+    // Option 1 (game sub-area scene).
+    const optGame = this.add.text(0, 30, `  ${lm.subArea.optionGameLabel}`, {
+      fontFamily: 'monospace',
+      fontSize: '16px',
+      color: '#cfb47a',
+      align: 'center',
+    });
+    optGame.setOrigin(0.5, 0.5);
+    optGame.setData('label', lm.subArea.optionGameLabel);
+    container.add(optGame);
+
+    // Hint line for keyboard.
+    const hint = this.add.text(
+      0,
+      80,
+      'Up Down to select  Enter to confirm  Esc to cancel',
+      {
+        fontFamily: 'monospace',
+        fontSize: '11px',
+        color: '#9f8a5a',
+        align: 'center',
+      },
+    );
+    hint.setOrigin(0.5, 0.5);
+    container.add(hint);
+
+    this.landmarkPrompt = {
+      binding: lm,
+      container,
+      optionTexts: [optUi, optGame],
+      selectedIndex: 0,
+      openedAt: time,
+    };
+  }
+
+  /**
+   * Helios-v2 W3 S5: per-frame landmark prompt input handler. Called from
+   * update() while a prompt is open. ArrowUp / ArrowDown swap the highlight,
+   * Enter confirms the selection, Esc dismisses the prompt.
+   */
+  private handleLandmarkPromptInput(_time: number): void {
+    const prompt = this.landmarkPrompt;
+    if (!prompt) return;
+    if (!this.upKey || !this.downKey || !this.enterKey || !this.escKey) return;
+
+    let dirty = false;
+    if (Phaser.Input.Keyboard.JustDown(this.upKey)) {
+      prompt.selectedIndex = ((prompt.selectedIndex + 1) % 2) as 0 | 1;
+      dirty = true;
+    }
+    if (Phaser.Input.Keyboard.JustDown(this.downKey)) {
+      prompt.selectedIndex = ((prompt.selectedIndex + 1) % 2) as 0 | 1;
+      dirty = true;
+    }
+    if (dirty) {
+      // Update caret arrow + color highlight on the option texts.
+      for (let i = 0; i < prompt.optionTexts.length; i += 1) {
+        const t = prompt.optionTexts[i];
+        const label = t.getData('label') as string;
+        if (i === prompt.selectedIndex) {
+          t.setText(`> ${label}`);
+          t.setColor('#ffd86b');
+        } else {
+          t.setText(`  ${label}`);
+          t.setColor('#cfb47a');
+        }
+      }
+    }
+
+    if (Phaser.Input.Keyboard.JustDown(this.enterKey)) {
+      this.confirmLandmarkPrompt();
+    } else if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
+      this.dismissLandmarkPrompt();
+    }
+  }
+
+  /**
+   * Helios-v2 W3 S5: confirm the highlighted prompt option. Choice 0 emits
+   * the UI landmark interact event (preserves the existing Phanes flow);
+   * choice 1 fades out and starts the bound sub-area scene.
+   */
+  private confirmLandmarkPrompt(): void {
+    const prompt = this.landmarkPrompt;
+    if (!prompt) return;
+    const lm = prompt.binding;
+    const sub = lm.subArea;
+    if (!sub) {
+      this.dismissLandmarkPrompt();
+      return;
+    }
+
+    // Tear down prompt UI before triggering the action so the prompt does
+    // not bleed into the sub-area or remain after the modal action.
+    const choice = prompt.selectedIndex;
+    this.dismissLandmarkPrompt();
+
+    if (choice === 0) {
+      // UI modal path: existing Phanes flow.
+      this.emitLandmarkInteract(lm);
+    } else {
+      // Game sub-area path: fade out + scene.start.
+      this.cameras.main.fadeOut(500, 0, 0, 0);
+      this.cameras.main.once('camerafadeoutcomplete', () => {
+        this.scene.start(sub.sceneKey, {
+          worldId: 'medieval_desert',
+          from: 'ApolloVillage',
+        });
+      });
+    }
+  }
+
+  /**
+   * Helios-v2 W3 S5: tear down the prompt overlay container + clear state.
+   */
+  private dismissLandmarkPrompt(): void {
+    const prompt = this.landmarkPrompt;
+    if (!prompt) return;
+    try {
+      prompt.container.destroy(true);
+    } catch (err) {
+      console.error('[ApolloVillageScene] prompt container destroy threw', err);
+    }
+    this.landmarkPrompt = null;
   }
 
   // ---- Camera + cleanup ----
@@ -879,6 +1170,16 @@ export class ApolloVillageScene extends Phaser.Scene {
       this.ambientNpcs = [];
       this.landmarkBindings = [];
       this.lastLandmarkEmitAt = {};
+
+      // Helios-v2 W3 S5: dismiss any open landmark prompt overlay.
+      if (this.landmarkPrompt) {
+        try {
+          this.landmarkPrompt.container.destroy(true);
+        } catch (err) {
+          console.error('[ApolloVillageScene] prompt container destroy threw', err);
+        }
+        this.landmarkPrompt = null;
+      }
 
       for (const unsub of this.unsubscribers) {
         try {
