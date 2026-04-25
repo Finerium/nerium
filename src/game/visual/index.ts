@@ -38,3 +38,30 @@ export {
   type YSortable,
   type OriginSettable,
 } from './ysort';
+
+export { buildSkyGradient, type SkyGradientOptions } from './skyGradient';
+
+export {
+  buildParallaxLayer,
+  stairStepSilhouette,
+  type ParallaxLayerOptions,
+  type SilhouetteRect,
+} from './parallaxLayer';
+
+export {
+  buildAmbientFx,
+  type AmbientFxKind,
+  type AmbientFxOptions,
+} from './ambientFx';
+
+export {
+  buildTent,
+  buildCactus,
+  buildWaterWell,
+  buildFirePit,
+  buildLampPost,
+  buildPalmTree,
+  buildRock,
+  buildMerchantStall,
+  type TentVariant,
+} from './decoration';
