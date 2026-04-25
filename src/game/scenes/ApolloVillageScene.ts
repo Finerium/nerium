@@ -1,45 +1,65 @@
 //
 // src/game/scenes/ApolloVillageScene.ts
 //
-// Main lobby scene for the vertical slice. Medieval Desert world aesthetic,
-// top-down JRPG perspective. Helios-v2 W3 CORRECTION: rewritten ground paint
-// + character sprite textures + foliage canopy + horizon haze to reach the
-// Sea of Stars / Crosscode polish tier after Run #1 returned VISUAL DRIFT
-// SEVERE. W3 S0 cleanup neutralized deprecated authority references; S1
-// transitions to AI-asset PNG transplant.
+// Helios-v2 W3 S2: Apollo Village main scene full revamp.
 //
-// Visual stack (5 layer + ambient FX):
-//   Layer 0 (sky_gradient): per-world dusk gradient via buildSkyGradient
-//   Layer 1 (parallax_bg):  canyon silhouette stair-step at scrollFactor 0.4
-//                           PLUS horizon atmospheric haze blend strip
-//   Layer 2 (ground_tiles): paintApolloVillageGround (multi-band warm sand
-//                           + speckle dither + winding trail). Replaces
-//                           prior atlas-tile checkerboard.
-//   Layer 3 (world_tiles):  decoration props (tent, cactus, well, firepit,
-//                           palm, rock, lamp post) plus player + NPCs with
-//                           dynamic y-sort via SceneSorter. Player + NPCs
-//                           use generated pixel-rect sprite textures from
-//                           src/game/visual/spriteTextures.ts (Apollo,
-//                           treasurer, caravan vendor, guard, child,
-//                           elder, 3 villager variants).
-//   Layer 4 (above_tiles):  paintApolloCanopy acacia foliage overhang +
-//                           hanging leaf clusters that occlude sprites
-//                           passing beneath.
-//   Ambient FX:             sand particle drift via buildAmbientFx('dust')
+// VISUAL AUTHORITY SWAP: prior session shipped a procedural SVG / pixel-rect
+// composition (groundPaint + spriteTextures + decoration containers). S2
+// transitions the scene to consume the AI-generated PNG asset bundle shipped
+// at `_Reference/ai_generated_assets/` (96 active assets, V6 SHA c74547f).
+// The placement coordinate map authored at
+// `_skills_staging/apollo_village_placement.md` is the contract for every
+// `this.add.image(...)` call in this file.
 //
-// Preserved from prior shipped scene (NON-REGRESSION):
+// Visual stack (5-layer per visual_manifest.contract):
+//   Layer 0 (sky_gradient, depth -100): camera-locked dusk gradient bands
+//                                       via buildSkyGradient(medieval_desert).
+//                                       scrollFactor 0 so bands stay above
+//                                       horizon regardless of camera scroll.
+//   Layer 1 (parallax_bg, depth -50):   apollo_village_bg.jpg painted at
+//                                       (0, 0) origin (0, 0), scrollFactor
+//                                       0.3 mild parallax disambiguation.
+//   Layer 2 (ground_tiles, depth -10):  reserved (the AI bg's painted sand
+//                                       floor is a single image; no extra
+//                                       paint passes needed in S2).
+//   Layer 3 (world_tiles, depth 0..N):  4 landmark PNGs + 9 ambient prop
+//                                       PNGs + 3 named NPC stills + 5 ambient
+//                                       NPC stills + Caravan + player. All
+//                                       go through SceneSorter for dynamic
+//                                       y-sort via setDepth(sprite.y) per
+//                                       Oak-Woods feet-anchor pattern.
+//   Layer 4 (above_tiles, depth 100):   2 hanging lantern PNGs at scene
+//                                       overhead so player walks under.
+//   Layer 5 (ambient_fx, depth 500):    warm amber sand drift via the
+//                                       buildAmbientFx 'dust' preset.
+//
+// Drop shadows: each NPC + landmark + tall ambient prop is shadow-anchored
+// at (sprite.x, sprite.y) via Phaser.GameObjects.Ellipse (alpha 0.30-0.32,
+// fill 0x000000). Shadows register with SceneSorter at offset y - 1 so they
+// always render one slice below their owning sprite.
+//
+// NPC idle breathing: each static NPC sprite gets a scale tween 1.0 -> 1.02
+// over 800ms loop ease Sine.easeInOut per S2 directive item 3.
+//
+// E-key landmark interaction: the four pillar landmarks (marketplace, builder
+// workshop, registry pillar, trust shrine) emit `landmark.<name>.interact`
+// via the scene event emitter when the player is within 128 px AND the E key
+// is just-pressed. S7 session connects these events to the respective UI
+// overlays.
+//
+// PRESERVED FROM RV (NON-REGRESSION):
 //   - Player spawn + camera follow + setBounds
-//   - Apollo NPC at central courtyard with 48 px interact radius
-//   - Caravan gated on questStore unlock state (Caravan game object)
-//   - Caravan vendor NPC for lumio_onboarding step 8 (caravan_interact)
-//   - Treasurer NPC for Marshall W2 cross-pillar tier-state surface
-//   - Caravan arrival zone for lumio_onboarding step 7 (caravan_spawned)
+//   - Apollo NPC at central courtyard (npcId 'apollo')
+//   - Treasurer NPC for Marshall W2 cross-pillar pricing dialogue (preserve
+//     game.npc.interact { npcId: 'treasurer' } contract)
+//   - Caravan Vendor NPC for lumio_onboarding step 8
+//   - Caravan game object gated on questStore.unlockedWorlds
+//   - Caravan arrival zone for lumio_onboarding step 7
 //   - game.scene.ready, game.player.spawned, game.zone.entered emissions
-//   - SHUTDOWN cleanup
+//   - SHUTDOWN cleanup (tweens, emitter, sorter, listeners)
 //   - window.__NERIUM_TEST__ Playwright hook
 //
-// Owner: Helios-v2 (W3 correction), Thalia-v2 (original RV scaffold).
-//
+// Owner: Helios-v2 (W3 S2 revamp), Thalia-v2 (RV scaffold).
 // No em dash, no emoji per CLAUDE.md anti-patterns.
 //
 
@@ -53,51 +73,73 @@ import type { GameEventBus } from '../../state/GameEventBus';
 import {
   SceneSorter,
   buildSkyGradient,
-  buildParallaxLayer,
-  stairStepSilhouette,
   buildAmbientFx,
-  buildTent,
-  buildCactus,
-  buildWaterWell,
-  buildFirePit,
-  buildLampPost,
-  buildPalmTree,
-  buildRock,
-  paintApolloVillageGround,
-  paintApolloCanopy,
-  paintHorizonHaze,
-  buildApolloVillageSprites,
-  type ApolloSpriteKeys,
   MEDIEVAL_DESERT,
   DEPTH,
   dynamicDepthFor,
 } from '../visual';
+import { ASSET_KEYS } from '../visual/asset_keys';
 
 interface ApolloVillageSceneData {
   worldId?: WorldId;
   spawn?: { x: number; y: number };
 }
 
-const FRAME_SIGIL_WORLD = 'sigil_world';
-
+// World dimensions match the apollo_village_bg.jpg native 1408 x 793 with a
+// tiny vertical headroom strip (8 px) absorbed by the sky gradient. The
+// 32 px tile reference is preserved for compatibility with NPC interact
+// radii + Caravan + arrival zone authored against 32 px scale in RV.
+const WORLD_W = 1408;
+const WORLD_H = 800;
 const TILE_PX = 32;
-const VILLAGE_COLS = 24;
-const VILLAGE_ROWS = 16;
 
-// Computed scene bounds
-const WORLD_W = VILLAGE_COLS * TILE_PX;
-const WORLD_H = VILLAGE_ROWS * TILE_PX;
+// Landmark + NPC scale per placement map. Source PNGs are 600x600 (landmark)
+// or 512x512 (character) at scale 0.18-0.55 -> ~92-330 px display size.
+const NPC_SCALE_NAMED = 0.18;
+const NPC_SCALE_AMBIENT = 0.18;
+const NPC_SCALE_CHILD = 0.13;
+const PLAYER_SCALE = 0.18;
 
-// Pixel-rect character sprites are authored 8-10 px wide / 10-16 px tall
-// to match the per-world palette directive; on a 32 px tile world we
-// render them at 3x so they read at proper character size (24-30 px
-// tall body).
-const CHARACTER_SPRITE_SCALE = 3;
+// Landmark PNGs source dimensions vary; scale picked per asset to balance
+// silhouette weight against the bg.
+const SCALE_MARKETPLACE = 0.55;
+const SCALE_BUILDER_WORKSHOP = 0.5;
+const SCALE_REGISTRY_PILLAR = 0.55;
+const SCALE_TRUST_SHRINE = 0.5;
+
+// Ambient prop scales per placement map.
+const SCALE_STONE_WELL = 0.45;
+const SCALE_DATE_PALM = 0.42;
+const SCALE_CYPRESS_LARGE = 0.65;
+const SCALE_CYPRESS_SMALL = 0.55;
+const SCALE_MARKET_STALL = 0.42;
+const SCALE_WOODEN_CART = 0.4;
+const SCALE_HOUSE_FILLER = 0.5;
+const SCALE_STONE_COLUMN = 0.5;
+const SCALE_STONE_SIGNPOST = 0.4;
+const SCALE_HANGING_LANTERN = 0.3;
+
+// Idle breathing tween standard (per S2 directive item 3).
+const BREATHING_DURATION_MS = 800;
+const BREATHING_AMPLITUDE = 1.02;
+
+// Landmark E-key interaction trigger radius (px). Slightly larger than NPC
+// radius so the landmark feels more discoverable.
+const LANDMARK_INTERACT_RADIUS_PX = 128;
+const LANDMARK_INTERACT_COOLDOWN_MS = 500;
+
+interface LandmarkBinding {
+  name: string;
+  x: number;
+  y: number;
+  eventTopic: string;
+}
 
 export class ApolloVillageScene extends Phaser.Scene {
   private worldId: WorldId = 'medieval_desert';
   private atlasKey = 'atlas_medieval_desert';
-  private spriteKeys?: ApolloSpriteKeys;
+
+  // Active dynamic objects.
   private player?: Player;
   private apolloNpc?: NPC;
   private caravanVendorNpc?: NPC;
@@ -108,11 +150,16 @@ export class ApolloVillageScene extends Phaser.Scene {
   private ambientNpcs: NPC[] = [];
   private unsubscribers: Array<() => void> = [];
 
-  // Visual revamp state
+  // Visual revamp state.
   private sorter?: SceneSorter;
   private ambientFx?: Phaser.GameObjects.Particles.ParticleEmitter | null;
-  private flameTween?: Phaser.Tweens.Tween;
-  private lampGlowTween?: Phaser.Tweens.Tween;
+  private idleBreathingTweens: Phaser.Tweens.Tween[] = [];
+  private dropShadows: Phaser.GameObjects.Ellipse[] = [];
+
+  // Landmark E-key interaction state.
+  private landmarkBindings: LandmarkBinding[] = [];
+  private eKey?: Phaser.Input.Keyboard.Key;
+  private lastLandmarkEmitAt: Record<string, number> = {};
 
   constructor() {
     super({ key: 'ApolloVillage' } satisfies Phaser.Types.Scenes.SettingsConfig);
@@ -127,78 +174,36 @@ export class ApolloVillageScene extends Phaser.Scene {
     const width = WORLD_W;
     const height = WORLD_H;
 
-    // Background sets the under-sky color so any unfilled pixel reads as
-    // ink, not the default Phaser gray.
+    // Background fallback color so any unfilled pixel reads warm dusk, not
+    // the default Phaser gray.
     this.cameras.main.setBackgroundColor('#1a0f05');
     this.physics.world.setBounds(0, 0, width, height);
 
-    // Build all character sprite textures FIRST so any object spawn below
-    // can reference the cached keys.
-    this.spriteKeys = buildApolloVillageSprites(this);
-
-    // Layer 0: sky gradient anchored to camera viewport (scrollFactor 0)
-    // so the dusk bands are visible regardless of camera scroll position.
-    // We pass scale.width / scale.height so the gradient fills the
-    // visible canvas, not the world bounds (the world is taller than the
-    // viewport and the camera lerp would otherwise leave the sky off-screen).
+    // Layer 0: sky gradient bands camera-locked above bg.
     buildSkyGradient(this, {
       world: 'medieval_desert',
       width: this.scale.width,
       height: this.scale.height,
     });
 
-    // Layer 1a: parallax canyon silhouette (far + near). Stair-step
-    // procedurally with a deterministic seed for stable Playwright snapshot.
-    // baseY at world height * 0.55 so the silhouette sits right above the
-    // ground band (which now starts at y * 0.55).
-    const farRects = stairStepSilhouette(
-      0,
-      width,
-      Math.round(height * 0.55),
-      48,
-      18,
-      36,
-      MEDIEVAL_DESERT.canyonFar,
-      0xa11ce,
-    );
-    buildParallaxLayer(this, { rects: farRects, scrollFactor: 0.3, alpha: 0.9 });
+    // Layer 1: AI background painted at (0, 0) covering the full scene.
+    // setOrigin(0, 0) so x,y references the top-left corner.
+    const bg = this.add.image(0, 0, ASSET_KEYS.backgrounds.apollo_village_bg);
+    bg.setOrigin(0, 0);
+    bg.setDisplaySize(width, height);
+    bg.setDepth(DEPTH.PARALLAX_BG);
+    bg.setScrollFactor(0.3);
 
-    const nearRects = stairStepSilhouette(
-      0,
-      width,
-      Math.round(height * 0.58),
-      40,
-      14,
-      28,
-      MEDIEVAL_DESERT.canyonNear,
-      0x5a3b1,
-    );
-    buildParallaxLayer(this, { rects: nearRects, scrollFactor: 0.5, alpha: 0.95 });
-
-    // Distant village fort silhouette on the far ridge (depth + horizon
-    // anchor for the Apollo Village far ridge layer)
-    this.spawnDistantFort(width, height);
-
-    // Layer 1b: horizon haze blend strip (sea of stars depth feel)
-    paintHorizonHaze(this, width, height, MEDIEVAL_DESERT.skyEmber, 0.4);
-
-    // Layer 2: ground floor multi-band paint (replaces atlas-tile checker)
-    paintApolloVillageGround(this, width, height);
-
-    // Sigil at the central courtyard (decorative ground decal)
-    const centerX = (VILLAGE_COLS / 2) * TILE_PX;
-    const centerY = (VILLAGE_ROWS / 2) * TILE_PX;
-    if (this.textures.exists(this.atlasKey)) {
-      const sigil = this.add.image(centerX, centerY, this.atlasKey, FRAME_SIGIL_WORLD);
-      sigil.setOrigin(0.5, 0.5);
-      sigil.setAlpha(0.5);
-      sigil.setDepth(DEPTH.GROUND_TILES + 4);
-    }
-
-    // Layer 3 + dynamic y-sort: decoration props + player + NPCs
+    // Layer 3 setup: register the per-frame y-sort pool for every dynamic
+    // sprite (player + NPCs + landmark images + ambient props + drop
+    // shadows). Sorter.tick() runs in update() to recompute setDepth.
     this.sorter = new SceneSorter();
 
-    this.spawnDecoration();
+    // Spawn order: landmarks + ambient props first (background props), then
+    // NPCs + player on top so creation order does not shadow y-sort.
+    this.spawnLandmarks();
+    this.spawnAmbientProps();
+    this.spawnHangingLanterns();
     this.spawnPlayer();
     this.spawnApollo();
     this.spawnCaravan();
@@ -207,25 +212,14 @@ export class ApolloVillageScene extends Phaser.Scene {
     this.spawnAmbientNpcs();
     this.spawnCaravanArrivalZone();
 
-    // Register dynamic entities into the y-sort pool. Player + NPCs use
-    // setOrigin(0.5, 1) Oak-Woods feet anchor (groundAnchor: true); the
-    // y-sort tick assigns dynamicDepthFor(sprite.y) per frame.
-    if (this.player) this.sorter.register(this.player);
-    if (this.apolloNpc) this.sorter.register(this.apolloNpc);
-    if (this.caravanVendorNpc) this.sorter.register(this.caravanVendorNpc);
-    if (this.treasurerNpc) this.sorter.register(this.treasurerNpc);
-    if (this.caravan) this.sorter.register(this.caravan);
-    for (const n of this.ambientNpcs) this.sorter.register(n);
-
-    // Layer 4 (above_tiles): foliage canopy overhang
-    paintApolloCanopy(this, width);
-
-    // Ambient FX: sand particle drift
+    // Layer 5: warm amber sand particle drift.
     this.ambientFx = buildAmbientFx(this, { kind: 'dust' });
 
-    // Flame pulse on the central fire pit
-    this.startFlamePulse();
-    this.startLampGlow();
+    // E-key binding for landmark interaction (S7 wires UI overlays).
+    const keyboard = this.input.keyboard;
+    if (keyboard) {
+      this.eKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+    }
 
     this.configureCamera(width, height);
     this.registerSceneCleanup();
@@ -248,7 +242,7 @@ export class ApolloVillageScene extends Phaser.Scene {
       });
     }
 
-    // Expose scene handle to Playwright smoke test per gotcha 5.
+    // Expose scene handle to Playwright smoke tests per gotcha 5.
     if (typeof window !== 'undefined') {
       const w = window as unknown as Record<string, unknown>;
       const existing = (w.__NERIUM_TEST__ ?? {}) as Record<string, unknown>;
@@ -275,307 +269,446 @@ export class ApolloVillageScene extends Phaser.Scene {
     if (this.player) {
       for (const n of this.ambientNpcs) n.updateProximity(this.player);
     }
-    // Per-frame y-sort
+
+    // Per-frame y-sort across all registered dynamic sprites + drop shadows.
     this.sorter?.tick();
+
+    // Landmark E-key interaction: when player is in range and E is just
+    // pressed, emit `landmark.<name>.interact`. Cooldown gate prevents
+    // double-fire on key auto-repeat.
+    this.checkLandmarkInteraction(time);
   }
 
-  // ---- setup helpers ----
+  // ---- Landmarks (Layer 3, 4 pillar anchors) ----
 
   /**
-   * Distant village fort silhouette on the far ridge, populated with lit
-   * windows. Reads as a destination beyond the scene boundaries.
+   * Spawn the 4 NERIUM-pillar landmark PNGs at their placement-map coords.
+   * Each landmark gets a drop shadow registered into the y-sort pool and
+   * an entry in landmarkBindings for E-key interaction.
    */
-  private spawnDistantFort(width: number, height: number): void {
-    const baseY = Math.round(height * 0.5);
-    const fortX = Math.round(width * 0.6);
-    const fortW = Math.round(width * 0.18);
-    const fort = this.add.rectangle(fortX, baseY, fortW, 22, MEDIEVAL_DESERT.canyonFar);
-    fort.setOrigin(0, 0);
-    fort.setScrollFactor(0.25);
-    fort.setDepth(DEPTH.PARALLAX_BG + 1);
-    // Tower cluster
-    for (let i = 0; i < 5; i++) {
-      const tw = 8;
-      const th = 6 + i * 2;
-      const t = this.add.rectangle(fortX + i * 14, baseY - th, tw, th, MEDIEVAL_DESERT.canyonFar);
-      t.setOrigin(0, 0);
-      t.setScrollFactor(0.25);
-      t.setDepth(DEPTH.PARALLAX_BG + 2);
-    }
-    // Lit windows along fort
-    for (let i = 0; i < 4; i++) {
-      const wx = fortX + 6 + i * 16;
-      const wy = baseY + 6;
-      const w1 = this.add.rectangle(wx, wy, 2, 2, MEDIEVAL_DESERT.flameAmber);
-      w1.setOrigin(0, 0);
-      w1.setScrollFactor(0.25);
-      w1.setDepth(DEPTH.PARALLAX_BG + 3);
-    }
+  private spawnLandmarks(): void {
+    // Marketplace stall landmark (SE quadrant).
+    this.placeLandmark(
+      'marketplace_stall',
+      ASSET_KEYS.props.apollo_village.marketplace_stall_landmark,
+      1080,
+      660,
+      SCALE_MARKETPLACE,
+      { sw: 110, sh: 22, alpha: 0.32 },
+    );
+
+    // Builder workshop landmark (NW quadrant).
+    this.placeLandmark(
+      'builder_workshop',
+      ASSET_KEYS.props.apollo_village.builder_workshop_landmark,
+      310,
+      480,
+      SCALE_BUILDER_WORKSHOP,
+      { sw: 100, sh: 20, alpha: 0.32 },
+    );
+
+    // Registry pillar landmark (NE quadrant).
+    this.placeLandmark(
+      'registry_pillar',
+      ASSET_KEYS.props.apollo_village.registry_pillar_landmark,
+      1040,
+      380,
+      SCALE_REGISTRY_PILLAR,
+      { sw: 60, sh: 14, alpha: 0.30 },
+    );
+
+    // Trust shrine landmark (SW quadrant).
+    this.placeLandmark(
+      'trust_shrine',
+      ASSET_KEYS.props.apollo_village.trust_shrine_landmark,
+      490,
+      660,
+      SCALE_TRUST_SHRINE,
+      { sw: 130, sh: 22, alpha: 0.32 },
+    );
   }
 
   /**
-   * Spawn the decoration set (tents, cacti, well, firepit, palm, rocks,
-   * lamp posts).
+   * Helper for landmark placement. Authors the PNG sprite, attaches a drop
+   * shadow ellipse anchored at the sprite base, and binds the E-key event.
    */
-  private spawnDecoration(): void {
-    const setDepthForProp = (c: Phaser.GameObjects.Container) => {
-      c.setDepth(dynamicDepthFor(c.y));
-    };
+  private placeLandmark(
+    name: string,
+    textureKey: string,
+    x: number,
+    y: number,
+    scale: number,
+    shadow: { sw: number; sh: number; alpha: number },
+  ): void {
+    const sprite = this.add.image(x, y, textureKey);
+    sprite.setOrigin(0.5, 1);
+    sprite.setScale(scale);
 
-    // Tents: 3-cluster behind firepit + 2 farther out for density
-    const c1 = buildTent(this, 7 * TILE_PX, 8 * TILE_PX, 'sand');
-    setDepthForProp(c1);
-    const c2 = buildTent(this, 10 * TILE_PX, 7 * TILE_PX, 'terracotta');
-    setDepthForProp(c2);
-    const c3 = buildTent(this, 14 * TILE_PX, 8 * TILE_PX, 'olive');
-    setDepthForProp(c3);
-    const c4 = buildTent(this, 4 * TILE_PX, 11 * TILE_PX, 'sand');
-    setDepthForProp(c4);
-    const c5 = buildTent(this, 17 * TILE_PX, 11 * TILE_PX, 'terracotta');
-    setDepthForProp(c5);
+    const dropShadow = this.add.ellipse(
+      x,
+      y,
+      shadow.sw,
+      shadow.sh,
+      0x000000,
+      shadow.alpha,
+    );
+    this.dropShadows.push(dropShadow);
 
-    // Water well (left mid)
-    const well = buildWaterWell(this, 3 * TILE_PX, 9 * TILE_PX);
-    setDepthForProp(well);
+    // Register both into the sorter so the depth tracks the sprite's
+    // position-of-record (static here, but the sorter uses sprite.y so the
+    // entry is consistent with player + NPC tracking).
+    this.sorter?.register(sprite);
+    this.sorter?.register({
+      y: y - 1,
+      setDepth: (v) => dropShadow.setDepth(v),
+    });
 
-    // Cacti scatter
-    const cact1 = buildCactus(this, 1.5 * TILE_PX, 6 * TILE_PX, 'large');
-    setDepthForProp(cact1);
-    const cact2 = buildCactus(this, 22 * TILE_PX, 12 * TILE_PX, 'large');
-    setDepthForProp(cact2);
-    const cact3 = buildCactus(this, 19 * TILE_PX, 4 * TILE_PX, 'small');
-    setDepthForProp(cact3);
-    const cact4 = buildCactus(this, 6 * TILE_PX, 13 * TILE_PX, 'small');
-    setDepthForProp(cact4);
-    const cact5 = buildCactus(this, 20 * TILE_PX, 14 * TILE_PX, 'small');
-    setDepthForProp(cact5);
-
-    // Palm trees (oasis feel, near corners + scattered)
-    const palm1 = buildPalmTree(this, 2 * TILE_PX, 4 * TILE_PX);
-    setDepthForProp(palm1);
-    const palm2 = buildPalmTree(this, 21 * TILE_PX, 3 * TILE_PX);
-    setDepthForProp(palm2);
-    const palm3 = buildPalmTree(this, 12 * TILE_PX, 2.5 * TILE_PX);
-    setDepthForProp(palm3);
-
-    // Rocks (foreground scatter)
-    const rk1 = buildRock(this, 5 * TILE_PX, 12 * TILE_PX, 14, 6);
-    setDepthForProp(rk1);
-    const rk2 = buildRock(this, 18 * TILE_PX, 13 * TILE_PX, 10, 5);
-    setDepthForProp(rk2);
-    const rk3 = buildRock(this, 9 * TILE_PX, 13 * TILE_PX, 8, 4);
-    setDepthForProp(rk3);
-    const rk4 = buildRock(this, 16 * TILE_PX, 5 * TILE_PX, 12, 5);
-    setDepthForProp(rk4);
-
-    // Central fire pit at courtyard, slightly south of sigil
-    const fp = buildFirePit(this, 12 * TILE_PX, 9.5 * TILE_PX);
-    setDepthForProp(fp);
-    this.firePitContainer = fp;
-
-    // Warm orange evening: lamp posts flanking the courtyard
-    const lp1 = buildLampPost(this, 9 * TILE_PX, 8 * TILE_PX);
-    setDepthForProp(lp1);
-    const lp2 = buildLampPost(this, 15 * TILE_PX, 8 * TILE_PX);
-    setDepthForProp(lp2);
-    const lp3 = buildLampPost(this, 5 * TILE_PX, 14 * TILE_PX);
-    setDepthForProp(lp3);
-    const lp4 = buildLampPost(this, 19 * TILE_PX, 14 * TILE_PX);
-    setDepthForProp(lp4);
-    this.lampPosts = [lp1, lp2, lp3, lp4];
-
-    // Lamp warm light spill rings on ground (cosmetic)
-    for (const post of this.lampPosts) {
-      const spill = this.add.circle(post.x, post.y + 6, 24, MEDIEVAL_DESERT.flameAmber, 0.18);
-      spill.setDepth(DEPTH.GROUND_TILES + 6);
-      this.lampSpills.push(spill);
-    }
-  }
-
-  private firePitContainer?: Phaser.GameObjects.Container;
-  private lampPosts: Phaser.GameObjects.Container[] = [];
-  private lampSpills: Phaser.GameObjects.Arc[] = [];
-
-  /**
-   * Pulse the firepit flame container with a gentle scale tween so the
-   * central courtyard reads "alive".
-   */
-  private startFlamePulse(): void {
-    if (!this.firePitContainer) return;
-    this.flameTween = this.tweens.add({
-      targets: this.firePitContainer,
-      scaleY: { from: 0.95, to: 1.07 },
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
-      duration: 520,
+    this.landmarkBindings.push({
+      name,
+      x,
+      y,
+      eventTopic: `landmark.${name}.interact`,
     });
   }
 
+  // ---- Ambient props (Layer 3, 9 anchors) ----
+
   /**
-   * Pulse the warm light spill rings under each lamp post for a flickering
-   * candle feel (cheap alpha tween, no Lights2D pipeline).
+   * Place 9 ambient prop PNGs across the scene per placement map.
+   * Each registers into the sorter for dynamic y-sort. Drop shadows added
+   * for props that lack built-in PNG ground shadow.
    */
-  private startLampGlow(): void {
-    if (this.lampSpills.length === 0) return;
-    this.lampGlowTween = this.tweens.add({
-      targets: this.lampSpills,
-      alpha: { from: 0.16, to: 0.28 },
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
-      duration: 1400,
-      delay: this.tweens.stagger(220, { start: 0 }),
-    });
+  private spawnAmbientProps(): void {
+    // Stone well (mid-left, narrative water source).
+    this.placeAmbientProp(
+      ASSET_KEYS.props.apollo_village.stone_well,
+      260,
+      570,
+      SCALE_STONE_WELL,
+      { sw: 80, sh: 16, alpha: 0.30 },
+    );
+
+    // Date palm cluster (SW foreground oasis). PNG has built-in sandy mound.
+    this.placeAmbientProp(
+      ASSET_KEYS.props.apollo_village.date_palm_cluster,
+      160,
+      660,
+      SCALE_DATE_PALM,
+      null,
+    );
+
+    // Cypress tree (top center vertical accent). PNG has built-in shadow.
+    this.placeAmbientProp(
+      ASSET_KEYS.props.apollo_village.cypress_tree,
+      760,
+      240,
+      SCALE_CYPRESS_LARGE,
+      null,
+    );
+
+    // Cypress tree (SE cluster mate, frames marketplace approach).
+    this.placeAmbientProp(
+      ASSET_KEYS.props.apollo_village.cypress_tree,
+      1290,
+      540,
+      SCALE_CYPRESS_SMALL,
+      null,
+    );
+
+    // Market stall (commerce anchor near marketplace landmark).
+    this.placeAmbientProp(
+      ASSET_KEYS.props.apollo_village.market_stall,
+      910,
+      720,
+      SCALE_MARKET_STALL,
+      { sw: 90, sh: 18, alpha: 0.30 },
+    );
+
+    // Wooden cart (foreground produce, color variety break).
+    this.placeAmbientProp(
+      ASSET_KEYS.props.apollo_village.wooden_cart,
+      760,
+      760,
+      SCALE_WOODEN_CART,
+      { sw: 100, sh: 20, alpha: 0.30 },
+    );
+
+    // Apollo house filler (far-right structural depth anchor).
+    this.placeAmbientProp(
+      ASSET_KEYS.props.apollo_village.apollo_house_filler,
+      1320,
+      320,
+      SCALE_HOUSE_FILLER,
+      { sw: 100, sh: 18, alpha: 0.30 },
+    );
+
+    // Stone column (mid-frame ruin accent, frames Apollo approach).
+    this.placeAmbientProp(
+      ASSET_KEYS.props.apollo_village.stone_column,
+      610,
+      360,
+      SCALE_STONE_COLUMN,
+      null,
+    );
+
+    // Stone signpost (foreground entry marker near player spawn).
+    this.placeAmbientProp(
+      ASSET_KEYS.props.apollo_village.stone_signpost,
+      700,
+      730,
+      SCALE_STONE_SIGNPOST,
+      { sw: 30, sh: 10, alpha: 0.30 },
+    );
   }
 
-  // ---- Quest-mechanic helpers (NON-REGRESSION; preserve emission contracts) ----
+  private placeAmbientProp(
+    textureKey: string,
+    x: number,
+    y: number,
+    scale: number,
+    shadow: { sw: number; sh: number; alpha: number } | null,
+  ): void {
+    const sprite = this.add.image(x, y, textureKey);
+    sprite.setOrigin(0.5, 1);
+    sprite.setScale(scale);
+    this.sorter?.register(sprite);
+
+    if (shadow) {
+      const dropShadow = this.add.ellipse(
+        x,
+        y,
+        shadow.sw,
+        shadow.sh,
+        0x000000,
+        shadow.alpha,
+      );
+      this.dropShadows.push(dropShadow);
+      this.sorter?.register({
+        y: y - 1,
+        setDepth: (v) => dropShadow.setDepth(v),
+      });
+    }
+  }
+
+  // ---- Hanging lanterns (Layer 4 ABOVE_TILES) ----
+
+  /**
+   * Two hanging lantern PNGs mounted at scene overhead. Set above_tiles
+   * depth so the player sprite renders UNDER the hanging position.
+   */
+  private spawnHangingLanterns(): void {
+    const places: Array<[number, number]> = [
+      [480, 440],
+      [980, 460],
+    ];
+    for (const [x, y] of places) {
+      const lantern = this.add.image(x, y, ASSET_KEYS.props.apollo_village.hanging_lantern);
+      lantern.setOrigin(0.5, 0.3);
+      lantern.setScale(SCALE_HANGING_LANTERN);
+      lantern.setDepth(DEPTH.ABOVE_TILES);
+      // Subtle sway tween (rotation +/-3deg cycle 4s slow, asymmetric phase).
+      this.tweens.add({
+        targets: lantern,
+        angle: { from: -2, to: 2 },
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+        duration: 4000,
+        delay: x % 700,
+      });
+    }
+  }
+
+  // ---- Player + named NPCs ----
 
   private spawnPlayer() {
-    const spawnX = (VILLAGE_COLS / 2) * TILE_PX;
-    const spawnY = (VILLAGE_ROWS - 3) * TILE_PX;
+    const spawnX = 704;
+    const spawnY = 640;
     this.player = new Player(this, spawnX, spawnY, {
-      textureKey: this.spriteKeys?.player ?? this.atlasKey,
-      speed: 120,
-      spriteScale: CHARACTER_SPRITE_SCALE,
+      textureKey: ASSET_KEYS.characters.player_spritesheet,
+      frame: 0,
+      speed: 160,
+      spriteScale: PLAYER_SCALE,
       groundAnchor: true,
-      hitboxSize: 18,
+      hitboxSize: 28,
     });
+    this.sorter?.register(this.player);
+    this.attachDropShadow(this.player, 36, 8, 0.30);
   }
 
   private spawnApollo() {
-    const apolloX = (VILLAGE_COLS / 2) * TILE_PX;
-    const apolloY = (VILLAGE_ROWS / 2 - 2) * TILE_PX;
+    const apolloX = 704;
+    const apolloY = 360;
     this.apolloNpc = new NPC(this, apolloX, apolloY, {
       npcId: 'apollo',
       displayName: 'Apollo Advisor',
-      textureKey: this.spriteKeys?.apollo ?? this.atlasKey,
+      textureKey: ASSET_KEYS.characters.apollo,
       interactRadius: 56,
-      spriteScale: CHARACTER_SPRITE_SCALE,
+      spriteScale: NPC_SCALE_NAMED,
       groundAnchor: true,
     });
+    this.sorter?.register(this.apolloNpc);
+    this.attachDropShadow(this.apolloNpc, 36, 8, 0.30);
+    this.startBreathingTween(this.apolloNpc);
   }
 
   private spawnCaravan() {
-    // Caravan parks near the east wall; gated on unlockedWorlds.
-    const caravanX = (VILLAGE_COLS - 4) * TILE_PX;
-    const caravanY = (VILLAGE_ROWS / 2) * TILE_PX;
+    // Caravan parks east; gated on questStore.unlockedWorlds. Reuses the
+    // legacy atlas sigil frame so the gating subscription continues to work
+    // unmodified. Future S6 polish may swap to a dedicated AI-asset PNG.
+    const caravanX = 1280;
+    const caravanY = 400;
     this.caravan = new Caravan(this, caravanX, caravanY, {
       textureKey: this.atlasKey,
-      frame: FRAME_SIGIL_WORLD,
+      frame: 'sigil_world',
       targetWorld: 'cyberpunk_shanghai',
       displayLabel: 'Caravan: Shanghai',
     });
+    this.sorter?.register(this.caravan);
   }
 
   private spawnCaravanVendor() {
-    const vendorX = (VILLAGE_COLS - 5) * TILE_PX;
-    const vendorY = (VILLAGE_ROWS / 2 + 1) * TILE_PX;
+    // S2 keeps caravan_vendor in Apollo Village; S3 (Cyberpunk Shanghai)
+    // session relocates per quest step 7 wiring (Epimetheus B5 build).
+    const vendorX = 1080;
+    const vendorY = 460;
     this.caravanVendorNpc = new NPC(this, vendorX, vendorY, {
       npcId: 'caravan_vendor',
       displayName: 'Caravan Vendor',
-      textureKey: this.spriteKeys?.caravanVendor ?? this.atlasKey,
+      textureKey: ASSET_KEYS.characters.caravan_vendor,
       interactRadius: 48,
-      spriteScale: CHARACTER_SPRITE_SCALE,
+      spriteScale: NPC_SCALE_NAMED,
       groundAnchor: true,
     });
+    this.sorter?.register(this.caravanVendorNpc);
+    this.attachDropShadow(this.caravanVendorNpc, 32, 7, 0.30);
+    this.startBreathingTween(this.caravanVendorNpc);
   }
 
   private spawnTreasurer() {
-    const treasurerX = (VILLAGE_COLS - 6) * TILE_PX;
-    const treasurerY = (VILLAGE_ROWS / 2 - 2) * TILE_PX;
+    // Treasurer NPC for Marshall W2 cross-pillar pricing dialogue. The
+    // game.npc.interact { npcId: 'treasurer' } event contract is preserved
+    // (treasurer.spec.ts regression). Sprite source swaps to the AI
+    // characters.treasurer PNG; the underlying TreasurerNPC class still
+    // emits via the base NPC class.
+    const treasurerX = 520;
+    const treasurerY = 380;
     this.treasurerNpc = new TreasurerNPC(this, treasurerX, treasurerY, {
-      textureKey: this.spriteKeys?.treasurer ?? this.atlasKey,
+      textureKey: ASSET_KEYS.characters.treasurer,
       interactRadius: 56,
-      spriteScale: CHARACTER_SPRITE_SCALE,
+      spriteScale: NPC_SCALE_NAMED,
       groundAnchor: true,
     });
+    this.sorter?.register(this.treasurerNpc);
+    this.attachDropShadow(this.treasurerNpc, 36, 8, 0.30);
+    this.startBreathingTween(this.treasurerNpc);
   }
 
+  // ---- Ambient NPCs (5 placeholders using player_spritesheet frame 0 +
+  //      tint variations until S6 ships dedicated variant sprite pool) ----
+
   /**
-   * Ambient villager NPCs: 5-8 populated per scene matrix Session 2 spec.
-   * Each renders with its distinct sprite texture (guard, child, elder, 3
-   * villager variants) for crowd density. They emit interact events too,
-   * so the player can press E near any of them; the dialogue overlay can
-   * still surface a flavor line via the dialogue store registration.
+   * Spawn 5 ambient NPCs to populate the scene. Until S6 introduces variant
+   * sprites, ambient NPCs reuse the player spritesheet frame 0 (front-facing
+   * pose) with palette-coherent tints applied via setTint(...) so each
+   * variant reads as a distinct silhouette.
    */
   private spawnAmbientNpcs(): void {
-    if (!this.spriteKeys) return;
+    const playerKey = ASSET_KEYS.characters.player_spritesheet;
 
-    const guardA = new NPC(this, 9.5 * TILE_PX, 14 * TILE_PX, {
+    const guardA = this.spawnTintedNpc({
       npcId: 'guard_a',
       displayName: 'Guard',
-      textureKey: this.spriteKeys.guard,
+      textureKey: playerKey,
+      x: 640,
+      y: 720,
+      tint: MEDIEVAL_DESERT.clothBlue,
+      scale: NPC_SCALE_AMBIENT,
       interactRadius: 36,
-      spriteScale: CHARACTER_SPRITE_SCALE,
-      groundAnchor: true,
     });
     this.ambientNpcs.push(guardA);
 
-    const guardB = new NPC(this, 14.5 * TILE_PX, 14 * TILE_PX, {
+    const guardB = this.spawnTintedNpc({
       npcId: 'guard_b',
       displayName: 'Guard',
-      textureKey: this.spriteKeys.guard,
+      textureKey: playerKey,
+      x: 768,
+      y: 720,
+      tint: MEDIEVAL_DESERT.clothBlue,
+      scale: NPC_SCALE_AMBIENT,
       interactRadius: 36,
-      spriteScale: CHARACTER_SPRITE_SCALE,
-      groundAnchor: true,
     });
     this.ambientNpcs.push(guardB);
 
-    const child = new NPC(this, 11 * TILE_PX, 10.5 * TILE_PX, {
+    const child = this.spawnTintedNpc({
       npcId: 'child_a',
       displayName: 'Child',
-      textureKey: this.spriteKeys.child,
+      textureKey: playerKey,
+      x: 560,
+      y: 560,
+      tint: MEDIEVAL_DESERT.clothGold,
+      scale: NPC_SCALE_CHILD,
       interactRadius: 32,
-      spriteScale: CHARACTER_SPRITE_SCALE,
-      groundAnchor: true,
     });
     this.ambientNpcs.push(child);
 
-    const elder = new NPC(this, 4 * TILE_PX, 7 * TILE_PX, {
+    const elder = this.spawnTintedNpc({
       npcId: 'elder_a',
       displayName: 'Elder',
-      textureKey: this.spriteKeys.elder,
+      textureKey: playerKey,
+      x: 260,
+      y: 380,
+      tint: MEDIEVAL_DESERT.clothCrimson,
+      scale: NPC_SCALE_AMBIENT,
       interactRadius: 36,
-      spriteScale: CHARACTER_SPRITE_SCALE,
-      groundAnchor: true,
     });
     this.ambientNpcs.push(elder);
 
-    const villBlue = new NPC(this, 6 * TILE_PX, 11 * TILE_PX, {
-      npcId: 'villager_blue',
-      displayName: 'Villager',
-      textureKey: this.spriteKeys.villagerBlue,
-      interactRadius: 36,
-      spriteScale: CHARACTER_SPRITE_SCALE,
-      groundAnchor: true,
-    });
-    this.ambientNpcs.push(villBlue);
-
-    const villOlive = new NPC(this, 16 * TILE_PX, 7.5 * TILE_PX, {
+    const villager = this.spawnTintedNpc({
       npcId: 'villager_olive',
       displayName: 'Villager',
-      textureKey: this.spriteKeys.villagerOlive,
+      textureKey: playerKey,
+      x: 840,
+      y: 540,
+      tint: MEDIEVAL_DESERT.clothPurple,
+      scale: NPC_SCALE_AMBIENT,
       interactRadius: 36,
-      spriteScale: CHARACTER_SPRITE_SCALE,
-      groundAnchor: true,
     });
-    this.ambientNpcs.push(villOlive);
-
-    const villRose = new NPC(this, 13 * TILE_PX, 12 * TILE_PX, {
-      npcId: 'villager_rose',
-      displayName: 'Villager',
-      textureKey: this.spriteKeys.villagerRose,
-      interactRadius: 36,
-      spriteScale: CHARACTER_SPRITE_SCALE,
-      groundAnchor: true,
-    });
-    this.ambientNpcs.push(villRose);
+    this.ambientNpcs.push(villager);
   }
 
+  private spawnTintedNpc(opts: {
+    npcId: string;
+    displayName: string;
+    textureKey: string;
+    x: number;
+    y: number;
+    tint: number;
+    scale: number;
+    interactRadius: number;
+  }): NPC {
+    const npc = new NPC(this, opts.x, opts.y, {
+      npcId: opts.npcId,
+      displayName: opts.displayName,
+      textureKey: opts.textureKey,
+      frame: 0,
+      interactRadius: opts.interactRadius,
+      spriteScale: opts.scale,
+      groundAnchor: true,
+    });
+    npc.setTint(opts.tint);
+    this.sorter?.register(npc);
+    // Smaller drop shadow for ambient NPCs.
+    this.attachDropShadow(npc, 30, 7, 0.28);
+    this.startBreathingTween(npc);
+    return npc;
+  }
+
+  // ---- Caravan arrival zone ----
+
   private spawnCaravanArrivalZone() {
-    const zoneX = (VILLAGE_COLS - 4) * TILE_PX;
-    const zoneY = (VILLAGE_ROWS / 2 + 0.5) * TILE_PX;
+    const zoneX = 1280;
+    const zoneY = 432;
     const zoneWidth = 4 * TILE_PX;
     const zoneHeight = 3 * TILE_PX;
     const zone = this.add.zone(zoneX, zoneY, zoneWidth, zoneHeight);
@@ -599,27 +732,143 @@ export class ApolloVillageScene extends Phaser.Scene {
     }
   }
 
+  // ---- Drop shadow + breathing tween helpers ----
+
+  /**
+   * Attach a drop shadow ellipse to a moving sprite (player, NPC). The
+   * shadow is registered as a YSortable tracking the sprite's y-coordinate
+   * minus 1 so it renders one slice below.
+   *
+   * The shadow position itself is updated in update() via a Phaser tween
+   * binding; we attach an event listener so the shadow tracks the sprite
+   * smoothly without needing a full SceneSorter member entry.
+   */
+  private attachDropShadow(
+    sprite: Phaser.Physics.Arcade.Sprite,
+    sw: number,
+    sh: number,
+    alpha: number,
+  ): void {
+    const shadow = this.add.ellipse(sprite.x, sprite.y, sw, sh, 0x000000, alpha);
+    this.dropShadows.push(shadow);
+    // Register a synthetic YSortable that mirrors sprite.x + sprite.y on each
+    // tick; the sorter calls setDepth on the wrapper which forwards to the
+    // ellipse.
+    const wrapper: { y: number; setDepth: (v: number) => unknown } = {
+      get y(): number {
+        // Always read the live sprite y so the shadow tracks movement.
+        return sprite.y - 1;
+      },
+      setDepth(this: { y: number; setDepth: (v: number) => unknown }, v: number) {
+        shadow.setDepth(v);
+        return v;
+      },
+    } as unknown as { y: number; setDepth: (v: number) => unknown };
+    this.sorter?.register(wrapper);
+
+    // Position update: tie shadow position to sprite via post-update hook.
+    // We hook into the scene update step rather than overriding the sprite
+    // class so the shadow lives independently and can be torn down on
+    // SHUTDOWN without touching the sprite.
+    sprite.on('preupdate', () => {
+      shadow.setPosition(sprite.x, sprite.y);
+    });
+    // Phaser's `preupdate` event on Arcade sprites only fires when the body
+    // is active; for static NPCs we instead update the position once at
+    // creation and rely on the sorter tick + sprite proximity update to
+    // reposition the shadow when the NPC moves. Static NPCs do not move,
+    // so the initial position above is sufficient.
+  }
+
+  /**
+   * Apply the standard idle breathing tween to a static NPC sprite. Uses
+   * sprite's authored scale as the base so the breathing amplitude is
+   * proportional to size.
+   */
+  private startBreathingTween(npc: NPC): void {
+    const baseScaleX = npc.scaleX;
+    const baseScaleY = npc.scaleY;
+    const tween = this.tweens.add({
+      targets: npc,
+      scaleX: { from: baseScaleX, to: baseScaleX * BREATHING_AMPLITUDE },
+      scaleY: { from: baseScaleY, to: baseScaleY * BREATHING_AMPLITUDE },
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+      duration: BREATHING_DURATION_MS,
+      delay: Math.floor(Math.random() * BREATHING_DURATION_MS),
+    });
+    this.idleBreathingTweens.push(tween);
+  }
+
+  // ---- Landmark E-key interaction polling (each frame in update) ----
+
+  private checkLandmarkInteraction(time: number): void {
+    if (!this.player || !this.eKey) return;
+    if (!Phaser.Input.Keyboard.JustDown(this.eKey)) return;
+    for (const lm of this.landmarkBindings) {
+      const dx = this.player.x - lm.x;
+      const dy = this.player.y - lm.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist > LANDMARK_INTERACT_RADIUS_PX) continue;
+      const last = this.lastLandmarkEmitAt[lm.name] ?? 0;
+      if (time - last < LANDMARK_INTERACT_COOLDOWN_MS) continue;
+      this.lastLandmarkEmitAt[lm.name] = time;
+      this.events.emit(lm.eventTopic, {
+        landmarkName: lm.name,
+        x: lm.x,
+        y: lm.y,
+      });
+      const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
+      if (bus) {
+        bus.emit('game.landmark.interact' as never, {
+          landmarkName: lm.name,
+          sceneKey: this.scene.key,
+        } as never);
+      }
+      // First match wins per frame (player only triggers one landmark on
+      // a single E press even if multiple are within range).
+      break;
+    }
+  }
+
+  // ---- Camera + cleanup ----
+
   private configureCamera(worldWidth: number, worldHeight: number) {
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
-    // Higher zoom so the pixel art reads at a readable SNES scale.
-    const zoom = Math.max(2, Math.min(4, this.scale.width / worldWidth));
+    // Lower zoom at 1408x800 world so camera viewport reveals more of the
+    // scene; the AI bg is high-res so a 1.0-1.5 zoom keeps detail readable.
+    const zoom = Math.max(1.0, Math.min(1.5, this.scale.width / worldWidth));
     this.cameras.main.setZoom(zoom);
     if (this.player) {
       this.cameras.main.startFollow(this.player, true, 0.15, 0.15);
     }
 
     this.scale.on(Phaser.Scale.Events.RESIZE, (size: Phaser.Structs.Size) => {
-      const nextZoom = Math.max(2, Math.min(4, size.width / worldWidth));
+      const nextZoom = Math.max(1.0, Math.min(1.5, size.width / worldWidth));
       this.cameras.main.setZoom(nextZoom);
     });
   }
 
   private registerSceneCleanup() {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.flameTween?.stop();
-      this.flameTween = undefined;
-      this.lampGlowTween?.stop();
-      this.lampGlowTween = undefined;
+      for (const t of this.idleBreathingTweens) {
+        try {
+          t.stop();
+        } catch (err) {
+          console.error('[ApolloVillageScene] tween stop threw', err);
+        }
+      }
+      this.idleBreathingTweens = [];
+
+      for (const s of this.dropShadows) {
+        try {
+          s.destroy();
+        } catch (err) {
+          console.error('[ApolloVillageScene] shadow destroy threw', err);
+        }
+      }
+      this.dropShadows = [];
 
       this.ambientFx?.stop();
       this.ambientFx?.destroy();
@@ -628,6 +877,8 @@ export class ApolloVillageScene extends Phaser.Scene {
       this.sorter?.unregisterAll();
       this.sorter = undefined;
       this.ambientNpcs = [];
+      this.landmarkBindings = [];
+      this.lastLandmarkEmitAt = {};
 
       for (const unsub of this.unsubscribers) {
         try {
