@@ -36,10 +36,19 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Path, Request, status
 from pydantic import BaseModel, Field
 
-from src.backend.errors import NotFoundProblem, UnauthorizedProblem
+from src.backend.errors import (
+    NotFoundProblem,
+    ServiceUnavailableProblem,
+    UnauthorizedProblem,
+)
 from src.backend.middleware.auth import AuthPrincipal
 from src.backend.routers.v1.admin.deps import require_admin_scope
 from src.backend.trust import service as trust_service
+from src.backend.trust.cron.refresh_scores import (
+    DEFAULT_FRESHNESS_WINDOW_HOURS,
+    MAX_LISTINGS_PER_RUN,
+    enqueue_refresh_batch,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -254,7 +263,101 @@ async def refresh_creator_trust(
     return TrustScoreResponse(**payload)
 
 
+class RefreshBatchRequest(BaseModel):
+    """Optional knobs for ``POST /v1/admin/trust/refresh-batch``.
+
+    Both fields are clamped server-side: a freshness window of zero or
+    a per-tenant cap above ``MAX_LISTINGS_PER_RUN`` would let an admin
+    trigger an unbounded sweep, so we clip aggressive overrides into
+    the contract Section 8 envelope.
+    """
+
+    freshness_window_hours: int | None = Field(
+        default=None,
+        ge=1,
+        le=24 * 30,
+        description=(
+            "How many hours of staleness qualifies a listing for refresh. "
+            f"Default {DEFAULT_FRESHNESS_WINDOW_HOURS} when omitted."
+        ),
+    )
+    max_listings_per_tenant: int | None = Field(
+        default=None,
+        ge=1,
+        le=MAX_LISTINGS_PER_RUN,
+        description=(
+            f"Per-tenant cap. Capped at {MAX_LISTINGS_PER_RUN} per "
+            "contract Section 8."
+        ),
+    )
+
+
+class RefreshBatchResponse(BaseModel):
+    """Acknowledgement that the batch refresh was enqueued via Arq."""
+
+    enqueued: bool
+    job_name: str
+    freshness_window_hours: int
+    max_listings_per_tenant: int
+
+
+@admin_trust_router.post(
+    "/refresh-batch",
+    response_model=RefreshBatchResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def trigger_batch_refresh(
+    request: Request,
+    body: RefreshBatchRequest | None = None,
+) -> RefreshBatchResponse:
+    """Manually enqueue the nightly trust score refresh sweep.
+
+    This endpoint does NOT block until the sweep finishes (a per-tenant
+    cap of 1000 listings can take a while); it returns 202 once the
+    Arq job has been enqueued. Operators triage by reading
+    ``trust.refresh.batch_completed`` in the worker log.
+
+    Behaviour
+    ---------
+    - ``freshness_window_hours`` defaults to 24 (matches on-demand
+      cache TTL).
+    - ``max_listings_per_tenant`` defaults to 1000 (contract Section
+      8 cap).
+    - Returns ``enqueued=False`` with HTTP 503 when the Arq Redis
+      handle is not yet installed (e.g. a degraded boot) so the admin
+      can distinguish "queued" from "queue down".
+    """
+
+    _require_principal(request)  # raises 401 if no principal
+    knobs = body or RefreshBatchRequest()
+    success = await enqueue_refresh_batch(
+        freshness_window_hours=knobs.freshness_window_hours,
+        max_listings_per_tenant=knobs.max_listings_per_tenant,
+    )
+    if not success:
+        # Surface as a 503 so the operator knows the queue is unavailable.
+        raise ServiceUnavailableProblem(
+            detail=(
+                "Trust refresh queue is currently unavailable. Inspect the "
+                "API logs for lifespan.arq.unavailable and confirm Redis "
+                "connectivity before retrying."
+            )
+        )
+    return RefreshBatchResponse(
+        enqueued=True,
+        job_name="trust_refresh_batch",
+        freshness_window_hours=(
+            knobs.freshness_window_hours or DEFAULT_FRESHNESS_WINDOW_HOURS
+        ),
+        max_listings_per_tenant=(
+            knobs.max_listings_per_tenant or MAX_LISTINGS_PER_RUN
+        ),
+    )
+
+
 __all__ = [
+    "RefreshBatchRequest",
+    "RefreshBatchResponse",
     "TrustScoreResponse",
     "admin_trust_router",
     "trust_router",
