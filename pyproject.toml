@@ -72,6 +72,15 @@ dependencies = [
   "pybreaker>=1.2.0,<2.0.0",
   "tenacity>=8.5.0,<10.0.0",
   "cryptography>=44.0.0,<46.0.0",
+
+  # Plutus W2 NP S2: ReportLab pure-Python PDF Canvas for billing invoice
+  # generation per spawn directive (neither weasyprint nor reportlab were
+  # listed; reportlab picked because it has no native lib dependency,
+  # ships the Canvas drawing primitives we need, and avoids the
+  # libcairo2/libpango-1.0-0 Docker base layer that weasyprint requires).
+  # Used by ``src/backend/billing/invoices/pdf_generator.py`` to render
+  # marketplace purchase receipts at A4 paper size.
+  "reportlab>=4.2.0,<5.0.0",
 ]
 
 [project.optional-dependencies]

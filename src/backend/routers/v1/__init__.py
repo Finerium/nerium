@@ -157,6 +157,12 @@ _PILLAR_REGISTRY: tuple[tuple[str, str, str], ...] = (
     ("billing.checkout", "src.backend.routers.v1.billing", "checkout_router"),
     ("billing.subscription", "src.backend.routers.v1.billing", "subscription_router"),
     ("billing.webhook", "src.backend.routers.v1.billing", "webhook_router"),
+    # Plutus W2 NP S2: invoice PDF download. ``GET /v1/billing/invoices/
+    # {invoice_id}.pdf`` resolves the id to a marketplace_purchase row,
+    # gates on buyer-or-seller membership, renders ReportLab Canvas PDF
+    # bytes back with attachment Content-Disposition. Consumed by the
+    # Iapetus dashboard "Download invoice" button.
+    ("billing.invoices", "src.backend.billing.invoices", "invoices_router"),
     # Iapetus W2 NP P4 Session 1: marketplace commerce surface. Three
     # routers land under ``/v1/commerce/*``:
     #   - connect: POST onboard + refresh + GET status (Connect Express).
