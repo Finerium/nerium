@@ -24,6 +24,7 @@ import * as Phaser from 'phaser';
 import { BootScene } from '../../game/scenes/BootScene';
 import { PreloadScene } from '../../game/scenes/PreloadScene';
 import { ApolloVillageScene } from '../../game/scenes/ApolloVillageScene';
+import { CaravanRoadScene } from '../../game/scenes/CaravanRoadScene';
 import { MiniBuilderCinematicScene } from '../../game/scenes/MiniBuilderCinematicScene';
 import { wireBridge, type GameBridge } from '../../state/gameBridge';
 
@@ -59,11 +60,19 @@ export default function PhaserCanvas() {
           debug: false,
         },
       },
-      // MiniBuilderCinematicScene is registered at construction but does
-      // not auto-start: BootScene -> PreloadScene -> ApolloVillageScene is
-      // the normal boot chain. The cinematic is launched on demand by
-      // gameBridge in response to the quest effect `play_cinematic`.
-      scene: [BootScene, PreloadScene, ApolloVillageScene, MiniBuilderCinematicScene],
+      // CaravanRoadScene + MiniBuilderCinematicScene are registered at
+      // construction but do not auto-start: BootScene -> PreloadScene ->
+      // ApolloVillageScene is the normal boot chain. CaravanRoad is started
+      // by the scene transition manager (Helios-v2 S7 wiring) when the quest
+      // engine fires the scene_transition effect; the cinematic launches
+      // on the play_cinematic effect.
+      scene: [
+        BootScene,
+        PreloadScene,
+        ApolloVillageScene,
+        CaravanRoadScene,
+        MiniBuilderCinematicScene,
+      ],
     });
 
     gameRef.current = game;
