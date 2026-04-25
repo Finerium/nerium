@@ -1,31 +1,68 @@
 //
 // src/game/scenes/CaravanRoadScene.ts
 //
-// Helios-v2 W3 CORRECTION: rewritten ground paint + sprite textures +
-// foliage canopy + horizon haze to reach Sea of Stars / Crosscode tier.
+// Helios-v2 W3 S3: Caravan Road main scene full revamp.
 //
-// Caravan Road transition scene. Bridges Medieval Desert lobby (Apollo) to
-// Cyberpunk Shanghai. Travel montage along a dirt road that fades from
-// warm desert dusk into a distant cyberpunk neon-tease silhouette.
+// VISUAL AUTHORITY SWAP: prior session shipped a procedural SVG / pixel-rect
+// composition (paintCaravanRoadGround + paintCaravanCanopy + paintHorizonHaze
+// + buildCaravanRoadSprites + buildCactus + buildPalmTree + buildRock +
+// stairStepSilhouette + buildParallaxLayer). S3 transitions the scene to
+// consume the AI-generated PNG asset bundle shipped at
+// `_Reference/ai_generated_assets/` (96 active assets, V6 SHA c74547f).
+// The placement coordinate map authored at
+// `_skills_staging/caravan_road_placement.md` is the contract for every
+// `this.add.image(...)` call in this file.
 //
-// Visual stack:
-//   Layer 0 sky_gradient: 7-band warm-cool transitional dusk
-//   Layer 1 parallax_bg:  warm mountain silhouette + cyberpunk-tease
-//                         silhouette right + horizon haze blend strip
-//   Layer 2 ground_tiles: paintCaravanRoadGround (5-band rust earth +
-//                         trapezoid widening road + wagon tracks)
-//   Layer 3 world_tiles:  caravan wagon decoration container + ox + 3
-//                         traveler NPCs + cacti + palm + rocks + player.
-//                         All y-sorted via SceneSorter.
-//   Layer 4 above_tiles:  paintCaravanCanopy banner flags + distant birds
-//   Ambient FX:           leaves flutter rate 20/s
+// Visual stack (5-layer per visual_manifest.contract):
+//   Layer 0 (sky_gradient, depth -100): camera-locked dusk gradient bands
+//                                       via buildSkyGradient(caravan_road).
+//                                       scrollFactor 0 so bands stay above
+//                                       horizon regardless of camera scroll.
+//   Layer 1 (parallax_bg, depth -50):   caravan_road_bg.jpg painted at
+//                                       (0, 0) origin (0, 0), scrollFactor
+//                                       0.3 mild parallax disambiguation.
+//   Layer 2 (ground_tiles, depth -10):  reserved (the AI bg's painted dirt
+//                                       road + grass + cobble is a single
+//                                       image; no extra paint passes).
+//   Layer 3 (world_tiles, depth 0..N):  7 ambient prop PNGs + 1 wayhouse
+//                                       filler + 1 caravan vendor NPC +
+//                                       player + drop shadows. All go
+//                                       through SceneSorter for dynamic
+//                                       y-sort via setDepth(sprite.y) per
+//                                       Oak-Woods feet-anchor pattern.
+//   Layer 4 (above_tiles, depth 100):   reserved (no overhead canopy in S3).
+//   Layer 5 (ambient_fx, depth 500):    autumn-leaf flutter via the
+//                                       buildAmbientFx 'leaves' preset.
+//   Layer 6 (overlay, depth 9000):      autumn_leaves PNG static scattered
+//                                       distribution covering full scene.
 //
-// Quest narrative integration: scene entered when questStore unlocks
-// cyberpunk_shanghai. Walking far enough east emits game.zone.entered
-// with zoneId 'caravan_road_arrival_zone' for quest step 5-7 advance.
+// Drop shadows: each NPC + tall ambient prop is shadow-anchored at
+// (sprite.x, sprite.y) via Phaser.GameObjects.Ellipse (alpha 0.30-0.32,
+// fill 0x000000). Shadows register with SceneSorter at offset y - 1 so they
+// always render one slice below their owning sprite.
 //
-// Cinematic 500ms fade-in via cameras.main.fadeIn(500).
+// NPC idle breathing: caravan_vendor NPC sprite gets a scale tween 1.0 to
+// 1.02 over 800ms loop ease Sine.easeInOut per S3 directive item 3.
 //
+// PRESERVED FROM RV (NON-REGRESSION):
+//   - Player spawn + camera follow + setBounds
+//   - Caravan arrival zone for quest step 5-7 advance
+//   - game.scene.ready, game.player.spawned, game.zone.entered emissions
+//   - Cinematic 500ms fade-in via cameras.main.fadeIn(500)
+//   - SHUTDOWN cleanup (tweens, emitter, sorter, listeners)
+//   - window.__NERIUM_TEST__ Playwright hook
+//
+// CUTOVER (S3 boundary):
+//   - groundPaint.ts symbols removed: paintCaravanRoadGround,
+//     paintCaravanCanopy, paintHorizonHaze
+//   - spriteTextures.ts symbols removed: buildCaravanRoadSprites,
+//     CaravanRoadSpriteKeys
+//   - decoration.ts symbols removed: buildCactus, buildPalmTree, buildRock
+//   - parallaxLayer.ts symbols removed: buildParallaxLayer,
+//     stairStepSilhouette
+//   - All procedural pixel composition replaced by AI-asset PNG render.
+//
+// Owner: Helios-v2 (W3 S3 revamp), Thalia-v2 (RV scaffold).
 // No em dash, no emoji per CLAUDE.md anti-patterns.
 //
 
@@ -37,53 +74,65 @@ import type { GameEventBus } from '../../state/GameEventBus';
 import {
   SceneSorter,
   buildSkyGradient,
-  buildParallaxLayer,
-  stairStepSilhouette,
   buildAmbientFx,
-  buildCactus,
-  buildPalmTree,
-  buildRock,
-  paintCaravanRoadGround,
-  paintCaravanCanopy,
-  paintHorizonHaze,
-  buildCaravanRoadSprites,
-  type CaravanRoadSpriteKeys,
-  CARAVAN_ROAD,
-  CYBERPUNK_SHANGHAI,
-  MEDIEVAL_DESERT,
   DEPTH,
-  dynamicDepthFor,
 } from '../visual';
+import { ASSET_KEYS } from '../visual/asset_keys';
 
 interface CaravanRoadSceneData {
   worldId?: WorldId;
   spawn?: { x: number; y: number };
 }
 
+// World dimensions match the caravan_road_bg.jpg native 1408 x 792 with a
+// tiny vertical headroom strip (8 px) absorbed by the sky gradient. The
+// 32 px tile reference is preserved for compatibility with NPC interact
+// radii + Caravan + arrival zone authored against 32 px scale in RV.
+const WORLD_W = 1408;
+const WORLD_H = 800;
 const TILE_PX = 32;
-const ROAD_COLS = 32;
-const ROAD_ROWS = 14;
-const WORLD_W = ROAD_COLS * TILE_PX;
-const WORLD_H = ROAD_ROWS * TILE_PX;
 
-const CHARACTER_SPRITE_SCALE = 3;
+// NPC + player scale per placement map (S2 parity).
+const NPC_SCALE_NAMED = 0.18;
+const PLAYER_SCALE = 0.18;
+
+// Ambient prop scales per placement map.
+const SCALE_WOODEN_WAGON = 0.32;
+const SCALE_LANTERN_POST = 0.30;
+const SCALE_CAMPFIRE_RING = 0.20;
+const SCALE_WOODEN_BARREL = 0.18;
+const SCALE_FALLEN_LOG = 0.28;
+const SCALE_ROADSIDE_SIGNPOST = 0.20;
+const SCALE_CARAVAN_ROPE_BRIDGE = 0.22;
+const SCALE_CARAVAN_WAYHOUSE_FILLER = 0.34;
+
+// Idle breathing tween standard (per S3 directive item 3, S2 parity).
+const BREATHING_DURATION_MS = 800;
+const BREATHING_AMPLITUDE = 1.02;
+
+// autumn_leaves overlay depth + alpha (per directive 4).
+const AUTUMN_LEAVES_DEPTH = 9000;
+const AUTUMN_LEAVES_ALPHA = 0.5;
+
+// Cinematic fade-in (preserved from RV).
+const FADE_IN_MS = 500;
 
 export class CaravanRoadScene extends Phaser.Scene {
   private worldId: WorldId = 'medieval_desert';
-  private atlasKey = 'atlas_medieval_desert';
-  private spriteKeys?: CaravanRoadSpriteKeys;
+
+  // Active dynamic objects.
   private player?: Player;
-  private travelerA?: NPC;
-  private travelerB?: NPC;
-  private travelerC?: NPC;
+  private caravanVendorNpc?: NPC;
   private arrivalZone?: Phaser.GameObjects.Zone;
   private arrivalEmitted = false;
   private unsubscribers: Array<() => void> = [];
 
+  // Visual revamp state.
   private sorter?: SceneSorter;
   private ambientFx?: Phaser.GameObjects.Particles.ParticleEmitter | null;
-  private neonTeaseFlicker?: Phaser.Tweens.Tween;
-  private lanternFlicker?: Phaser.Tweens.Tween;
+  private idleBreathingTweens: Phaser.Tweens.Tween[] = [];
+  private dropShadows: Phaser.GameObjects.Ellipse[] = [];
+  private autumnLeavesOverlay?: Phaser.GameObjects.Image;
 
   constructor() {
     super({ key: 'CaravanRoad' } satisfies Phaser.Types.Scenes.SettingsConfig);
@@ -91,104 +140,54 @@ export class CaravanRoadScene extends Phaser.Scene {
 
   init(data: CaravanRoadSceneData) {
     if (data.worldId) this.worldId = data.worldId;
-    this.atlasKey = `atlas_${this.worldId}`;
   }
 
   create() {
     const width = WORLD_W;
     const height = WORLD_H;
 
+    // Background fallback color so any unfilled pixel reads cool dusk, not
+    // the default Phaser gray.
     this.cameras.main.setBackgroundColor('#1c1b2c');
     this.physics.world.setBounds(0, 0, width, height);
 
-    // Cinematic fade-in
-    this.cameras.main.fadeIn(500, 0, 0, 0);
+    // Cinematic fade-in (preserved from RV)
+    this.cameras.main.fadeIn(FADE_IN_MS, 0, 0, 0);
 
-    // Build character sprite textures FIRST
-    this.spriteKeys = buildCaravanRoadSprites(this);
-
-    // Layer 0: dusk gradient anchored to camera viewport (scrollFactor 0)
+    // Layer 0: sky gradient bands camera-locked above bg.
     buildSkyGradient(this, {
       world: 'caravan_road',
       width: this.scale.width,
       height: this.scale.height,
     });
 
-    // Layer 1a: distant warm mountains. baseY at world height * 0.55 so
-    // silhouettes sit right above the ground band.
-    const mountainsRects = stairStepSilhouette(
-      0,
-      width,
-      Math.round(height * 0.55),
-      52,
-      24,
-      48,
-      CARAVAN_ROAD.mountainFar,
-      0xc1a3a3,
-    );
-    buildParallaxLayer(this, { rects: mountainsRects, scrollFactor: 0.25, alpha: 0.9 });
+    // Layer 1: AI background painted at (0, 0) covering the full scene.
+    // setOrigin(0, 0) so x,y references the top-left corner.
+    const bg = this.add.image(0, 0, ASSET_KEYS.backgrounds.caravan_road_bg);
+    bg.setOrigin(0, 0);
+    bg.setDisplaySize(width, height);
+    bg.setDepth(DEPTH.PARALLAX_BG);
+    bg.setScrollFactor(0.3);
 
-    // Mountain top warm highlight
-    const mtnHighlight = stairStepSilhouette(
-      0,
-      Math.round(width * 0.55),
-      Math.round(height * 0.55),
-      52,
-      24,
-      28,
-      CARAVAN_ROAD.mountainHi,
-      0xc1a3a3,
-    );
-    buildParallaxLayer(this, {
-      rects: mtnHighlight.map((r) => ({ ...r, height: 2 })),
-      scrollFactor: 0.25,
-      alpha: 0.7,
-    });
-
-    // Layer 1b: cyberpunk-tease silhouette on right portion
-    const cityTeaserRects = stairStepSilhouette(
-      Math.round(width * 0.55),
-      width,
-      Math.round(height * 0.58),
-      24,
-      32,
-      72,
-      CARAVAN_ROAD.cityTeaser,
-      0x5e7e7,
-    );
-    const teaserContainer = buildParallaxLayer(this, {
-      rects: cityTeaserRects,
-      scrollFactor: 0.45,
-      alpha: 0.92,
-    });
-
-    // Add neon flicker dots over the cyberpunk silhouette
-    this.spawnCityTeaserFlicker(width, height, teaserContainer);
-
-    // Horizon haze blend strip
-    paintHorizonHaze(this, width, height, CARAVAN_ROAD.skyAmber, 0.4);
-
-    // Layer 2: ground floor multi-band paint
-    paintCaravanRoadGround(this, width, height);
-
-    // Layer 3: decoration props + caravan wagon + travelers + player
+    // Layer 3 setup: register the per-frame y-sort pool for every dynamic
+    // sprite (player + NPC + ambient props + wayhouse filler + drop shadows).
+    // Sorter.tick() runs in update() to recompute setDepth.
     this.sorter = new SceneSorter();
-    this.spawnDecoration();
-    this.spawnCaravanWagon();
+
+    // Spawn order: ambient props + wayhouse filler first (background props),
+    // then NPC + player on top so creation order does not shadow y-sort.
+    this.spawnAmbientProps();
+    this.spawnWayhouseFiller();
     this.spawnPlayer();
-    this.spawnTravelers();
+    this.spawnCaravanVendor();
     this.spawnArrivalZone();
 
-    if (this.player) this.sorter.register(this.player);
-    if (this.travelerA) this.sorter.register(this.travelerA);
-    if (this.travelerB) this.sorter.register(this.travelerB);
-    if (this.travelerC) this.sorter.register(this.travelerC);
-
-    // Layer 4: canopy + birds
-    paintCaravanCanopy(this, width);
-
-    // Ambient FX: leaves
+    // Layer 5: ambient FX particle emitter (autumn leaves flutter).
     this.ambientFx = buildAmbientFx(this, { kind: 'leaves' });
+
+    // Layer 6: autumn_leaves PNG static overlay covering full scene.
+    // Per directive 4: S3 ships baseline overlay; S9 polishes drift tween.
+    this.spawnAutumnLeavesOverlay(width, height);
 
     this.configureCamera(width, height);
     this.registerSceneCleanup();
@@ -211,6 +210,7 @@ export class CaravanRoadScene extends Phaser.Scene {
       });
     }
 
+    // Expose scene handle to Playwright smoke tests per gotcha 5.
     if (typeof window !== 'undefined') {
       const w = window as unknown as Record<string, unknown>;
       const existing = (w.__NERIUM_TEST__ ?? {}) as Record<string, unknown>;
@@ -225,223 +225,192 @@ export class CaravanRoadScene extends Phaser.Scene {
 
   update(time: number, delta: number) {
     this.player?.update(time, delta);
-    if (this.player && this.travelerA) this.travelerA.updateProximity(this.player);
-    if (this.player && this.travelerB) this.travelerB.updateProximity(this.player);
-    if (this.player && this.travelerC) this.travelerC.updateProximity(this.player);
+    if (this.player && this.caravanVendorNpc) {
+      this.caravanVendorNpc.updateProximity(this.player);
+    }
+
+    // Per-frame y-sort across all registered dynamic sprites + drop shadows.
     this.sorter?.tick();
   }
 
-  // ---- helpers ----
-
-  private spawnDecoration(): void {
-    const setDepthForProp = (c: Phaser.GameObjects.Container) => {
-      c.setDepth(dynamicDepthFor(c.y));
-    };
-
-    // Cacti scattered along the road
-    const cact1 = buildCactus(this, 4 * TILE_PX, 5 * TILE_PX, 'small');
-    setDepthForProp(cact1);
-    const cact2 = buildCactus(this, 11 * TILE_PX, 4 * TILE_PX, 'large');
-    setDepthForProp(cact2);
-    const cact3 = buildCactus(this, 19 * TILE_PX, 5 * TILE_PX, 'small');
-    setDepthForProp(cact3);
-    const cact4 = buildCactus(this, 28 * TILE_PX, 12 * TILE_PX, 'large');
-    setDepthForProp(cact4);
-    const cact5 = buildCactus(this, 7 * TILE_PX, 12 * TILE_PX, 'small');
-    setDepthForProp(cact5);
-    const cact6 = buildCactus(this, 23 * TILE_PX, 4 * TILE_PX, 'small');
-    setDepthForProp(cact6);
-
-    // Palm tree (oasis hint near cyberpunk transition)
-    const palm = buildPalmTree(this, 22 * TILE_PX, 11 * TILE_PX);
-    setDepthForProp(palm);
-    const palm2 = buildPalmTree(this, 3 * TILE_PX, 4 * TILE_PX);
-    setDepthForProp(palm2);
-
-    // Rocks scattered for foreground anchoring
-    const rk1 = buildRock(this, 6 * TILE_PX, 11 * TILE_PX, 14, 5);
-    setDepthForProp(rk1);
-    const rk2 = buildRock(this, 16 * TILE_PX, 12 * TILE_PX, 12, 5);
-    setDepthForProp(rk2);
-    const rk3 = buildRock(this, 26 * TILE_PX, 4 * TILE_PX, 10, 4);
-    setDepthForProp(rk3);
-    const rk4 = buildRock(this, 9 * TILE_PX, 13 * TILE_PX, 8, 4);
-    setDepthForProp(rk4);
-  }
+  // ---- Ambient props (Layer 3, 7 placements per directive) ----
 
   /**
-   * Caravan wagon centerpiece. Hand-placed pixel rectangles composing the
-   * caravan ox + cart bed + canvas awning silhouette.
+   * Place 7 ambient prop PNGs across the scene per placement map.
+   * Each registers into the sorter for dynamic y-sort. Drop shadows added
+   * for props that lack built-in PNG ground shadow.
+   *
+   * Lights2D coordinate reservations are MARKED in placement map for S9
+   * enable; S3 just places sprites + drop shadows.
    */
-  private spawnCaravanWagon(): void {
-    const wagonX = 14 * TILE_PX;
-    const wagonY = 9 * TILE_PX;
-    const c = this.add.container(wagonX, wagonY);
-    const band = (rx: number, ry: number, w: number, h: number, color: number) => {
-      const r = this.add.rectangle(rx, ry, w, h, color);
-      r.setOrigin(0, 0);
-      c.add(r);
-    };
-    // Shadow under wagon
-    band(-72, 24, 144, 3, CARAVAN_ROAD.oxShadow);
-    // Wheels
-    band(-60, 8, 20, 20, MEDIEVAL_DESERT.plankDeep);
-    band(-58, 10, 16, 16, MEDIEVAL_DESERT.plankMid);
-    band(-54, 14, 8, 8, MEDIEVAL_DESERT.plankDeep);
-    band(-52, 16, 4, 4, MEDIEVAL_DESERT.plankBright);
-    band(40, 8, 20, 20, MEDIEVAL_DESERT.plankDeep);
-    band(42, 10, 16, 16, MEDIEVAL_DESERT.plankMid);
-    band(46, 14, 8, 8, MEDIEVAL_DESERT.plankDeep);
-    band(48, 16, 4, 4, MEDIEVAL_DESERT.plankBright);
-    // Wheel spokes (cosmetic)
-    band(-50, 12, 1, 16, MEDIEVAL_DESERT.plankBright);
-    band(50, 12, 1, 16, MEDIEVAL_DESERT.plankBright);
-    // Cart bed
-    band(-66, -4, 132, 14, MEDIEVAL_DESERT.plankMid);
-    band(-66, -4, 132, 2, MEDIEVAL_DESERT.plankHi);
-    band(-66, 8, 132, 2, MEDIEVAL_DESERT.plankDeep);
-    // Canvas awning bands
-    band(-46, -28, 100, 2, CARAVAN_ROAD.awningBone);
-    band(-52, -26, 112, 2, CARAVAN_ROAD.awningHi);
-    band(-56, -24, 120, 2, CARAVAN_ROAD.awningBone);
-    band(-58, -22, 124, 2, CARAVAN_ROAD.awningStripe);
-    band(-60, -20, 128, 14, CARAVAN_ROAD.awningBone);
-    band(-60, -6, 128, 2, MEDIEVAL_DESERT.plankBright);
-    for (let xx = -52; xx < 64; xx += 10) band(xx, -20, 4, 14, CARAVAN_ROAD.awningStripe);
-    // Opening in back
-    band(-50, -12, 14, 14, CARAVAN_ROAD.oxShadow);
-    band(8, -16, 18, 10, MEDIEVAL_DESERT.plankDeep);
-    band(8, -16, 18, 1, MEDIEVAL_DESERT.plankHi);
-    // Lantern hanging from awning right (flicker tweened)
-    band(64, -28, 1, 14, MEDIEVAL_DESERT.plankDeep);
-    band(60, -14, 8, 8, MEDIEVAL_DESERT.plankDeep);
-    const lanternFlame = this.add.rectangle(61, -13, 6, 6, MEDIEVAL_DESERT.flameAmber);
-    lanternFlame.setOrigin(0, 0);
-    c.add(lanternFlame);
-    const lanternBright = this.add.rectangle(62, -12, 4, 4, MEDIEVAL_DESERT.flameBright);
-    lanternBright.setOrigin(0, 0);
-    c.add(lanternBright);
-    // Ox in front pulling cart
-    const oxX = 66;
-    const oxY = -10;
-    band(oxX, oxY + 6, 34, 20, CARAVAN_ROAD.oxBody);
-    band(oxX, oxY + 6, 34, 2, CARAVAN_ROAD.oxHi);
-    band(oxX, oxY + 24, 34, 2, CARAVAN_ROAD.oxShadow);
-    band(oxX + 32, oxY + 10, 14, 14, CARAVAN_ROAD.oxBody);
-    band(oxX + 32, oxY + 10, 14, 2, CARAVAN_ROAD.oxHi);
-    band(oxX + 38, oxY + 6, 2, 4, CARAVAN_ROAD.awningBone); // horns
-    band(oxX + 44, oxY + 6, 2, 4, CARAVAN_ROAD.awningBone);
-    band(oxX + 40, oxY + 4, 4, 2, CARAVAN_ROAD.awningBone);
-    // Ox eye
-    band(oxX + 42, oxY + 12, 1, 1, MEDIEVAL_DESERT.plankDeep);
-    // Legs
-    band(oxX + 4, oxY + 26, 3, 12, CARAVAN_ROAD.oxShadow);
-    band(oxX + 14, oxY + 26, 3, 12, CARAVAN_ROAD.oxShadow);
-    band(oxX + 24, oxY + 26, 3, 12, CARAVAN_ROAD.oxShadow);
-    band(oxX + 30, oxY + 26, 3, 12, CARAVAN_ROAD.oxShadow);
+  private spawnAmbientProps(): void {
+    // Wooden wagon (PRIMARY caravan landmark, right cobblestone zone).
+    // Anchor for caravan_vendor NPC at (1100, 620).
+    this.placeAmbientProp(
+      ASSET_KEYS.props.caravan_road.wooden_wagon,
+      1180,
+      600,
+      SCALE_WOODEN_WAGON,
+      { sw: 130, sh: 18, alpha: 0.32 },
+    );
 
-    c.setDepth(dynamicDepthFor(c.y));
+    // Lantern post (vertical accent flanking right cobblestone path entry).
+    // Lights2D coord MARKED for S9: warm amber flameAmber point light.
+    this.placeAmbientProp(
+      ASSET_KEYS.props.caravan_road.lantern_post,
+      920,
+      560,
+      SCALE_LANTERN_POST,
+      { sw: 24, sh: 10, alpha: 0.30 },
+    );
 
-    // Tween lantern flicker
-    this.lanternFlicker = this.tweens.add({
-      targets: [lanternFlame, lanternBright],
-      alpha: { from: 0.7, to: 1.0 },
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
-      duration: 280,
-    });
+    // Campfire ring (cold) at bottom-mid dirt path.
+    // Lights2D coord MARKED for S9: warm amber flameOrange + flame particle.
+    this.placeAmbientProp(
+      ASSET_KEYS.props.caravan_road.campfire_ring,
+      660,
+      580,
+      SCALE_CAMPFIRE_RING,
+      { sw: 110, sh: 18, alpha: 0.30 },
+    );
+
+    // Wooden barrel (bottom-far-right margin cluster).
+    this.placeAmbientProp(
+      ASSET_KEYS.props.caravan_road.wooden_barrel,
+      1330,
+      700,
+      SCALE_WOODEN_BARREL,
+      { sw: 50, sh: 12, alpha: 0.30 },
+    );
+
+    // Fallen log (far-left grass area; horizontal silhouette).
+    // Built-in PNG leaf pile shadow at base; no extra Phaser shadow.
+    this.placeAmbientProp(
+      ASSET_KEYS.props.caravan_road.fallen_log,
+      220,
+      620,
+      SCALE_FALLEN_LOG,
+      null,
+    );
+
+    // Roadside signpost (far-left grass area top, near player spawn).
+    this.placeAmbientProp(
+      ASSET_KEYS.props.caravan_road.roadside_signpost,
+      90,
+      540,
+      SCALE_ROADSIDE_SIGNPOST,
+      { sw: 22, sh: 8, alpha: 0.30 },
+    );
+
+    // Caravan rope bridge (far-right grass top; small-scale scenic accent).
+    // Built-in PNG cliff base shadow; no extra Phaser shadow.
+    this.placeAmbientProp(
+      ASSET_KEYS.props.caravan_road.caravan_rope_bridge,
+      1280,
+      380,
+      SCALE_CARAVAN_ROPE_BRIDGE,
+      null,
+    );
   }
 
-  /**
-   * Cyberpunk-tease neon flicker over distant city silhouette.
-   */
-  private spawnCityTeaserFlicker(
-    width: number,
-    height: number,
-    container: Phaser.GameObjects.Container,
+  private placeAmbientProp(
+    textureKey: string,
+    x: number,
+    y: number,
+    scale: number,
+    shadow: { sw: number; sh: number; alpha: number } | null,
   ): void {
-    const yMin = Math.round(height * 0.45);
-    const yMax = Math.round(height * 0.58);
-    const positions: Array<[number, number, number]> = [
-      [Math.round(width * 0.62), yMin + 4, CYBERPUNK_SHANGHAI.neonCyan],
-      [Math.round(width * 0.66), yMin + 12, CYBERPUNK_SHANGHAI.neonMagenta],
-      [Math.round(width * 0.7), yMin + 6, CYBERPUNK_SHANGHAI.neonAmber],
-      [Math.round(width * 0.74), yMin + 18, CYBERPUNK_SHANGHAI.neonCyan],
-      [Math.round(width * 0.78), yMin + 10, CYBERPUNK_SHANGHAI.neonMagenta],
-      [Math.round(width * 0.82), yMin + 22, CYBERPUNK_SHANGHAI.neonViolet],
-      [Math.round(width * 0.86), yMin + 8, CYBERPUNK_SHANGHAI.neonCyan],
-      [Math.round(width * 0.9), yMin + 16, CYBERPUNK_SHANGHAI.neonMagenta],
-      [Math.round(width * 0.94), yMax - 4, CYBERPUNK_SHANGHAI.neonCyan],
-    ];
-    const dots: Phaser.GameObjects.Rectangle[] = [];
-    for (const [x, y, color] of positions) {
-      const dot = this.add.rectangle(x, y, 2, 2, color);
-      dot.setOrigin(0, 0);
-      dot.setAlpha(0.7);
-      container.add(dot);
-      dots.push(dot);
-      // Neon glow halo (slightly larger faded box)
-      const halo = this.add.rectangle(x - 1, y - 1, 4, 4, color);
-      halo.setOrigin(0, 0);
-      halo.setAlpha(0.25);
-      container.add(halo);
-      dots.push(halo);
+    const sprite = this.add.image(x, y, textureKey);
+    sprite.setOrigin(0.5, 1);
+    sprite.setScale(scale);
+    this.sorter?.register(sprite);
+
+    if (shadow) {
+      const dropShadow = this.add.ellipse(
+        x,
+        y,
+        shadow.sw,
+        shadow.sh,
+        0x000000,
+        shadow.alpha,
+      );
+      this.dropShadows.push(dropShadow);
+      this.sorter?.register({
+        y: y - 1,
+        setDepth: (v) => dropShadow.setDepth(v),
+      });
     }
-    this.neonTeaseFlicker = this.tweens.add({
-      targets: dots,
-      alpha: { from: 0.4, to: 1.0 },
-      duration: 800,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
-      delay: this.tweens.stagger(140, { start: 0, ease: 'Linear' }),
+  }
+
+  // ---- Wayhouse filler (Layer 3 structural anchor) ----
+
+  /**
+   * Caravan wayhouse filler at mid-left. Sits adjacent to bg's painted
+   * maple tree (south-west of tree). Lights2D coord MARKED for S9:
+   * warm amber point at lit window position (520, 380).
+   */
+  private spawnWayhouseFiller(): void {
+    const x = 440;
+    const y = 480;
+    const sprite = this.add.image(
+      x,
+      y,
+      ASSET_KEYS.props.caravan_road.caravan_wayhouse_filler,
+    );
+    sprite.setOrigin(0.5, 1);
+    sprite.setScale(SCALE_CARAVAN_WAYHOUSE_FILLER);
+    this.sorter?.register(sprite);
+
+    const dropShadow = this.add.ellipse(x, y, 150, 18, 0x000000, 0.32);
+    this.dropShadows.push(dropShadow);
+    this.sorter?.register({
+      y: y - 1,
+      setDepth: (v) => dropShadow.setDepth(v),
     });
   }
+
+  // ---- Player + Caravan Vendor NPC ----
 
   private spawnPlayer(): void {
-    const spawnX = 2 * TILE_PX;
-    const spawnY = Math.round(ROAD_ROWS * 0.6) * TILE_PX;
+    const spawnX = 96;
+    const spawnY = 480;
     this.player = new Player(this, spawnX, spawnY, {
-      textureKey: this.spriteKeys?.player ?? this.atlasKey,
+      textureKey: ASSET_KEYS.characters.player_spritesheet,
+      frame: 0,
       speed: 130,
-      spriteScale: CHARACTER_SPRITE_SCALE,
+      spriteScale: PLAYER_SCALE,
       groundAnchor: true,
-      hitboxSize: 18,
+      hitboxSize: 28,
     });
+    this.sorter?.register(this.player);
+    this.attachDropShadow(this.player, 36, 8, 0.30);
   }
 
-  private spawnTravelers(): void {
-    if (!this.spriteKeys) return;
-    this.travelerA = new NPC(this, 9 * TILE_PX, 7 * TILE_PX, {
-      npcId: 'traveler_a',
-      displayName: 'Traveler',
-      textureKey: this.spriteKeys.travelerA,
-      interactRadius: 40,
-      spriteScale: CHARACTER_SPRITE_SCALE,
+  private spawnCaravanVendor(): void {
+    // Caravan Vendor NPC stands beside the wagon at (1180, 600).
+    // Inventory 2.6: warm-palette character at 64-96px reads as "wandering
+    // merchant at his caravan".
+    const vendorX = 1100;
+    const vendorY = 620;
+    this.caravanVendorNpc = new NPC(this, vendorX, vendorY, {
+      npcId: 'caravan_vendor',
+      displayName: 'Caravan Vendor',
+      textureKey: ASSET_KEYS.characters.caravan_vendor,
+      interactRadius: 48,
+      spriteScale: NPC_SCALE_NAMED,
       groundAnchor: true,
     });
-    this.travelerB = new NPC(this, 17 * TILE_PX, 10 * TILE_PX, {
-      npcId: 'traveler_b',
-      displayName: 'Wanderer',
-      textureKey: this.spriteKeys.travelerB,
-      interactRadius: 40,
-      spriteScale: CHARACTER_SPRITE_SCALE,
-      groundAnchor: true,
-    });
-    this.travelerC = new NPC(this, 25 * TILE_PX, 7 * TILE_PX, {
-      npcId: 'traveler_c',
-      displayName: 'Pilgrim',
-      textureKey: this.spriteKeys.travelerC,
-      interactRadius: 40,
-      spriteScale: CHARACTER_SPRITE_SCALE,
-      groundAnchor: true,
-    });
+    this.sorter?.register(this.caravanVendorNpc);
+    this.attachDropShadow(this.caravanVendorNpc, 32, 7, 0.30);
+    this.startBreathingTween(this.caravanVendorNpc);
   }
+
+  // ---- Arrival zone (quest step 5-7 trigger preserved from RV) ----
 
   private spawnArrivalZone(): void {
-    const zoneX = (ROAD_COLS - 2) * TILE_PX;
-    const zoneY = Math.round(ROAD_ROWS * 0.6) * TILE_PX;
+    // East edge of world on dirt path at player y altitude.
+    const zoneX = 1344;
+    const zoneY = 480;
     const zoneWidth = 3 * TILE_PX;
     const zoneHeight = 4 * TILE_PX;
     const zone = this.add.zone(zoneX, zoneY, zoneWidth, zoneHeight);
@@ -465,30 +434,128 @@ export class CaravanRoadScene extends Phaser.Scene {
     }
   }
 
-  private configureCamera(worldWidth: number, _worldHeight: number) {
-    this.cameras.main.setBounds(0, 0, worldWidth, _worldHeight);
-    const zoom = Math.max(2, Math.min(4, this.scale.width / worldWidth));
+  // ---- Atmospheric overlay (Layer 6 autumn_leaves) ----
+
+  /**
+   * Autumn-leaf static scattered distribution overlay covering full scene.
+   * Per directive 4 (NOT cut V6 unlike Apollo's dust_motes):
+   * - depth 9000 (above world, below UIScene 10000)
+   * - alpha 0.5 (S9 polishes alpha tween 0.4 to 0.6 over 3s)
+   * - displaySize matches world dimensions
+   * - origin (0, 0) so coordinates reference top-left corner
+   *
+   * S9 wire-up: position drift tween left-to-right slow + alpha tween.
+   */
+  private spawnAutumnLeavesOverlay(worldWidth: number, worldHeight: number): void {
+    const overlay = this.add.image(0, 0, ASSET_KEYS.overlays.autumn_leaves);
+    overlay.setOrigin(0, 0);
+    overlay.setDisplaySize(worldWidth, worldHeight);
+    overlay.setAlpha(AUTUMN_LEAVES_ALPHA);
+    overlay.setDepth(AUTUMN_LEAVES_DEPTH);
+    overlay.setScrollFactor(0.6);
+    this.autumnLeavesOverlay = overlay;
+  }
+
+  // ---- Drop shadow + breathing tween helpers (S2 parity) ----
+
+  /**
+   * Attach a drop shadow ellipse to a moving sprite (player, NPC). The
+   * shadow is registered as a YSortable tracking the sprite's y-coordinate
+   * minus 1 so it renders one slice below.
+   */
+  private attachDropShadow(
+    sprite: Phaser.Physics.Arcade.Sprite,
+    sw: number,
+    sh: number,
+    alpha: number,
+  ): void {
+    const shadow = this.add.ellipse(sprite.x, sprite.y, sw, sh, 0x000000, alpha);
+    this.dropShadows.push(shadow);
+    const wrapper: { y: number; setDepth: (v: number) => unknown } = {
+      get y(): number {
+        return sprite.y - 1;
+      },
+      setDepth(this: { y: number; setDepth: (v: number) => unknown }, v: number) {
+        shadow.setDepth(v);
+        return v;
+      },
+    } as unknown as { y: number; setDepth: (v: number) => unknown };
+    this.sorter?.register(wrapper);
+
+    sprite.on('preupdate', () => {
+      shadow.setPosition(sprite.x, sprite.y);
+    });
+  }
+
+  /**
+   * Apply the standard idle breathing tween to a static NPC sprite. Uses
+   * sprite's authored scale as the base so the breathing amplitude is
+   * proportional to size.
+   */
+  private startBreathingTween(npc: NPC): void {
+    const baseScaleX = npc.scaleX;
+    const baseScaleY = npc.scaleY;
+    const tween = this.tweens.add({
+      targets: npc,
+      scaleX: { from: baseScaleX, to: baseScaleX * BREATHING_AMPLITUDE },
+      scaleY: { from: baseScaleY, to: baseScaleY * BREATHING_AMPLITUDE },
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+      duration: BREATHING_DURATION_MS,
+      delay: Math.floor(Math.random() * BREATHING_DURATION_MS),
+    });
+    this.idleBreathingTweens.push(tween);
+  }
+
+  // ---- Camera + cleanup ----
+
+  private configureCamera(worldWidth: number, worldHeight: number) {
+    this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
+    // S2 parity: camera viewport reveals more of the scene. Lower clamp keeps
+    // the AI bg detail readable without over-magnification.
+    const zoom = Math.max(1.0, Math.min(1.5, this.scale.width / worldWidth));
     this.cameras.main.setZoom(zoom);
     if (this.player) {
       this.cameras.main.startFollow(this.player, true, 0.15, 0.15);
     }
+
     this.scale.on(Phaser.Scale.Events.RESIZE, (size: Phaser.Structs.Size) => {
-      const nextZoom = Math.max(2, Math.min(4, size.width / worldWidth));
+      const nextZoom = Math.max(1.0, Math.min(1.5, size.width / worldWidth));
       this.cameras.main.setZoom(nextZoom);
     });
   }
 
   private registerSceneCleanup() {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.neonTeaseFlicker?.stop();
-      this.neonTeaseFlicker = undefined;
-      this.lanternFlicker?.stop();
-      this.lanternFlicker = undefined;
+      for (const t of this.idleBreathingTweens) {
+        try {
+          t.stop();
+        } catch (err) {
+          console.error('[CaravanRoadScene] tween stop threw', err);
+        }
+      }
+      this.idleBreathingTweens = [];
+
+      for (const s of this.dropShadows) {
+        try {
+          s.destroy();
+        } catch (err) {
+          console.error('[CaravanRoadScene] shadow destroy threw', err);
+        }
+      }
+      this.dropShadows = [];
+
+      this.autumnLeavesOverlay?.destroy();
+      this.autumnLeavesOverlay = undefined;
+
       this.ambientFx?.stop();
       this.ambientFx?.destroy();
       this.ambientFx = undefined;
+
       this.sorter?.unregisterAll();
       this.sorter = undefined;
+
       for (const unsub of this.unsubscribers) {
         try {
           unsub();
@@ -497,6 +564,7 @@ export class CaravanRoadScene extends Phaser.Scene {
         }
       }
       this.unsubscribers = [];
+
       const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
       bus?.emit('game.scene.shutdown', { sceneKey: this.scene.key });
     });
