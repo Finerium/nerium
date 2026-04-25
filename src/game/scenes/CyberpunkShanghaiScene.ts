@@ -1,38 +1,28 @@
 //
 // src/game/scenes/CyberpunkShanghaiScene.ts
 //
-// Helios-v2 W3 S4: Cyberpunk Shanghai District scene (NEW). The final
-// destination after the Caravan Road transition. Magenta + cyan neon clash
-// over a deep void base, rim-light puddle reflections, hologram pulse,
-// neon rain + smog ambient FX. Caravan vendor NPC relocates to this scene
-// per agent prompt scene matrix Session 3 (B5 Epimetheus quest step 7).
+// Helios-v2 W3 CORRECTION: rewritten ground paint + sprite textures +
+// neon overhead canopy + horizon haze to reach Hyper Light Drifter /
+// Sea of Stars cyberpunk tier.
+//
+// Cyberpunk Shanghai District. Final destination after Caravan Road.
+// Magenta + cyan neon clash over deep void base, rim-light puddle
+// reflections, hologram pulse, neon rain + smog ambient FX. Caravan
+// vendor NPC relocates here on quest step 7 (B5 Epimetheus build).
 //
 // Visual stack:
-//   Layer 0 sky_gradient: 4-band cyberpunk void (deep -> mid -> upper ->
-//     smog purple) via buildSkyGradient('cyberpunk_shanghai').
-//   Layer 1 parallax_bg: 3 silhouette layers (far buildings, mid towers,
-//     near skyline) with neon window glints (cyan + magenta + amber) +
-//     antenna blink pixels.
-//   Layer 2 ground_tiles: rust-tinted pavement floor + neon puddle
-//     reflections (cyan + magenta horizontal strips at random rows
-//     simulating rim-light on wet pavement).
-//   Layer 3 world_tiles: vending machine clusters + neon sign poles +
-//     hologram pulse columns + dumpster prop + caravan_vendor NPC
-//     (relocated from Apollo on quest step 7) + 4 ambient NPCs
-//     (synth-vendor, cyborg-guard, street-rat, salaryman) + player. All
-//     y-sorted via SceneSorter.
-//   Layer 4 above_tiles: hanging neon sign + cable strip at top of scene.
-//   Ambient FX: buildAmbientFx('rain') 60/s + buildAmbientFx('neon_smog')
-//     25/s overlapped (rain in front, smog behind).
-//
-// Caravan vendor relocation: per agent prompt Session 3 + B5 Epimetheus
-// build, on quest step 7 the caravan_vendor NPC moves from
-// ApolloVillageScene to CyberpunkShanghaiScene. The vendor is spawned
-// in this scene with the same npcId 'caravan_vendor' and same
-// displayName 'Caravan Vendor' so the quest dialogue triggers continue
-// to fire identically. The Apollo-scene caravan_vendor stays present
-// for backward play (player who never completes step 7 still sees it);
-// the cyber-scene caravan_vendor exists in parallel.
+//   Layer 0 sky_gradient: 4-band cyberpunk void
+//   Layer 1 parallax_bg:  3 silhouette layers (far buildings, mid towers,
+//                         near skyline) with neon window glints + horizon
+//                         haze blend
+//   Layer 2 ground_tiles: paintCyberpunkShanghaiGround (dark wet pavement
+//                         + neon puddle reflections + grid texture)
+//   Layer 3 world_tiles:  vending machines + neon sign poles + hologram
+//                         pulse + dumpster + caravan_vendor + 4 ambient
+//                         NPCs + player. All y-sorted.
+//   Layer 4 above_tiles:  paintCyberpunkOverhead cable network + hanging
+//                         neon signs
+//   Ambient FX:           rain 60/s + neon smog 25/s
 //
 // No em dash, no emoji per CLAUDE.md anti-patterns.
 //
@@ -48,6 +38,11 @@ import {
   buildParallaxLayer,
   stairStepSilhouette,
   buildAmbientFx,
+  paintCyberpunkShanghaiGround,
+  paintCyberpunkOverhead,
+  paintHorizonHaze,
+  buildCyberpunkShanghaiSprites,
+  type CyberpunkShanghaiSpriteKeys,
   CYBERPUNK_SHANGHAI,
   DEPTH,
   dynamicDepthFor,
@@ -58,20 +53,18 @@ interface CyberpunkShanghaiSceneData {
   spawn?: { x: number; y: number };
 }
 
-const FRAME_FLOOR_PRIMARY = 'floor_primary';
-const FRAME_FLOOR_SECONDARY = 'floor_secondary';
-const FRAME_AGENT_IDLE = 'agent_idle';
-const FRAME_AGENT_ACTIVE = 'agent_active';
-
 const TILE_PX = 32;
 const SHANGHAI_COLS = 28;
 const SHANGHAI_ROWS = 16;
 const WORLD_W = SHANGHAI_COLS * TILE_PX;
 const WORLD_H = SHANGHAI_ROWS * TILE_PX;
 
+const CHARACTER_SPRITE_SCALE = 3;
+
 export class CyberpunkShanghaiScene extends Phaser.Scene {
   private worldId: WorldId = 'cyberpunk_shanghai';
   private atlasKey = 'atlas_cyberpunk_shanghai';
+  private spriteKeys?: CyberpunkShanghaiSpriteKeys;
   private player?: Player;
   private caravanVendorNpc?: NPC;
   private synthVendorNpc?: NPC;
@@ -85,6 +78,7 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
   private smogFx?: Phaser.GameObjects.Particles.ParticleEmitter | null;
   private holoPulseTween?: Phaser.Tweens.Tween;
   private signFlickerTween?: Phaser.Tweens.Tween;
+  private signOverheadTween?: Phaser.Tweens.Tween;
 
   constructor() {
     super({ key: 'CyberpunkShanghai' } satisfies Phaser.Types.Scenes.SettingsConfig);
@@ -102,20 +96,27 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#06060c');
     this.physics.world.setBounds(0, 0, width, height);
 
-    // Cinematic fade-in
     this.cameras.main.fadeIn(500, 0, 0, 0);
 
-    // Layer 0: void gradient
-    buildSkyGradient(this, { world: 'cyberpunk_shanghai', width, height });
+    // Build character sprite textures FIRST
+    this.spriteKeys = buildCyberpunkShanghaiSprites(this);
 
-    // Layer 1a: far building silhouette stack
+    // Layer 0: void gradient anchored to camera viewport (scrollFactor 0)
+    buildSkyGradient(this, {
+      world: 'cyberpunk_shanghai',
+      width: this.scale.width,
+      height: this.scale.height,
+    });
+
+    // Layer 1a: far building silhouette stack. baseY at world height * 0.5
+    // (far buildings sit higher in the frame for depth feel).
     const farRects = stairStepSilhouette(
       0,
       width,
-      Math.round(height * 0.4),
+      Math.round(height * 0.5),
       24,
       36,
-      80,
+      72,
       CYBERPUNK_SHANGHAI.buildingFar,
       0xfa3,
     );
@@ -125,10 +126,10 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
     const midRects = stairStepSilhouette(
       0,
       width,
-      Math.round(height * 0.5),
+      Math.round(height * 0.55),
       32,
       48,
-      96,
+      80,
       CYBERPUNK_SHANGHAI.buildingMid,
       0xb4d,
     );
@@ -138,24 +139,27 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
       alpha: 0.95,
     });
 
-    // Add neon window glints scattered across mid layer
     this.spawnNeonGlints(midContainer, width, height);
 
     // Layer 1c: near skyline
     const nearRects = stairStepSilhouette(
       0,
       width,
-      Math.round(height * 0.55),
+      Math.round(height * 0.58),
       28,
       32,
-      72,
+      60,
       CYBERPUNK_SHANGHAI.buildingNear,
       0xc8e,
     );
     buildParallaxLayer(this, { rects: nearRects, scrollFactor: 0.6, alpha: 0.92 });
 
+    // Smog haze on horizon (cool magenta tint for cyberpunk feel)
+    paintHorizonHaze(this, width, height, CYBERPUNK_SHANGHAI.smogPurple, 0.45);
+    paintHorizonHaze(this, width, height, CYBERPUNK_SHANGHAI.neonViolet, 0.22);
+
     // Layer 2: pavement + neon puddle reflections
-    this.layoutPavement(width, height);
+    paintCyberpunkShanghaiGround(this, width, height);
 
     // Layer 3: decoration props + NPCs + player
     this.sorter = new SceneSorter();
@@ -170,8 +174,9 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
     if (this.streetRatNpc) this.sorter.register(this.streetRatNpc);
     if (this.salarymanNpc) this.sorter.register(this.salarymanNpc);
 
-    // Layer 4: hanging neon sign + cable strip
-    this.layoutOverhead(width);
+    // Layer 4: cable + hanging signs
+    paintCyberpunkOverhead(this, width);
+    this.spawnOverheadSignFlicker(width);
 
     // Ambient FX: rain (front) + smog (behind)
     this.smogFx = buildAmbientFx(this, { kind: 'neon_smog' });
@@ -227,12 +232,10 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
     width: number,
     height: number,
   ): void {
-    // Scatter cyan + magenta + amber 2x2 pixels across the mid building
-    // band, then tween a stagger flicker so windows blink alive.
     const positions: Array<[number, number, number]> = [];
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 80; i++) {
       const x = (i * 47) % width;
-      const y = Math.round(height * 0.2) + ((i * 17) % Math.round(height * 0.3));
+      const y = Math.round(height * 0.25) + ((i * 17) % Math.round(height * 0.3));
       const colorRoll = i % 4;
       const color =
         colorRoll === 0
@@ -251,6 +254,12 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
       dot.setAlpha(0.85);
       container.add(dot);
       dots.push(dot);
+      // Glow halo
+      const halo = this.add.rectangle(x - 1, y - 1, 4, 4, color);
+      halo.setOrigin(0, 0);
+      halo.setAlpha(0.22);
+      container.add(halo);
+      dots.push(halo);
     }
     this.signFlickerTween = this.tweens.add({
       targets: dots,
@@ -259,39 +268,30 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
       yoyo: true,
       repeat: -1,
       ease: 'Sine.easeInOut',
-      delay: this.tweens.stagger(80, { start: 0, ease: 'Linear' }),
+      delay: this.tweens.stagger(70, { start: 0, ease: 'Linear' }),
     });
   }
 
-  private layoutPavement(width: number, height: number): void {
-    // Pavement floor: re-use medieval atlas's floor frames with cyberpunk
-    // tint applied per tile (no separate cyberpunk floor sprite needed for
-    // S4 ship; tint pass keeps asset budget zero per CC0 strategy).
-    for (let row = 0; row < SHANGHAI_ROWS; row++) {
-      for (let col = 0; col < SHANGHAI_COLS; col++) {
-        const slot = (row + col) % 4 === 0 ? FRAME_FLOOR_SECONDARY : FRAME_FLOOR_PRIMARY;
-        const t = this.add.image(
-          col * TILE_PX + TILE_PX / 2,
-          row * TILE_PX + TILE_PX / 2,
-          this.atlasKey,
-          slot,
-        );
-        t.setOrigin(0.5, 0.5);
-        t.setDepth(DEPTH.GROUND_TILES);
-        t.setTint(CYBERPUNK_SHANGHAI.pavement);
-      }
+  private spawnOverheadSignFlicker(width: number): void {
+    // Flicker the hanging sign pixels at top of screen for "alive" cyberpunk feel
+    const signs: Phaser.GameObjects.Rectangle[] = [];
+    for (let x = 32; x < width; x += 88) {
+      const accent = this.add.rectangle(x - 12, 26, 26, 4, CYBERPUNK_SHANGHAI.neonAmber);
+      accent.setOrigin(0, 0);
+      accent.setAlpha(0.85);
+      accent.setDepth(DEPTH.ABOVE_TILES + 2);
+      signs.push(accent);
     }
-    // Wet spots: tinted strips of cyan + magenta reflection scattered
-    for (let i = 0; i < 14; i++) {
-      const x = (i * 73) % width;
-      const y = Math.round(height * 0.55) + ((i * 41) % Math.round(height * 0.4));
-      const color = i % 2 === 0
-        ? CYBERPUNK_SHANGHAI.pavementReflectCyan
-        : CYBERPUNK_SHANGHAI.pavementReflectMagenta;
-      const wet = this.add.rectangle(x, y, 36 + ((i * 7) % 12), 4, color);
-      wet.setOrigin(0, 0);
-      wet.setAlpha(0.5);
-      wet.setDepth(DEPTH.GROUND_TILES + 1);
+    if (signs.length) {
+      this.signOverheadTween = this.tweens.add({
+        targets: signs,
+        alpha: { from: 0.4, to: 1.0 },
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+        duration: 700,
+        delay: this.tweens.stagger(160, { start: 0 }),
+      });
     }
   }
 
@@ -300,7 +300,7 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
       c.setDepth(dynamicDepthFor(c.y));
     };
 
-    // Vending machine cluster (3 colored boxes with flicker glow)
+    // Vending machine cluster
     const buildVendingMachine = (x: number, y: number, color: number) => {
       const c = this.add.container(x, y);
       const band = (rx: number, ry: number, w: number, h: number, col: number) => {
@@ -308,18 +308,29 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
         r.setOrigin(0, 0);
         c.add(r);
       };
+      // Frame
       band(-12, -36, 24, 36, CYBERPUNK_SHANGHAI.chromeBlack);
+      band(-12, -36, 24, 1, CYBERPUNK_SHANGHAI.chromeSteel);
+      band(-12, -1, 24, 1, CYBERPUNK_SHANGHAI.chromeSteel);
+      // Neon panel display
       band(-10, -34, 20, 18, color);
       band(-10, -34, 20, 1, CYBERPUNK_SHANGHAI.holoCyan);
+      band(-10, -16, 20, 1, CYBERPUNK_SHANGHAI.chromeRust);
+      // Item dispense slot
       band(-8, -14, 16, 8, CYBERPUNK_SHANGHAI.chromeSteel);
       band(-6, -12, 12, 4, CYBERPUNK_SHANGHAI.neonAmber);
+      // Coin slot
+      band(-4, -6, 8, 1, CYBERPUNK_SHANGHAI.chromeRust);
+      // Base
       band(-12, 0, 24, 2, CYBERPUNK_SHANGHAI.chromeRust);
       return c;
     };
 
     setDepthForProp(buildVendingMachine(4 * TILE_PX, 9 * TILE_PX, CYBERPUNK_SHANGHAI.neonMagenta));
     setDepthForProp(buildVendingMachine(5 * TILE_PX, 9 * TILE_PX, CYBERPUNK_SHANGHAI.neonCyan));
+    setDepthForProp(buildVendingMachine(6 * TILE_PX, 9 * TILE_PX, CYBERPUNK_SHANGHAI.neonViolet));
     setDepthForProp(buildVendingMachine(23 * TILE_PX, 11 * TILE_PX, CYBERPUNK_SHANGHAI.neonViolet));
+    setDepthForProp(buildVendingMachine(24 * TILE_PX, 11 * TILE_PX, CYBERPUNK_SHANGHAI.neonMagenta));
 
     // Neon sign poles
     const buildSignPole = (x: number, y: number, signColor: number) => {
@@ -332,23 +343,42 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
       band(-1, -64, 2, 64, CYBERPUNK_SHANGHAI.chromeSteel);
       band(-12, -68, 24, 8, CYBERPUNK_SHANGHAI.chromeBlack);
       band(-10, -66, 20, 4, signColor);
+      // glyph dots inside sign
+      band(-8, -65, 1, 1, 0xffffff);
+      band(-5, -65, 1, 1, 0xffffff);
+      band(-2, -65, 1, 1, 0xffffff);
+      band(2, -65, 1, 1, 0xffffff);
+      band(5, -65, 1, 1, 0xffffff);
+      band(8, -65, 1, 1, 0xffffff);
       band(-3, 0, 6, 2, CYBERPUNK_SHANGHAI.chromeBlack);
+      // Halo
+      const halo = this.add.rectangle(-13, -69, 26, 10, signColor);
+      halo.setOrigin(0, 0);
+      halo.setAlpha(0.22);
+      c.add(halo);
       return c;
     };
 
     setDepthForProp(buildSignPole(8 * TILE_PX, 8 * TILE_PX, CYBERPUNK_SHANGHAI.neonCyan));
     setDepthForProp(buildSignPole(14 * TILE_PX, 6 * TILE_PX, CYBERPUNK_SHANGHAI.neonMagenta));
     setDepthForProp(buildSignPole(20 * TILE_PX, 8 * TILE_PX, CYBERPUNK_SHANGHAI.neonViolet));
+    setDepthForProp(buildSignPole(11 * TILE_PX, 14 * TILE_PX, CYBERPUNK_SHANGHAI.neonAmber));
+    setDepthForProp(buildSignPole(17 * TILE_PX, 14 * TILE_PX, CYBERPUNK_SHANGHAI.neonCyan));
 
     // Hologram pulse columns
     const buildHologram = (x: number, y: number, color: number) => {
       const c = this.add.container(x, y);
-      for (let i = 0; i < 5; i++) {
-        const r = this.add.rectangle(-8, -8 - i * 8, 16, 4, color);
+      for (let i = 0; i < 6; i++) {
+        const r = this.add.rectangle(-8 + i * 0.5, -8 - i * 8, 16 - i, 4, color);
         r.setOrigin(0, 0);
         r.setAlpha(0.5);
         c.add(r);
       }
+      // Base disc
+      const disc = this.add.rectangle(-10, -2, 20, 2, color);
+      disc.setOrigin(0, 0);
+      disc.setAlpha(0.7);
+      c.add(disc);
       return c;
     };
 
@@ -356,19 +386,21 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
     setDepthForProp(holo1);
     const holo2 = buildHologram(17 * TILE_PX, 9 * TILE_PX, CYBERPUNK_SHANGHAI.holoMagenta);
     setDepthForProp(holo2);
+    const holo3 = buildHologram(15 * TILE_PX, 12 * TILE_PX, CYBERPUNK_SHANGHAI.neonViolet);
+    setDepthForProp(holo3);
 
-    // Pulse the holograms (alpha tween for "alive" effect)
+    // Pulse the holograms
     this.holoPulseTween = this.tweens.add({
-      targets: [...holo1.getAll(), ...holo2.getAll()],
+      targets: [...holo1.getAll(), ...holo2.getAll(), ...holo3.getAll()],
       alpha: { from: 0.3, to: 0.85 },
       yoyo: true,
       repeat: -1,
       duration: 1400,
       ease: 'Sine.easeInOut',
-      delay: this.tweens.stagger(120, { start: 0 }),
+      delay: this.tweens.stagger(100, { start: 0 }),
     });
 
-    // Dumpster (ambient prop)
+    // Dumpsters (ambient props)
     const buildDumpster = (x: number, y: number) => {
       const c = this.add.container(x, y);
       const band = (rx: number, ry: number, w: number, h: number, col: number) => {
@@ -383,82 +415,73 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
       // Trash spilled
       band(20, -4, 6, 4, CYBERPUNK_SHANGHAI.neonAmber);
       band(-26, -2, 6, 2, CYBERPUNK_SHANGHAI.neonViolet);
+      band(-30, -1, 4, 1, CYBERPUNK_SHANGHAI.neonCyan);
+      // Graffiti tag
+      band(-18, -12, 6, 2, CYBERPUNK_SHANGHAI.neonMagenta);
       return c;
     };
 
     setDepthForProp(buildDumpster(25 * TILE_PX, 7 * TILE_PX));
     setDepthForProp(buildDumpster(3 * TILE_PX, 14 * TILE_PX));
-  }
-
-  private layoutOverhead(width: number): void {
-    // Hanging neon sign strips at top of scene (above_tiles depth)
-    for (let x = 32; x < width; x += 96) {
-      const cable = this.add.rectangle(x, 0, 1, 16, CYBERPUNK_SHANGHAI.chromeSteel);
-      cable.setOrigin(0, 0);
-      cable.setDepth(DEPTH.ABOVE_TILES);
-      const sign = this.add.rectangle(x - 14, 16, 30, 8, CYBERPUNK_SHANGHAI.neonMagenta);
-      sign.setOrigin(0, 0);
-      sign.setDepth(DEPTH.ABOVE_TILES + 1);
-      sign.setAlpha(0.9);
-    }
-    // Power cables across top
-    const cable1 = this.add.rectangle(0, 4, width, 1, CYBERPUNK_SHANGHAI.chromeSteel);
-    cable1.setOrigin(0, 0);
-    cable1.setDepth(DEPTH.ABOVE_TILES);
-    const cable2 = this.add.rectangle(0, 12, width, 1, CYBERPUNK_SHANGHAI.chromeRust);
-    cable2.setOrigin(0, 0);
-    cable2.setDepth(DEPTH.ABOVE_TILES);
+    setDepthForProp(buildDumpster(13 * TILE_PX, 4 * TILE_PX));
   }
 
   private spawnPlayer(): void {
-    // Spawn at far west edge (entering from CaravanRoad direction)
     const spawnX = 2 * TILE_PX;
     const spawnY = Math.round(SHANGHAI_ROWS * 0.6) * TILE_PX;
     this.player = new Player(this, spawnX, spawnY, {
-      textureKey: this.atlasKey,
-      frame: FRAME_AGENT_IDLE,
+      textureKey: this.spriteKeys?.player ?? this.atlasKey,
       speed: 130,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
+      hitboxSize: 18,
     });
   }
 
   private spawnNpcs(): void {
+    if (!this.spriteKeys) return;
     // Caravan vendor relocated here per quest step 7
     this.caravanVendorNpc = new NPC(this, 6 * TILE_PX, 10 * TILE_PX, {
       npcId: 'caravan_vendor',
       displayName: 'Caravan Vendor',
-      textureKey: this.atlasKey,
-      frame: FRAME_AGENT_IDLE,
+      textureKey: this.spriteKeys.caravanVendor,
       interactRadius: 48,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
     });
 
-    // Ambient cyberpunk NPCs (4 variants)
+    // Ambient cyberpunk NPCs
     this.synthVendorNpc = new NPC(this, 13 * TILE_PX, 9 * TILE_PX, {
       npcId: 'synth_vendor',
       displayName: 'Synth Vendor',
-      textureKey: this.atlasKey,
-      frame: FRAME_AGENT_ACTIVE,
+      textureKey: this.spriteKeys.synthVendor,
       interactRadius: 40,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
     });
     this.cyborgGuardNpc = new NPC(this, 21 * TILE_PX, 7 * TILE_PX, {
       npcId: 'cyborg_guard',
       displayName: 'Cyborg Guard',
-      textureKey: this.atlasKey,
-      frame: FRAME_AGENT_ACTIVE,
+      textureKey: this.spriteKeys.cyborgGuard,
       interactRadius: 40,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
     });
     this.streetRatNpc = new NPC(this, 9 * TILE_PX, 13 * TILE_PX, {
       npcId: 'street_rat',
       displayName: 'Street Rat',
-      textureKey: this.atlasKey,
-      frame: FRAME_AGENT_IDLE,
+      textureKey: this.spriteKeys.streetRat,
       interactRadius: 40,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
     });
     this.salarymanNpc = new NPC(this, 18 * TILE_PX, 13 * TILE_PX, {
       npcId: 'salaryman',
       displayName: 'Salaryman',
-      textureKey: this.atlasKey,
-      frame: FRAME_AGENT_IDLE,
+      textureKey: this.spriteKeys.salaryman,
       interactRadius: 40,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
     });
   }
 
@@ -481,6 +504,8 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
       this.holoPulseTween = undefined;
       this.signFlickerTween?.stop();
       this.signFlickerTween = undefined;
+      this.signOverheadTween?.stop();
+      this.signOverheadTween = undefined;
       this.rainFx?.stop();
       this.rainFx?.destroy();
       this.rainFx = undefined;

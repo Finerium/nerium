@@ -20,6 +20,10 @@ export interface NpcOptions {
   textureKey: string;
   frame?: string | number;
   interactRadius?: number;
+  /** Helios-v2 W3 correction: render scale multiplier for sprite texture. */
+  spriteScale?: number;
+  /** Helios-v2 W3 correction: ground-anchor origin for y-sort. */
+  groundAnchor?: boolean;
 }
 
 export class NPC extends Phaser.Physics.Arcade.Sprite {
@@ -29,6 +33,7 @@ export class NPC extends Phaser.Physics.Arcade.Sprite {
   private nameLabel: Phaser.GameObjects.Text;
   private playerNearby = false;
   private interactListener?: (evt: KeyboardEvent) => void;
+  private labelOffsetY: number = 24;
 
   constructor(scene: Phaser.Scene, x: number, y: number, options: NpcOptions) {
     super(scene, x, y, options.textureKey, options.frame ?? 'agent_active');
@@ -40,27 +45,50 @@ export class NPC extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
 
     this.setImmovable(true);
-    this.setOrigin(0.5, 0.5);
+    if (options.groundAnchor) {
+      this.setOrigin(0.5, 1);
+    } else {
+      this.setOrigin(0.5, 0.5);
+    }
     this.setName(`npc-${options.npcId}`);
+    if (options.spriteScale && options.spriteScale !== 1) {
+      this.setScale(options.spriteScale);
+    }
 
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.setImmovable(true);
-    body.setSize(28, 28);
-    body.setOffset(2, 2);
+    // Hitbox sized to the visible display area; if the sprite was scaled the
+    // displayWidth / displayHeight reflect the rendered size already.
+    const hbW = Math.min(28, Math.max(8, Math.round(this.displayWidth * 0.7)));
+    const hbH = Math.min(28, Math.max(8, Math.round(this.displayHeight * 0.7)));
+    body.setSize(hbW, hbH);
+    if (options.groundAnchor) {
+      body.setOffset(
+        Math.max(0, (this.displayWidth - hbW) / 2),
+        Math.max(0, this.displayHeight - hbH - 2),
+      );
+    } else {
+      body.setOffset(
+        Math.max(0, (this.displayWidth - hbW) / 2),
+        Math.max(0, (this.displayHeight - hbH) / 2),
+      );
+    }
 
     // Name label floats above the sprite in world space. This is acceptable
     // inside Phaser per the contract: world-space UI renders in Phaser,
     // screen-space UI (prompts, dialog) renders in React.
+    const labelOffsetY = options.groundAnchor ? this.displayHeight + 4 : this.displayHeight / 2 + 8;
     this.nameLabel = scene.add
-      .text(x, y - 24, options.displayName, {
+      .text(x, y - labelOffsetY, options.displayName, {
         fontFamily: 'monospace',
-        fontSize: '12px',
+        fontSize: '10px',
         color: '#ffffff',
         backgroundColor: '#00000080',
         padding: { left: 4, right: 4, top: 2, bottom: 2 },
       })
       .setOrigin(0.5, 1)
       .setDepth(50);
+    this.labelOffsetY = labelOffsetY;
   }
 
   /**
@@ -87,7 +115,7 @@ export class NPC extends Phaser.Physics.Arcade.Sprite {
     }
 
     // Keep the label synced to sprite position.
-    this.nameLabel.setPosition(this.x, this.y - 24);
+    this.nameLabel.setPosition(this.x, this.y - this.labelOffsetY);
   }
 
   private bindInteractKey() {

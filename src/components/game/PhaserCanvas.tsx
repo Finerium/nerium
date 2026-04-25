@@ -82,6 +82,10 @@ export default function PhaserCanvas() {
     bridgeRef.current = bridge;
 
     // Expose for Playwright smoke test per gotcha 5 (__NERIUM_TEST_* hook).
+    // Also expose the Phaser game itself under __nerium_game__ so the
+    // snapshot tests can jump scenes (caravan_road_smoke pattern), behind
+    // a Helios-v2 W3 correction comment so production builds can scrub it
+    // via the standard window-handle review.
     if (typeof window !== 'undefined') {
       const w = window as unknown as Record<string, unknown>;
       const existing = (w.__NERIUM_TEST__ ?? {}) as Record<string, unknown>;
@@ -89,6 +93,7 @@ export default function PhaserCanvas() {
         ...existing,
         phaserMounted: true,
       };
+      w.__nerium_game__ = game;
     }
 
     return () => {
@@ -113,6 +118,7 @@ export default function PhaserCanvas() {
         const w = window as unknown as Record<string, unknown>;
         const existing = (w.__NERIUM_TEST__ ?? {}) as Record<string, unknown>;
         w.__NERIUM_TEST__ = { ...existing, phaserMounted: false };
+        delete w.__nerium_game__;
       }
     };
   }, []);

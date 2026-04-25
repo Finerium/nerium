@@ -19,6 +19,19 @@ export interface PlayerOptions {
   frame?: string | number;
   speed?: number;
   hitboxSize?: number;
+  /**
+   * Render scale multiplier for the sprite texture. Used by Helios-v2 W3
+   * correction where character sprites are generated at 8-14 px and need
+   * 2-3x scale to read at 32 px world tile. Defaults to 1 for back-compat
+   * with atlas-frame paths.
+   */
+  spriteScale?: number;
+  /**
+   * If true, sprite uses Oak-Woods feet anchor (origin 0.5, 1) so y-sort
+   * compares feet-y. Defaults to false to preserve existing center-anchor
+   * RV behavior. Helios-v2 correction sets true for new sprite textures.
+   */
+  groundAnchor?: boolean;
 }
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
@@ -38,14 +51,33 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
 
     this.setCollideWorldBounds(true);
-    this.setOrigin(0.5, 0.5);
+    if (options.groundAnchor) {
+      // Oak-Woods feet anchor for y-sort correctness
+      this.setOrigin(0.5, 1);
+    } else {
+      this.setOrigin(0.5, 0.5);
+    }
     this.setName('player');
+
+    // Helios-v2 correction: render scale for tiny pixel-rect textures so
+    // an 8x14 sprite reads at proper world-tile size.
+    if (options.spriteScale && options.spriteScale !== 1) {
+      this.setScale(options.spriteScale);
+    }
 
     // Hitbox slightly smaller than the tile so wall collisions feel softer.
     const hitbox = options.hitboxSize ?? 24;
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.setSize(hitbox, hitbox);
-    body.setOffset((32 - hitbox) / 2, (32 - hitbox) / 2);
+    // Center the hitbox on the visible sprite regardless of origin.
+    if (options.groundAnchor) {
+      body.setOffset(
+        Math.max(0, (this.displayWidth - hitbox) / 2),
+        Math.max(0, this.displayHeight - hitbox - 2),
+      );
+    } else {
+      body.setOffset((this.displayWidth - hitbox) / 2, (this.displayHeight - hitbox) / 2);
+    }
 
     const keyboard = scene.input.keyboard;
     if (!keyboard) {

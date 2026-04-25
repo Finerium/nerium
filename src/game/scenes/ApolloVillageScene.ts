@@ -2,15 +2,28 @@
 // src/game/scenes/ApolloVillageScene.ts
 //
 // Main lobby scene for the vertical slice. Medieval Desert world aesthetic,
-// top-down JRPG perspective. After Helios-v2 W3 S2 revamp the scene uses a
-// 5-layer depth stack:
+// top-down JRPG perspective. Helios-v2 W3 CORRECTION: rewritten ground paint
+// + character sprite textures + foliage canopy + horizon haze to reach the
+// Sea of Stars / Crosscode visual_inspiration tier after Run #1 returned
+// VISUAL DRIFT SEVERE.
+//
+// Visual stack (5 layer + ambient FX):
 //   Layer 0 (sky_gradient): per-world dusk gradient via buildSkyGradient
 //   Layer 1 (parallax_bg):  canyon silhouette stair-step at scrollFactor 0.4
-//   Layer 2 (ground_tiles): floor checker via existing CC0 atlas slots
+//                           PLUS horizon atmospheric haze blend strip
+//   Layer 2 (ground_tiles): paintApolloVillageGround (multi-band warm sand
+//                           + speckle dither + winding trail). Replaces
+//                           prior atlas-tile checkerboard.
 //   Layer 3 (world_tiles):  decoration props (tent, cactus, well, firepit,
 //                           palm, rock, lamp post) plus player + NPCs with
-//                           dynamic y-sort via SceneSorter
-//   Layer 4 (above_tiles):  acacia canopy overhang silhouette (decorative)
+//                           dynamic y-sort via SceneSorter. Player + NPCs
+//                           use generated pixel-rect sprite textures from
+//                           src/game/visual/spriteTextures.ts (Apollo,
+//                           treasurer, caravan vendor, guard, child,
+//                           elder, 3 villager variants).
+//   Layer 4 (above_tiles):  paintApolloCanopy acacia foliage overhang +
+//                           hanging leaf clusters that occlude sprites
+//                           passing beneath.
 //   Ambient FX:             sand particle drift via buildAmbientFx('dust')
 //
 // Preserved from prior shipped scene (NON-REGRESSION):
@@ -24,7 +37,7 @@
 //   - SHUTDOWN cleanup
 //   - window.__NERIUM_TEST__ Playwright hook
 //
-// Owner: Helios-v2 (W3 S2 visual revamp), Thalia-v2 (original RV scaffold).
+// Owner: Helios-v2 (W3 correction), Thalia-v2 (original RV scaffold).
 //
 // No em dash, no emoji per CLAUDE.md anti-patterns.
 //
@@ -49,6 +62,11 @@ import {
   buildLampPost,
   buildPalmTree,
   buildRock,
+  paintApolloVillageGround,
+  paintApolloCanopy,
+  paintHorizonHaze,
+  buildApolloVillageSprites,
+  type ApolloSpriteKeys,
   MEDIEVAL_DESERT,
   DEPTH,
   dynamicDepthFor,
@@ -59,14 +77,6 @@ interface ApolloVillageSceneData {
   spawn?: { x: number; y: number };
 }
 
-// Atlas frame names from the existing CC0 medieval_desert atlas. The atlas
-// remains the floor + wall ground source; decoration is now hand-placed
-// rectangles per Helios-v2 visual revamp.
-const FRAME_FLOOR_PRIMARY = 'floor_primary';
-const FRAME_FLOOR_SECONDARY = 'floor_secondary';
-const FRAME_PATH_MARKER = 'path_marker';
-const FRAME_AGENT_IDLE = 'agent_idle';
-const FRAME_AGENT_ACTIVE = 'agent_active';
 const FRAME_SIGIL_WORLD = 'sigil_world';
 
 const TILE_PX = 32;
@@ -77,9 +87,15 @@ const VILLAGE_ROWS = 16;
 const WORLD_W = VILLAGE_COLS * TILE_PX;
 const WORLD_H = VILLAGE_ROWS * TILE_PX;
 
+// Pixel-rect character sprites are authored 8-10 px wide / 10-16 px tall
+// to match the scene-art.js reference; on a 32 px tile world we render
+// them at 3x so they read at proper character size (24-30 px tall body).
+const CHARACTER_SPRITE_SCALE = 3;
+
 export class ApolloVillageScene extends Phaser.Scene {
   private worldId: WorldId = 'medieval_desert';
   private atlasKey = 'atlas_medieval_desert';
+  private spriteKeys?: ApolloSpriteKeys;
   private player?: Player;
   private apolloNpc?: NPC;
   private caravanVendorNpc?: NPC;
@@ -87,12 +103,14 @@ export class ApolloVillageScene extends Phaser.Scene {
   private caravan?: Caravan;
   private caravanZone?: Phaser.GameObjects.Zone;
   private caravanZoneEntered = false;
+  private ambientNpcs: NPC[] = [];
   private unsubscribers: Array<() => void> = [];
 
   // Visual revamp state
   private sorter?: SceneSorter;
   private ambientFx?: Phaser.GameObjects.Particles.ParticleEmitter | null;
   private flameTween?: Phaser.Tweens.Tween;
+  private lampGlowTween?: Phaser.Tweens.Tween;
 
   constructor() {
     super({ key: 'ApolloVillage' } satisfies Phaser.Types.Scenes.SettingsConfig);
@@ -112,37 +130,68 @@ export class ApolloVillageScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#1a0f05');
     this.physics.world.setBounds(0, 0, width, height);
 
-    // Layer 0: sky gradient (camera-anchored, scrollFactor 0)
-    buildSkyGradient(this, { world: 'medieval_desert', width, height });
+    // Build all character sprite textures FIRST so any object spawn below
+    // can reference the cached keys.
+    this.spriteKeys = buildApolloVillageSprites(this);
 
-    // Layer 1: parallax canyon silhouette (far + near). Stair-step
+    // Layer 0: sky gradient anchored to camera viewport (scrollFactor 0)
+    // so the dusk bands are visible regardless of camera scroll position.
+    // We pass scale.width / scale.height so the gradient fills the
+    // visible canvas, not the world bounds (the world is taller than the
+    // viewport and the camera lerp would otherwise leave the sky off-screen).
+    buildSkyGradient(this, {
+      world: 'medieval_desert',
+      width: this.scale.width,
+      height: this.scale.height,
+    });
+
+    // Layer 1a: parallax canyon silhouette (far + near). Stair-step
     // procedurally with a deterministic seed for stable Playwright snapshot.
+    // baseY at world height * 0.55 so the silhouette sits right above the
+    // ground band (which now starts at y * 0.55).
     const farRects = stairStepSilhouette(
       0,
       width,
-      Math.round(height * 0.45),
+      Math.round(height * 0.55),
       48,
       18,
       36,
       MEDIEVAL_DESERT.canyonFar,
-      0xa11ce, // arbitrary seed
+      0xa11ce,
     );
-    buildParallaxLayer(this, { rects: farRects, scrollFactor: 0.3, alpha: 0.85 });
+    buildParallaxLayer(this, { rects: farRects, scrollFactor: 0.3, alpha: 0.9 });
 
     const nearRects = stairStepSilhouette(
       0,
       width,
-      Math.round(height * 0.55),
+      Math.round(height * 0.58),
       40,
       14,
       28,
       MEDIEVAL_DESERT.canyonNear,
-      0x5a3b1, // distinct seed for distinct silhouette
+      0x5a3b1,
     );
-    buildParallaxLayer(this, { rects: nearRects, scrollFactor: 0.5, alpha: 0.9 });
+    buildParallaxLayer(this, { rects: nearRects, scrollFactor: 0.5, alpha: 0.95 });
 
-    // Layer 2: ground floor tilemap (existing CC0 atlas)
-    this.layoutGroundFloor();
+    // Distant village fort silhouette on the far ridge (continuity with
+    // scene-art.js scene1() distant village)
+    this.spawnDistantFort(width, height);
+
+    // Layer 1b: horizon haze blend strip (sea of stars depth feel)
+    paintHorizonHaze(this, width, height, MEDIEVAL_DESERT.skyEmber, 0.4);
+
+    // Layer 2: ground floor multi-band paint (replaces atlas-tile checker)
+    paintApolloVillageGround(this, width, height);
+
+    // Sigil at the central courtyard (decorative ground decal)
+    const centerX = (VILLAGE_COLS / 2) * TILE_PX;
+    const centerY = (VILLAGE_ROWS / 2) * TILE_PX;
+    if (this.textures.exists(this.atlasKey)) {
+      const sigil = this.add.image(centerX, centerY, this.atlasKey, FRAME_SIGIL_WORLD);
+      sigil.setOrigin(0.5, 0.5);
+      sigil.setAlpha(0.5);
+      sigil.setDepth(DEPTH.GROUND_TILES + 4);
+    }
 
     // Layer 3 + dynamic y-sort: decoration props + player + NPCs
     this.sorter = new SceneSorter();
@@ -153,29 +202,28 @@ export class ApolloVillageScene extends Phaser.Scene {
     this.spawnCaravan();
     this.spawnCaravanVendor();
     this.spawnTreasurer();
+    this.spawnAmbientNpcs();
     this.spawnCaravanArrivalZone();
 
     // Register dynamic entities into the y-sort pool. Player + NPCs use
-    // setOrigin(0.5, 0.5) per existing constructors, so we apply the
-    // dynamic depth without rewriting their origin (decoration containers
-    // already use the correct anchor via the buildXxx() helpers).
+    // setOrigin(0.5, 1) Oak-Woods feet anchor (groundAnchor: true); the
+    // y-sort tick assigns dynamicDepthFor(sprite.y) per frame.
     if (this.player) this.sorter.register(this.player);
     if (this.apolloNpc) this.sorter.register(this.apolloNpc);
     if (this.caravanVendorNpc) this.sorter.register(this.caravanVendorNpc);
     if (this.treasurerNpc) this.sorter.register(this.treasurerNpc);
     if (this.caravan) this.sorter.register(this.caravan);
+    for (const n of this.ambientNpcs) this.sorter.register(n);
 
-    // Layer 4 (above_tiles): canopy overhang. We place a row of olive-tinted
-    // foliage strips at the top of the scene to suggest acacia branches
-    // above the player. Always renders above world entities at low y.
-    this.layoutCanopy(width);
+    // Layer 4 (above_tiles): foliage canopy overhang
+    paintApolloCanopy(this, width);
 
-    // Ambient FX: sand particle drift across the scene (camera-anchored)
+    // Ambient FX: sand particle drift
     this.ambientFx = buildAmbientFx(this, { kind: 'dust' });
 
-    // Flame pulse on the central fire pit: gentle scale tween for the
-    // amber glow effect. Cosmetic only, no behavior coupling.
+    // Flame pulse on the central fire pit
     this.startFlamePulse();
+    this.startLampGlow();
 
     this.configureCamera(width, height);
     this.registerSceneCleanup();
@@ -222,79 +270,66 @@ export class ApolloVillageScene extends Phaser.Scene {
     if (this.player && this.treasurerNpc) {
       this.treasurerNpc.updateProximity(this.player);
     }
-    // Per-frame y-sort (Helios-v2 W3 S1 SceneSorter)
+    if (this.player) {
+      for (const n of this.ambientNpcs) n.updateProximity(this.player);
+    }
+    // Per-frame y-sort
     this.sorter?.tick();
   }
 
   // ---- setup helpers ----
 
   /**
-   * Layer 2 ground floor: alternating primary/secondary atlas tiles in a
-   * checker pattern. Each ground tile sits at depth GROUND_TILES (-10).
-   * Path markers form a visual lead from the entrance toward the courtyard.
+   * Distant village fort silhouette on the far ridge, populated with lit
+   * windows. Reads as a destination beyond the scene boundaries.
    */
-  private layoutGroundFloor(): void {
-    for (let row = 0; row < VILLAGE_ROWS; row++) {
-      for (let col = 0; col < VILLAGE_COLS; col++) {
-        const slot =
-          (row + col) % 3 === 0 ? FRAME_FLOOR_SECONDARY : FRAME_FLOOR_PRIMARY;
-        const t = this.add.image(
-          col * TILE_PX + TILE_PX / 2,
-          row * TILE_PX + TILE_PX / 2,
-          this.atlasKey,
-          slot,
-        );
-        t.setOrigin(0.5, 0.5);
-        t.setDepth(DEPTH.GROUND_TILES);
-      }
+  private spawnDistantFort(width: number, height: number): void {
+    const baseY = Math.round(height * 0.5);
+    const fortX = Math.round(width * 0.6);
+    const fortW = Math.round(width * 0.18);
+    const fort = this.add.rectangle(fortX, baseY, fortW, 22, MEDIEVAL_DESERT.canyonFar);
+    fort.setOrigin(0, 0);
+    fort.setScrollFactor(0.25);
+    fort.setDepth(DEPTH.PARALLAX_BG + 1);
+    // Tower cluster
+    for (let i = 0; i < 5; i++) {
+      const tw = 8;
+      const th = 6 + i * 2;
+      const t = this.add.rectangle(fortX + i * 14, baseY - th, tw, th, MEDIEVAL_DESERT.canyonFar);
+      t.setOrigin(0, 0);
+      t.setScrollFactor(0.25);
+      t.setDepth(DEPTH.PARALLAX_BG + 2);
     }
-
-    // Path markers from entrance to center
-    const centerX = (VILLAGE_COLS / 2) * TILE_PX;
-    for (let step = 2; step < VILLAGE_ROWS / 2; step++) {
-      const t = this.add.image(
-        centerX,
-        step * TILE_PX + TILE_PX / 2,
-        this.atlasKey,
-        FRAME_PATH_MARKER,
-      );
-      t.setOrigin(0.5, 0.5);
-      t.setDepth(DEPTH.GROUND_TILES);
+    // Lit windows along fort
+    for (let i = 0; i < 4; i++) {
+      const wx = fortX + 6 + i * 16;
+      const wy = baseY + 6;
+      const w1 = this.add.rectangle(wx, wy, 2, 2, MEDIEVAL_DESERT.flameAmber);
+      w1.setOrigin(0, 0);
+      w1.setScrollFactor(0.25);
+      w1.setDepth(DEPTH.PARALLAX_BG + 3);
     }
-
-    // Sigil at the central courtyard (decorative, ground depth so player walks over)
-    const centerY = (VILLAGE_ROWS / 2) * TILE_PX;
-    const sigil = this.add.image(centerX, centerY, this.atlasKey, FRAME_SIGIL_WORLD);
-    sigil.setOrigin(0.5, 0.5);
-    sigil.setDepth(DEPTH.GROUND_TILES);
   }
 
   /**
    * Spawn the decoration set (tents, cacti, well, firepit, palm, rocks,
-   * lamp posts). Each prop is a Phaser.GameObjects.Container at world
-   * coordinates; depth is computed by SceneSorter from container.y.
-   * Containers default to setOrigin(0.5, 0.5) but each builder draws
-   * its rects relative to (0, 0) being the FEET anchor (i.e., container.y
-   * === ground line). Manual setDepth(dynamicDepthFor(container.y)) sets
-   * baseline depth; SceneSorter does not include containers by default
-   * since they have no y-sort registration.
+   * lamp posts).
    */
   private spawnDecoration(): void {
-    const decorationY = (anchor: number) => anchor;
     const setDepthForProp = (c: Phaser.GameObjects.Container) => {
       c.setDepth(dynamicDepthFor(c.y));
     };
 
     // Tents: 3-cluster behind firepit + 2 farther out for density
-    const c1 = buildTent(this, 7 * TILE_PX, decorationY(8 * TILE_PX), 'sand');
+    const c1 = buildTent(this, 7 * TILE_PX, 8 * TILE_PX, 'sand');
     setDepthForProp(c1);
-    const c2 = buildTent(this, 10 * TILE_PX, decorationY(7 * TILE_PX), 'terracotta');
+    const c2 = buildTent(this, 10 * TILE_PX, 7 * TILE_PX, 'terracotta');
     setDepthForProp(c2);
-    const c3 = buildTent(this, 14 * TILE_PX, decorationY(8 * TILE_PX), 'olive');
+    const c3 = buildTent(this, 14 * TILE_PX, 8 * TILE_PX, 'olive');
     setDepthForProp(c3);
-    const c4 = buildTent(this, 4 * TILE_PX, decorationY(11 * TILE_PX), 'sand');
+    const c4 = buildTent(this, 4 * TILE_PX, 11 * TILE_PX, 'sand');
     setDepthForProp(c4);
-    const c5 = buildTent(this, 17 * TILE_PX, decorationY(11 * TILE_PX), 'terracotta');
+    const c5 = buildTent(this, 17 * TILE_PX, 11 * TILE_PX, 'terracotta');
     setDepthForProp(c5);
 
     // Water well (left mid)
@@ -310,6 +345,8 @@ export class ApolloVillageScene extends Phaser.Scene {
     setDepthForProp(cact3);
     const cact4 = buildCactus(this, 6 * TILE_PX, 13 * TILE_PX, 'small');
     setDepthForProp(cact4);
+    const cact5 = buildCactus(this, 20 * TILE_PX, 14 * TILE_PX, 'small');
+    setDepthForProp(cact5);
 
     // Palm trees (oasis feel, near corners + scattered)
     const palm1 = buildPalmTree(this, 2 * TILE_PX, 4 * TILE_PX);
@@ -326,82 +363,81 @@ export class ApolloVillageScene extends Phaser.Scene {
     setDepthForProp(rk2);
     const rk3 = buildRock(this, 9 * TILE_PX, 13 * TILE_PX, 8, 4);
     setDepthForProp(rk3);
+    const rk4 = buildRock(this, 16 * TILE_PX, 5 * TILE_PX, 12, 5);
+    setDepthForProp(rk4);
 
     // Central fire pit at courtyard, slightly south of sigil
     const fp = buildFirePit(this, 12 * TILE_PX, 9.5 * TILE_PX);
     setDepthForProp(fp);
-    // Stash flame ref for pulse tween
     this.firePitContainer = fp;
 
-    // Warm orange evening: 2 lamp posts flanking the courtyard
+    // Warm orange evening: lamp posts flanking the courtyard
     const lp1 = buildLampPost(this, 9 * TILE_PX, 8 * TILE_PX);
     setDepthForProp(lp1);
     const lp2 = buildLampPost(this, 15 * TILE_PX, 8 * TILE_PX);
     setDepthForProp(lp2);
+    const lp3 = buildLampPost(this, 5 * TILE_PX, 14 * TILE_PX);
+    setDepthForProp(lp3);
+    const lp4 = buildLampPost(this, 19 * TILE_PX, 14 * TILE_PX);
+    setDepthForProp(lp4);
+    this.lampPosts = [lp1, lp2, lp3, lp4];
+
+    // Lamp warm light spill rings on ground (cosmetic)
+    for (const post of this.lampPosts) {
+      const spill = this.add.circle(post.x, post.y + 6, 24, MEDIEVAL_DESERT.flameAmber, 0.18);
+      spill.setDepth(DEPTH.GROUND_TILES + 6);
+      this.lampSpills.push(spill);
+    }
   }
 
   private firePitContainer?: Phaser.GameObjects.Container;
+  private lampPosts: Phaser.GameObjects.Container[] = [];
+  private lampSpills: Phaser.GameObjects.Arc[] = [];
 
   /**
-   * Layer 4 above_tiles: canopy overhang. Rectangles painted at the top
-   * of the world to suggest tree branches reaching from off-screen.
-   */
-  private layoutCanopy(width: number): void {
-    // Acacia-tinted irregular bands at very top of scene
-    for (let x = 0; x < width; x += 28) {
-      const w = 24 + ((x * 17) % 16);
-      const h = 8 + ((x * 11) % 10);
-      const branch = this.add.rectangle(
-        x,
-        -2,
-        w,
-        h,
-        MEDIEVAL_DESERT.cactusBody,
-      );
-      branch.setOrigin(0, 0);
-      branch.setAlpha(0.85);
-      branch.setDepth(DEPTH.ABOVE_TILES);
-    }
-    // Highlight glints on the canopy
-    for (let x = 8; x < width; x += 36) {
-      const glint = this.add.rectangle(
-        x,
-        2,
-        4,
-        2,
-        MEDIEVAL_DESERT.cactusHi,
-      );
-      glint.setOrigin(0, 0);
-      glint.setDepth(DEPTH.ABOVE_TILES + 1);
-    }
-  }
-
-  /**
-   * Cosmetic: pulse the firepit flame container with a gentle scale tween
-   * so the central courtyard reads "alive" without consuming game logic
-   * cycles. Pure decoration, no quest coupling.
+   * Pulse the firepit flame container with a gentle scale tween so the
+   * central courtyard reads "alive".
    */
   private startFlamePulse(): void {
     if (!this.firePitContainer) return;
     this.flameTween = this.tweens.add({
       targets: this.firePitContainer,
-      scaleY: { from: 0.95, to: 1.05 },
+      scaleY: { from: 0.95, to: 1.07 },
       yoyo: true,
       repeat: -1,
       ease: 'Sine.easeInOut',
-      duration: 600,
+      duration: 520,
     });
   }
 
-  // ---- Quest-mechanic helpers (NON-REGRESSION; unchanged from RV ship) ----
+  /**
+   * Pulse the warm light spill rings under each lamp post for a flickering
+   * candle feel (cheap alpha tween, no Lights2D pipeline).
+   */
+  private startLampGlow(): void {
+    if (this.lampSpills.length === 0) return;
+    this.lampGlowTween = this.tweens.add({
+      targets: this.lampSpills,
+      alpha: { from: 0.16, to: 0.28 },
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+      duration: 1400,
+      delay: this.tweens.stagger(220, { start: 0 }),
+    });
+  }
+
+  // ---- Quest-mechanic helpers (NON-REGRESSION; preserve emission contracts) ----
 
   private spawnPlayer() {
     const spawnX = (VILLAGE_COLS / 2) * TILE_PX;
     const spawnY = (VILLAGE_ROWS - 3) * TILE_PX;
     this.player = new Player(this, spawnX, spawnY, {
-      textureKey: this.atlasKey,
-      frame: FRAME_AGENT_IDLE,
+      textureKey: this.spriteKeys?.player ?? this.atlasKey,
       speed: 120,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
+      hitboxSize: 18,
     });
   }
 
@@ -411,15 +447,15 @@ export class ApolloVillageScene extends Phaser.Scene {
     this.apolloNpc = new NPC(this, apolloX, apolloY, {
       npcId: 'apollo',
       displayName: 'Apollo Advisor',
-      textureKey: this.atlasKey,
-      frame: FRAME_AGENT_ACTIVE,
-      interactRadius: 48,
+      textureKey: this.spriteKeys?.apollo ?? this.atlasKey,
+      interactRadius: 56,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
     });
   }
 
   private spawnCaravan() {
-    // Caravan parks near the east wall; gated on unlockedWorlds including
-    // cyberpunk_shanghai (the next world in rotation).
+    // Caravan parks near the east wall; gated on unlockedWorlds.
     const caravanX = (VILLAGE_COLS - 4) * TILE_PX;
     const caravanY = (VILLAGE_ROWS / 2) * TILE_PX;
     this.caravan = new Caravan(this, caravanX, caravanY, {
@@ -431,41 +467,111 @@ export class ApolloVillageScene extends Phaser.Scene {
   }
 
   private spawnCaravanVendor() {
-    // Caravan vendor NPC for lumio_onboarding step 8 (caravan_interact). The
-    // vendor stands a tile south of the caravan sigil; pointer-follow and
-    // interact prompt reuse the generic NPC class so the Press-E pattern
-    // matches Apollo.
     const vendorX = (VILLAGE_COLS - 5) * TILE_PX;
     const vendorY = (VILLAGE_ROWS / 2 + 1) * TILE_PX;
     this.caravanVendorNpc = new NPC(this, vendorX, vendorY, {
       npcId: 'caravan_vendor',
       displayName: 'Caravan Vendor',
-      textureKey: this.atlasKey,
-      frame: FRAME_AGENT_IDLE,
+      textureKey: this.spriteKeys?.caravanVendor ?? this.atlasKey,
       interactRadius: 48,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
     });
   }
 
   private spawnTreasurer() {
-    // Treasurer NPC for the Marshall W2 cross-pillar tier-state surface.
-    // Sits two tiles north-west of the caravan sigil so the trade district
-    // reads as a cluster (caravan + caravan vendor + treasurer) without
-    // overlapping the caravan arrival zone bounds.
     const treasurerX = (VILLAGE_COLS - 6) * TILE_PX;
     const treasurerY = (VILLAGE_ROWS / 2 - 2) * TILE_PX;
     this.treasurerNpc = new TreasurerNPC(this, treasurerX, treasurerY, {
-      textureKey: this.atlasKey,
-      frame: FRAME_AGENT_ACTIVE,
+      textureKey: this.spriteKeys?.treasurer ?? this.atlasKey,
       interactRadius: 56,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
     });
   }
 
+  /**
+   * Ambient villager NPCs: 5-8 populated per scene matrix Session 2 spec.
+   * Each renders with its distinct sprite texture (guard, child, elder, 3
+   * villager variants) for crowd density. They emit interact events too,
+   * so the player can press E near any of them; the dialogue overlay can
+   * still surface a flavor line via the dialogue store registration.
+   */
+  private spawnAmbientNpcs(): void {
+    if (!this.spriteKeys) return;
+
+    const guardA = new NPC(this, 9.5 * TILE_PX, 14 * TILE_PX, {
+      npcId: 'guard_a',
+      displayName: 'Guard',
+      textureKey: this.spriteKeys.guard,
+      interactRadius: 36,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
+    });
+    this.ambientNpcs.push(guardA);
+
+    const guardB = new NPC(this, 14.5 * TILE_PX, 14 * TILE_PX, {
+      npcId: 'guard_b',
+      displayName: 'Guard',
+      textureKey: this.spriteKeys.guard,
+      interactRadius: 36,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
+    });
+    this.ambientNpcs.push(guardB);
+
+    const child = new NPC(this, 11 * TILE_PX, 10.5 * TILE_PX, {
+      npcId: 'child_a',
+      displayName: 'Child',
+      textureKey: this.spriteKeys.child,
+      interactRadius: 32,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
+    });
+    this.ambientNpcs.push(child);
+
+    const elder = new NPC(this, 4 * TILE_PX, 7 * TILE_PX, {
+      npcId: 'elder_a',
+      displayName: 'Elder',
+      textureKey: this.spriteKeys.elder,
+      interactRadius: 36,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
+    });
+    this.ambientNpcs.push(elder);
+
+    const villBlue = new NPC(this, 6 * TILE_PX, 11 * TILE_PX, {
+      npcId: 'villager_blue',
+      displayName: 'Villager',
+      textureKey: this.spriteKeys.villagerBlue,
+      interactRadius: 36,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
+    });
+    this.ambientNpcs.push(villBlue);
+
+    const villOlive = new NPC(this, 16 * TILE_PX, 7.5 * TILE_PX, {
+      npcId: 'villager_olive',
+      displayName: 'Villager',
+      textureKey: this.spriteKeys.villagerOlive,
+      interactRadius: 36,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
+    });
+    this.ambientNpcs.push(villOlive);
+
+    const villRose = new NPC(this, 13 * TILE_PX, 12 * TILE_PX, {
+      npcId: 'villager_rose',
+      displayName: 'Villager',
+      textureKey: this.spriteKeys.villagerRose,
+      interactRadius: 36,
+      spriteScale: CHARACTER_SPRITE_SCALE,
+      groundAnchor: true,
+    });
+    this.ambientNpcs.push(villRose);
+  }
+
   private spawnCaravanArrivalZone() {
-    // Caravan arrival zone for lumio_onboarding step 7 (caravan_spawned). An
-    // invisible physics zone east of village center; first overlap with the
-    // player emits game.zone.entered, which the bridge translates into the
-    // zone_enter trigger. The once-flag keeps the emission single-shot so
-    // the bus is not spammed during sustained overlap.
     const zoneX = (VILLAGE_COLS - 4) * TILE_PX;
     const zoneY = (VILLAGE_ROWS / 2 + 0.5) * TILE_PX;
     const zoneWidth = 4 * TILE_PX;
@@ -493,7 +599,7 @@ export class ApolloVillageScene extends Phaser.Scene {
 
   private configureCamera(worldWidth: number, worldHeight: number) {
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
-    // Higher zoom so the 16x16 tile art reads at a readable SNES scale.
+    // Higher zoom so the pixel art reads at a readable SNES scale.
     const zoom = Math.max(2, Math.min(4, this.scale.width / worldWidth));
     this.cameras.main.setZoom(zoom);
     if (this.player) {
@@ -508,18 +614,18 @@ export class ApolloVillageScene extends Phaser.Scene {
 
   private registerSceneCleanup() {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      // Stop tween before scene tears down to avoid stale-target warning
       this.flameTween?.stop();
       this.flameTween = undefined;
+      this.lampGlowTween?.stop();
+      this.lampGlowTween = undefined;
 
-      // Pause + destroy ambient particle emitter
       this.ambientFx?.stop();
       this.ambientFx?.destroy();
       this.ambientFx = undefined;
 
-      // Flush y-sort registry
       this.sorter?.unregisterAll();
       this.sorter = undefined;
+      this.ambientNpcs = [];
 
       for (const unsub of this.unsubscribers) {
         try {
@@ -530,7 +636,6 @@ export class ApolloVillageScene extends Phaser.Scene {
       }
       this.unsubscribers = [];
 
-      // Emit shutdown topic so Euterpe and other consumers can unbind.
       const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
       bus?.emit('game.scene.shutdown', { sceneKey: this.scene.key });
     });

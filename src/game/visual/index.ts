@@ -65,3 +65,35 @@ export {
   buildMerchantStall,
   type TentVariant,
 } from './decoration';
+
+export {
+  paintApolloVillageGround,
+  paintCaravanRoadGround,
+  paintCyberpunkShanghaiGround,
+  paintApolloCanopy,
+  paintCaravanCanopy,
+  paintCyberpunkOverhead,
+  paintHorizonHaze,
+} from './groundPaint';
+
+export {
+  buildPlayerTexture,
+  buildApolloTexture,
+  buildTreasurerTexture,
+  buildCaravanVendorTexture,
+  buildVillagerTexture,
+  buildGuardTexture,
+  buildChildTexture,
+  buildElderTexture,
+  buildTravelerTexture,
+  buildSynthVendorTexture,
+  buildCyborgGuardTexture,
+  buildStreetRatTexture,
+  buildSalarymanTexture,
+  buildApolloVillageSprites,
+  buildCaravanRoadSprites,
+  buildCyberpunkShanghaiSprites,
+  type ApolloSpriteKeys,
+  type CaravanRoadSpriteKeys,
+  type CyberpunkShanghaiSpriteKeys,
+} from './spriteTextures';
