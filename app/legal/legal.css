@@ -1,0 +1,175 @@
+/*
+ * app/legal/legal.css
+ *
+ * Scoped stylesheet for the three legal placeholder routes:
+ *   - /legal/terms
+ *   - /legal/privacy
+ *   - /legal/credits
+ *
+ * Authored by Eunomia W2 T4 S2 (Admin ops, deferred legal-page scope,
+ * 2026-04-26). These are research-preview placeholders. Terms and Privacy
+ * carry an honest "draft, pending Termly template paste" banner per
+ * NarasiGhaisan honest-claim discipline (Section 16) and CLAUDE.md anti
+ * pattern 1 (no over-claim on public surface).
+ *
+ * Scoping. Every rule lives under `.nerium-landing .nl-legal` so it inherits
+ * the landing page palette tokens (oklch phosphor green, fog grey, ink
+ * background) declared in `app/landing.css` without re-importing them. The
+ * legal pages mount the same `.nerium-landing` wrapper class so the OKLCH
+ * palette tokens cascade naturally and Tailwind v4 reset stays compatible.
+ *
+ * Mobile responsive. The article container caps at 720px and pads down to
+ * 5vw at the 600px breakpoint. No horizontal scroll at 375px.
+ */
+
+.nerium-landing .nl-legal {
+  position: relative;
+  z-index: 3;
+  min-height: 100vh;
+  padding: 80px 6vw 120px;
+  display: flex;
+  justify-content: center;
+  background: var(--nl-ink);
+}
+
+.nerium-landing .nl-legal-article {
+  width: 100%;
+  max-width: 720px;
+  font-family: var(--nl-font-display);
+  color: var(--nl-bone);
+  line-height: 1.7;
+}
+
+.nerium-landing .nl-legal-back {
+  display: inline-block;
+  margin-bottom: 32px;
+  font-family: var(--nl-font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--nl-phos-dim);
+  border-bottom: 1px solid transparent;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+
+.nerium-landing .nl-legal-back:hover,
+.nerium-landing .nl-legal-back:focus-visible {
+  color: var(--nl-phos);
+  border-bottom-color: var(--nl-phos);
+}
+
+.nerium-landing .nl-legal-pretitle {
+  font-family: var(--nl-font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--nl-phos-dim);
+  margin: 0 0 12px;
+}
+
+.nerium-landing .nl-legal h1 {
+  font-family: var(--nl-font-retro);
+  font-size: clamp(36px, 6vw, 56px);
+  line-height: 1.05;
+  color: var(--nl-phos);
+  margin: 0 0 16px;
+  letter-spacing: 0.02em;
+}
+
+.nerium-landing .nl-legal-updated {
+  font-family: var(--nl-font-mono);
+  font-size: 11px;
+  color: var(--nl-fog);
+  margin: 0 0 32px;
+}
+
+.nerium-landing .nl-legal-banner {
+  border: 1px solid var(--nl-amber);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--nl-amber);
+  padding: 16px 20px;
+  font-family: var(--nl-font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0 0 40px;
+  border-radius: 2px;
+}
+
+.nerium-landing .nl-legal-banner strong {
+  color: var(--nl-amber);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.nerium-landing .nl-legal-section {
+  margin: 0 0 36px;
+}
+
+.nerium-landing .nl-legal h2 {
+  font-family: var(--nl-font-display);
+  font-size: clamp(20px, 2.4vw, 26px);
+  font-weight: 600;
+  color: var(--nl-bone);
+  margin: 0 0 12px;
+  border-bottom: 1px solid var(--nl-line);
+  padding-bottom: 8px;
+}
+
+.nerium-landing .nl-legal p {
+  margin: 0 0 16px;
+  color: var(--nl-bone);
+}
+
+.nerium-landing .nl-legal a:not(.nl-legal-back) {
+  color: var(--nl-phos);
+  border-bottom: 1px solid var(--nl-phos-deep);
+  transition: border-color 160ms ease;
+}
+
+.nerium-landing .nl-legal a:not(.nl-legal-back):hover,
+.nerium-landing .nl-legal a:not(.nl-legal-back):focus-visible {
+  border-bottom-color: var(--nl-phos);
+}
+
+.nerium-landing .nl-legal ul {
+  margin: 0 0 16px;
+  padding-left: 22px;
+  color: var(--nl-bone);
+}
+
+.nerium-landing .nl-legal li {
+  margin-bottom: 8px;
+}
+
+.nerium-landing .nl-legal code {
+  font-family: var(--nl-font-mono);
+  font-size: 0.92em;
+  color: var(--nl-phos);
+  background: var(--nl-ink-2);
+  padding: 1px 6px;
+  border-radius: 2px;
+}
+
+.nerium-landing .nl-legal-contact {
+  font-family: var(--nl-font-mono);
+  font-size: 12px;
+  color: var(--nl-fog);
+  margin-top: 8px;
+}
+
+/* small screens */
+@media (max-width: 600px) {
+  .nerium-landing .nl-legal {
+    padding: 56px 5vw 80px;
+  }
+  .nerium-landing .nl-legal h1 {
+    font-size: 36px;
+  }
+  .nerium-landing .nl-legal-banner {
+    padding: 14px 16px;
+  }
+}

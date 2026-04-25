@@ -97,6 +97,19 @@ export function CTASection() {
             github.com/Finerium/nerium
           </a>
           <span>discord: nerium0leander</span>
+          <span className="nl-foot-legal" aria-label="Legal links">
+            <Link href="/legal/terms" prefetch={false}>
+              terms
+            </Link>
+            {' · '}
+            <Link href="/legal/privacy" prefetch={false}>
+              privacy
+            </Link>
+            {' · '}
+            <Link href="/legal/credits" prefetch={false}>
+              credits
+            </Link>
+          </span>
           <a href="#nl-top">back to top</a>
         </div>
       </footer>
