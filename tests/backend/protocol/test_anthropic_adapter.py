@@ -141,7 +141,16 @@ async def test_adapter_rejects_empty_payload() -> None:
 
 @pytest.mark.asyncio
 async def test_adapter_raises_on_upstream_error() -> None:
-    """4xx / 5xx upstream surfaces RuntimeError for the dispatcher."""
+    """5xx upstream surfaces TransientVendorError for the S2 dispatcher.
+
+    S2 upgraded the adapter to raise typed dispatcher exceptions
+    (:class:`TransientVendorError` for 5xx + 408/429,
+    :class:`PermanentVendorError` for other 4xx) so the breaker +
+    Tenacity policy can decide retry vs giveup uniformly. 503 is
+    transient by classification.
+    """
+
+    from src.backend.protocol.exceptions import TransientVendorError
 
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(503, json={"error": "vendor down"})
@@ -150,7 +159,24 @@ async def test_adapter_raises_on_upstream_error() -> None:
     adapter = AnthropicAdapter(api_key="sk-test", transport=transport)
     task = VendorTask(task_type="chat", payload={"input_text": "hi"})
 
-    with pytest.raises(RuntimeError, match="503"):
+    with pytest.raises(TransientVendorError, match="503"):
+        await adapter.invoke(task, _principal())
+
+
+@pytest.mark.asyncio
+async def test_adapter_4xx_raises_permanent_vendor_error() -> None:
+    """400 surfaces PermanentVendorError so retry + breaker stay quiet."""
+
+    from src.backend.protocol.exceptions import PermanentVendorError
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(400, json={"error": "bad request"})
+
+    transport = httpx.MockTransport(handler)
+    adapter = AnthropicAdapter(api_key="sk-test", transport=transport)
+    task = VendorTask(task_type="chat", payload={"input_text": "hi"})
+
+    with pytest.raises(PermanentVendorError, match="400"):
         await adapter.invoke(task, _principal())
 
 

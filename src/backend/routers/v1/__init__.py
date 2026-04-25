@@ -194,6 +194,12 @@ _PILLAR_REGISTRY: tuple[tuple[str, str, str], ...] = (
     # BEFORE adapter invocation. ``GET /v1/protocol/vendors`` lists
     # the enabled catalogue (no auth, no secrets exposed).
     ("protocol.invoke", "src.backend.routers.v1.protocol", "protocol_router"),
+    # Crius W2 NP P5 Session 2: tenant API key envelope CRUD. Three
+    # routes under ``/v1/protocol/keys``: POST seals + persists, GET
+    # lists metadata (no plaintext ever), DELETE removes. Auth is the
+    # USER JWT (request.state.auth) NOT the agent JWT; these are
+    # tenant operator credentials configured by humans.
+    ("protocol.keys", "src.backend.routers.v1.protocol_keys", "protocol_keys_router"),
     # Future W2 slots. Keeping the label namespace so Nemea can assert
     # pillars are mounted before their dependent tests run.
 )

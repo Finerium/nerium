@@ -46,6 +46,10 @@ from src.backend.protocol.adapters.base import (
     VendorResponse,
     VendorTask,
 )
+from src.backend.protocol.exceptions import (
+    TransientVendorError,
+    classify_http_status,
+)
 from src.backend.registry.identity import AgentPrincipal
 
 __all__ = ["AnthropicAdapter"]
@@ -143,16 +147,28 @@ class AnthropicAdapter(BaseVendorAdapter):
         if self._transport is not None:
             client_kwargs["transport"] = self._transport
 
-        async with httpx.AsyncClient(**client_kwargs) as client:
-            resp = await client.post(
-                "/v1/messages",
-                json=body,
-                headers=headers,
+        try:
+            async with httpx.AsyncClient(**client_kwargs) as client:
+                resp = await client.post(
+                    "/v1/messages",
+                    json=body,
+                    headers=headers,
+                )
+        except httpx.RequestError as exc:
+            # Transport-level failure (DNS, TLS, connection reset).
+            # Always retryable per the Crius dispatcher's Tenacity
+            # policy; the breaker counts the eventual exhaustion.
+            logger.warning(
+                "anthropic.adapter.transport_error err=%s",
+                exc,
             )
+            raise TransientVendorError(
+                f"Anthropic transport error: {exc}",
+                vendor_slug=self.vendor_slug,
+                status_code=None,
+            ) from exc
 
         if resp.status_code >= 400:
-            # Surface a structured RuntimeError so the dispatcher (S2
-            # circuit breaker) can decide whether to open the circuit.
             # Body is logged at WARN; the upstream error message is
             # safe to forward (Anthropic does not echo the request key).
             logger.warning(
@@ -160,8 +176,11 @@ class AnthropicAdapter(BaseVendorAdapter):
                 resp.status_code,
                 resp.text[:512],
             )
-            raise RuntimeError(
-                f"Anthropic Messages API returned HTTP {resp.status_code}"
+            error_cls = classify_http_status(resp.status_code)
+            raise error_cls(
+                f"Anthropic Messages API returned HTTP {resp.status_code}",
+                vendor_slug=self.vendor_slug,
+                status_code=resp.status_code,
             )
 
         return self._parse_response(resp.json(), task.task_type, model)

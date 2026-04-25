@@ -245,6 +245,28 @@ class Settings(BaseSettings):
     anthropic_api_key: SecretStr = Field(default=SecretStr(""))
     hemera_bootstrap_builder_live: bool = Field(default=False)
 
+    # Crius W2 NP P5 Session 2: KEK (Key Encryption Key) base64 for the
+    # tenant API key envelope encryption path. 32 raw bytes encoded as
+    # standard base64 (44 ASCII characters with the trailing ``=``).
+    # Production deploys this on Hetzner via ``EnvironmentFile=/etc/nerium/
+    # kek.env`` chmod 600 owned by ``nerium:nerium``; never lands in git
+    # or Postgres. Empty default keeps dev / test booting; tests inject a
+    # deterministic 32-byte test KEK via conftest. Calls to
+    # :func:`src.backend.protocol.secret_store.seal_secret` raise
+    # RuntimeError when the env var is unset, so a misconfigured prod
+    # surfaces a clear 500 at the protocol_keys router rather than
+    # silently failing later. Environment variable:
+    # ``NERIUM_CRIUS_KEK_BASE64``.
+    crius_kek_base64: SecretStr = Field(
+        default=SecretStr(""),
+        description=(
+            "Crius KEK (32-byte AES-256 key, base64-encoded). Used by "
+            "the tenant API key envelope path "
+            "(``src.backend.protocol.secret_store``) to AES-Key-Wrap the "
+            "per-record DEK. Empty = sealing fails fast with RuntimeError."
+        ),
+    )
+
     # Moros (Chronos budget daemon, NP P3 S1) knobs. The Admin API key
     # is org-scoped (distinct from ``anthropic_api_key`` which is the
     # runtime Messages API key used by Kratos). If unset the poller

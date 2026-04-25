@@ -59,6 +59,19 @@ dependencies = [
   # backend wired through to ``cryptography.hazmat.primitives.asymmetric.ed25519``
   # which is already a transitive dependency via python-jose[cryptography].
   "pyjwt[crypto]>=2.10.0,<3.0.0",
+
+  # Crius W2 NP P5 Session 2: pybreaker for circuit breaker state machine
+  # (closed -> open -> half-open) per docs/contracts/vendor_adapter.contract.md
+  # Section 3.3, tenacity for exponential-jitter retry on transient vendor
+  # errors per the same contract Section 3.3. Both wrap the dispatcher's
+  # adapter.invoke call sites and ride alongside the AES-256-GCM envelope
+  # crypto path. cryptography is already required transitively by
+  # python-jose[cryptography] + pyjwt[crypto] but Crius adds the X25519
+  # ECDH + AES-Key-Wrap-with-Padding (RFC 5649) primitives so we pin the
+  # explicit dep here to keep the import surface honest.
+  "pybreaker>=1.2.0,<2.0.0",
+  "tenacity>=8.5.0,<10.0.0",
+  "cryptography>=44.0.0,<46.0.0",
 ]
 
 [project.optional-dependencies]

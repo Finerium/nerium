@@ -1,4 +1,4 @@
-"""Fixtures for Crius protocol tests (W2 NP P5 Session 1).
+"""Fixtures for Crius protocol tests (W2 NP P5 Sessions 1 + 2).
 
 Mirrors :mod:`tests.backend.registry.identity.conftest`:
 - A fake ``asyncpg`` pool whose connection is a :class:`MagicMock` so
@@ -7,6 +7,14 @@ Mirrors :mod:`tests.backend.registry.identity.conftest`:
   :func:`load_public_pem_for_verify` so :func:`require_agent_jwt`
   resolves the agent without a DB round-trip.
 
+Session 2 additions
+-------------------
+- A deterministic test KEK (32-byte base64) is seeded via the
+  ``crius_test_kek`` autouse fixture so :func:`secret_store.load_kek`
+  can run without the operator provisioning a real KEK env var.
+- The breaker registry singleton is reset per-test so failure budgets
+  do not leak between cases.
+
 Tests reset the registry singleton between cases via the
 ``reset_registry`` autouse fixture so monkeypatched env vars cannot
 leak into sibling tests.
@@ -14,6 +22,7 @@ leak into sibling tests.
 
 from __future__ import annotations
 
+import base64
 from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock
@@ -21,8 +30,16 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from src.backend.protocol.breaker import reset_breaker_registry_for_tests
 from src.backend.protocol.registry import reset_registry_for_tests
 from src.backend.utils.uuid7 import uuid7
+
+# Deterministic test KEK: 32 bytes of incrementing values (0x00..0x1f).
+# Encoded once at import so the fixture below can seed `Settings`
+# without redoing the encode per test. Production MUST override this
+# via NERIUM_CRIUS_KEK_BASE64 with a CSPRNG-generated 32-byte key.
+_TEST_KEK_BYTES = bytes(range(32))
+TEST_KEK_BASE64 = base64.b64encode(_TEST_KEK_BYTES).decode("ascii")
 
 
 class _FakeAcquireCtx:
@@ -41,8 +58,37 @@ def reset_registry() -> None:
     """Always start each test with a fresh registry singleton."""
 
     reset_registry_for_tests()
+    reset_breaker_registry_for_tests()
     yield
     reset_registry_for_tests()
+    reset_breaker_registry_for_tests()
+
+
+@pytest.fixture(autouse=True)
+def crius_test_kek(monkeypatch: pytest.MonkeyPatch) -> str:
+    """Provide a deterministic Crius KEK so secret_store helpers run.
+
+    Patches both the ``Settings`` accessor used by ``load_kek`` and
+    the env var so a Settings rebuild during the test still sees the
+    test KEK. Tests that exercise the missing-KEK branch monkeypatch
+    over this fixture explicitly.
+    """
+
+    from pydantic import SecretStr
+
+    from src.backend.config import Settings, get_settings
+
+    monkeypatch.setenv("NERIUM_CRIUS_KEK_BASE64", TEST_KEK_BASE64)
+
+    real_settings = get_settings()
+    test_settings = real_settings.model_copy(
+        update={"crius_kek_base64": SecretStr(TEST_KEK_BASE64)}
+    )
+    monkeypatch.setattr(
+        "src.backend.protocol.secret_store.get_settings",
+        lambda: test_settings,
+    )
+    return TEST_KEK_BASE64
 
 
 @pytest.fixture
