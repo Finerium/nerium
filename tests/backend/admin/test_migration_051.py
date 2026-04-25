@@ -23,8 +23,24 @@ def test_051_chains_off_050() -> None:
     assert module.down_revision == "050_marketplace_commerce"
 
 
-def test_051_is_current_single_head() -> None:
-    """No concurrent migration has parented off 051."""
+_CANONICAL_051_CHILDREN: frozenset[str] = frozenset(
+    {
+        # Tethys W2 NP P5 Session 1 extends agent_identity with the
+        # display_name / owner_user_id / public_key_pem columns the
+        # CRUD surface needs. Single canonical successor; any *other*
+        # child off 051 is still a branch error and fails the test.
+        "052_tethys_agent_identity_ed25519",
+    }
+)
+
+
+def test_051_has_only_canonical_children() -> None:
+    """Only whitelisted migrations may parent off 051.
+
+    The original guard asserted 051 was the single head, but Tethys'
+    052 legitimately chains off it. Replace the strict equality with
+    a whitelist set so unauthorised concurrent branches still fail.
+    """
 
     children: list[str] = []
     for path in _VERSIONS.glob("*.py"):
@@ -39,9 +55,10 @@ def test_051_is_current_single_head() -> None:
             and rev != "051_eunomia_admin_moderation_gdpr"
         ):
             children.append(rev)
-    assert children == [], (
-        "051 must be the single current head. Found children: "
-        + repr(children)
+    unknown = [child for child in children if child not in _CANONICAL_051_CHILDREN]
+    assert unknown == [], (
+        "Unauthorised concurrent migration parented off 051. "
+        f"Add to whitelist or rebase: {unknown!r}"
     )
 
 

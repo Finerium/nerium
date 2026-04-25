@@ -179,9 +179,16 @@ _PILLAR_REGISTRY: tuple[tuple[str, str, str], ...] = (
     ("admin.moderation", "src.backend.routers.v1.admin", "moderation_router"),
     ("me.gdpr", "src.backend.routers.v1.me", "gdpr_router"),
     ("me.consent", "src.backend.routers.v1.me", "consent_router"),
+    # Tethys W2 NP P5 Session 1: Ed25519 agent identity CRUD.
+    # ``POST /v1/identity/agents`` registers a new keypair (private PEM
+    # surfaced exactly once), ``GET /v1/identity/agents[/{id}]`` lists
+    # or fetches owner-scoped rows, ``DELETE`` revokes by flipping
+    # ``status = 'revoked'``. The ``require_agent_jwt`` FastAPI
+    # dependency lives at ``src.backend.registry.identity`` and is
+    # imported by Crius for vendor identity reuse.
+    ("identity.agents", "src.backend.routers.v1.identity", "identity_router"),
     # Future W2 slots. Keeping the label namespace so Nemea can assert
     # pillars are mounted before their dependent tests run.
-    # ("registry.identity", "src.backend.routers.v1.registry", "identity_router"),
 )
 
 

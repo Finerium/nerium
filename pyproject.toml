@@ -51,6 +51,14 @@ dependencies = [
   # Test mode only pre-Stripe-Atlas per Gate 4 lock. Pinned to the 12.x line
   # which carries the Checkout Session + Webhook signature helpers used here.
   "stripe>=11.0.0,<13.0.0",
+
+  # Tethys W2 NP P5 Session 1: PyJWT for EdDSA short-lived bearer tokens
+  # signed with Ed25519 agent identity keys per docs/contracts/agent_identity
+  # contract Section 4. ``python-jose`` does not implement EdDSA, hence the
+  # additional dependency. The ``[crypto]`` extra pins the cryptography
+  # backend wired through to ``cryptography.hazmat.primitives.asymmetric.ed25519``
+  # which is already a transitive dependency via python-jose[cryptography].
+  "pyjwt[crypto]>=2.10.0,<3.0.0",
 ]
 
 [project.optional-dependencies]
