@@ -23,8 +23,15 @@ def test_052_chains_off_051() -> None:
     assert module.down_revision == "051_eunomia_admin_moderation_gdpr"
 
 
-def test_052_is_current_single_head() -> None:
-    """No concurrent migration has parented off 052."""
+def test_052_has_single_linear_child() -> None:
+    """052 must have at most one child to keep the migration chain linear.
+
+    Originally Tethys asserted 052 was the head; Crius (W2 NP P5
+    Session 1) chained 053 off 052 per the pack prompt's
+    ``down_revision='052_tethys_agent_identity_ed25519'`` mandate. The
+    assertion now guards the linearity invariant rather than the head
+    identity: no two siblings may parent off 052.
+    """
 
     children: list[str] = []
     for path in _VERSIONS.glob("*.py"):
@@ -39,8 +46,8 @@ def test_052_is_current_single_head() -> None:
             and rev != "052_tethys_agent_identity_ed25519"
         ):
             children.append(rev)
-    assert children == [], (
-        "052 must be the single current head. Found children: "
+    assert len(children) <= 1, (
+        "052 must have a linear chain (zero or one child). Found: "
         + repr(children)
     )
 

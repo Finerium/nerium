@@ -59,6 +59,7 @@ from src.backend.models.vendor_adapter import (
     RequestType,
     Vendor,
     VendorAdapter,
+    VendorAdapterCatalog,
 )
 
 __all__ = [
@@ -96,5 +97,6 @@ __all__ = [
     "UserUpdate",
     "Vendor",
     "VendorAdapter",
+    "VendorAdapterCatalog",
     "dump_row",
 ]

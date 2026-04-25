@@ -67,6 +67,12 @@ DEFAULT_PUBLIC_PATHS: tuple[str, ...] = (
     # handler and does not ride the NERIUM bearer path.
     "/v1/billing/plans",
     "/v1/billing/webhook/stripe",
+    # Crius W2 NP P5 Session 1: public catalogue of enabled vendor
+    # adapters. The endpoint reads ``vendor_adapter_catalog`` which
+    # carries no secrets (API keys live in env vars, never in the
+    # catalogue). Allows the marketplace + admin tooling to render a
+    # vendor list without holding a session token.
+    "/v1/protocol/vendors",
 )
 """Paths that bypass auth entirely. Docs + health probes + OpenAPI spec."""
 

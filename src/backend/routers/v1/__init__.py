@@ -187,6 +187,13 @@ _PILLAR_REGISTRY: tuple[tuple[str, str, str], ...] = (
     # dependency lives at ``src.backend.registry.identity`` and is
     # imported by Crius for vendor identity reuse.
     ("identity.agents", "src.backend.routers.v1.identity", "identity_router"),
+    # Crius W2 NP P5 Session 1: multi-vendor adapter dispatcher.
+    # ``POST /v1/protocol/invoke`` requires an EdDSA agent JWT and
+    # dispatches via :func:`src.backend.protocol.dispatcher.dispatch`
+    # with the Hemera vendor.<slug>.disabled kill switch checked
+    # BEFORE adapter invocation. ``GET /v1/protocol/vendors`` lists
+    # the enabled catalogue (no auth, no secrets exposed).
+    ("protocol.invoke", "src.backend.routers.v1.protocol", "protocol_router"),
     # Future W2 slots. Keeping the label namespace so Nemea can assert
     # pillars are mounted before their dependent tests run.
 )
