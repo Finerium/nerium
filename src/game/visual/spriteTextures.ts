@@ -1,24 +1,33 @@
 //
 // src/game/visual/spriteTextures.ts
 //
-// Helios-v2 W3 CORRECTION: hand-placed pixel-rect character sprite textures
-// generated via Phaser.GameObjects.Graphics.generateTexture() at scene boot.
+// DEPRECATED in W3 S0 (legacy reference cleanup). This file ships the
+// hand-placed pixel-rect character sprite texture approach from prior
+// session SHA 1a8484b. The W3 visual revamp full restart pivot replaces
+// this approach with AI-generated PNG character sprites from
+// `_Reference/ai_generated_assets/characters/`. S1 will replace the
+// consumer call sites (Player + NPC + TreasurerNPC + Caravan) with a
+// `this.load.image()` preload of AI-asset PNGs flow, then rename this
+// file to `spriteTextures.ts.deprecated` and drop the barrel export from
+// `src/game/visual/index.ts`. Until then this file remains live to keep
+// the build green and the active scenes rendering at their current SHA.
 //
-// Pattern transplanted verbatim from
-// _Reference/visual_inspiration/claude_design_output/scene-art.js sprite()
-// rows/palette helper. Each character is a 12-16 px tall multi-row pixel
-// grid: head, torso, arms, legs distinguished by color tokens from the
-// per-world palette so silhouettes read recognizably (Apollo cloak + halo,
-// treasurer robe + scale icon, caravan vendor cart apron, cyberpunk synth
-// vendor visor, etc.).
+// Helios-v2 W3 CORRECTION origin (historical): hand-placed pixel-rect
+// character sprite textures generated via
+// Phaser.GameObjects.Graphics.generateTexture() at scene boot. Each
+// character was a 12-16 px tall multi-row pixel grid (head, torso, arms,
+// legs) distinguished by color tokens from the per-world palette so
+// silhouettes read recognizably (Apollo cloak + halo, treasurer robe +
+// scale icon, caravan vendor cart apron, cyberpunk synth vendor visor,
+// etc.).
 //
-// Why generated textures instead of atlas frames:
+// Why generated textures were used (historical justification):
 //   - The shipped CC0 atlas at /assets/worlds/medieval_desert/atlas_32.png
 //     ships only 16 schematic 32x32 slots (floor, wall, generic agent_idle).
 //     The agent_idle slot is a tiny generic robot which renders as
 //     unrecognizable cone / square / pyramid in the Run #1 snapshot.
-//   - Hand-placed pixel-rect sprites match the Sea of Stars / Crosscode
-//     tier visual_inspiration target where every character has a
+//   - Hand-placed pixel-rect sprites delivered a tier closer to the
+//     Sea of Stars / Crosscode polish target where every character has a
 //     distinct silhouette + accessory + walk-cycle hint.
 //   - Generated once per scene boot, cached in Phaser.Textures by key,
 //     then referenced by Player + NPC constructors via texture key swap
@@ -63,7 +72,7 @@ function paintAndGenerateTexture(
 }
 
 /**
- * Render a sprite from rows + palette (scene-art.js sprite() pattern). Each
+ * Render a sprite from rows + palette (multi-row pixel-grid pattern). Each
  * character cell of `rows[y]` maps to a 1x1 pixel using `palette[char]`.
  * `.` is transparent. Width = max row length; height = rows.length.
  *

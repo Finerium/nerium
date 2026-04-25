@@ -81,8 +81,10 @@ export type SharedPaletteKey = keyof typeof SHARED;
  *   primary: #c97a4a (terracotta), secondary: #e8c57d (sand),
  *   accent: #8b6f47 (stone), ink: #3d2817 (dark wood), warm orange evening.
  *
- * Sub-palette derived from scene-art.js scene1() Apollo Village authoritative
- * pixel-rect placement (sky/sand/canyon/cactus/tent/firepit/lamp).
+ * Sub-palette saturated to 32-48 colors per the visual_manifest contract
+ * Section 7 directive: sky bands, canyon silhouette, sand progression,
+ * trail, tent fabrics, cactus, stone, wood planks, fire/lamp, skin tones,
+ * cloth accents, Apollo signature gold + violet, ambient day/dusk/night.
  */
 export const MEDIEVAL_DESERT = {
   // Sky bands (twilight cobalt to amber-orange dusk gradient)
@@ -160,8 +162,11 @@ export const MEDIEVAL_DESERT = {
  *   primary: #00f0ff (cyan neon), secondary: #ff2e88 (magenta neon),
  *   accent: #8b5cf6 (electric violet), ink: #06060c (deep void).
  *
- * Sub-palette aligned with scene-art.js distant city silhouette + neon picks
- * referenced at scene2() lines 794-822 (cyberpunk skyline teaser).
+ * Sub-palette saturated to 32-48 colors per the visual_manifest contract
+ * Section 7 directive: void bands, neon primary cyan/magenta/violet,
+ * neon dim variants, hologram pulse, vending light, signage, smog/fog,
+ * puddle reflection, chrome trim, skin tones (cyberpunk-tinted), cloth
+ * accents (synth + corporate neutral), ambient day/dusk/night.
  */
 export const CYBERPUNK_SHANGHAI = {
   // Sky / void
@@ -219,8 +224,10 @@ export const CYBERPUNK_SHANGHAI = {
  *   accent: #6b2e26 (oxblood), ink: #c8a464 (gold trim) + oil-lamp warm +
  *   electric blue arcs per workshop description.
  *
- * Sub-palette aligned with scene-art.js scene3() workshop monitor + brass
- * lamp + cog wheel pattern.
+ * Sub-palette saturated to 32-48 colors per the visual_manifest contract
+ * Section 7 directive: wood (walnut, oak), brass and copper, oxblood
+ * leather, steam fog (warm-tinted to read steampunk vs cyberpunk), arcing
+ * electric blue, oil lamp glow, gear iron, skin and Victorian cloth.
  */
 export const STEAMPUNK_VICTORIAN = {
   // Wood (floor, walls, beams)
@@ -272,8 +279,9 @@ export const STEAMPUNK_VICTORIAN = {
 /**
  * CARAVAN_ROAD palette: bridge between MEDIEVAL_DESERT and CYBERPUNK_SHANGHAI
  * per agent prompt session 4 description (warm desert dusk fade -> cyberpunk
- * silhouette tease on horizon). Pulled from scene-art.js scene2() bands
- * lines 776-786 plus distant city teaser.
+ * silhouette tease on horizon). Sky bands transition warm dusk -> cool
+ * violet upper, ground rust-tinted earth, road dither, distant city teaser
+ * neon picks (cyan, magenta, amber), caravan awning + ox body.
  */
 export const CARAVAN_ROAD = {
   skyDeep: 0x1c1b2c,
@@ -335,8 +343,8 @@ export const PALETTE_BY_WORLD = {
 
 /**
  * Convert a 0xRRGGBB integer to a CSS hex string usable in
- * Phaser.GameObjects.Graphics.fillStyle string fallbacks (scene-art.js style)
- * and CSS gradient injection. Pads to 6 digits.
+ * Phaser.GameObjects.Graphics.fillStyle string fallbacks and CSS gradient
+ * injection. Pads to 6 digits.
  */
 export function hexToCss(value: number): string {
   return `#${value.toString(16).padStart(6, '0')}`;

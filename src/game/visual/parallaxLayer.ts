@@ -6,10 +6,13 @@
 // PARALLAX_BG depth band with scrollFactor < 1 so the layer drifts slower
 // than the camera, giving depth illusion without a true 3D camera.
 //
-// Pattern transplanted from _Reference/visual_inspiration/claude_design_output
-// /scene-art.js scene1() canyon silhouette + scene2() distant cyberpunk
-// city teaser. Each silhouette uses a simple stair-stepped rectangle stack
-// to simulate a horizon irregularity, no per-pixel shader required.
+// Pattern is a stair-step rectangle stack composition: each silhouette
+// uses a simple stack to simulate a horizon irregularity (canyon mesa for
+// Apollo, distant cyberpunk skyline for Caravan / Cyberpunk transition,
+// Victorian rooftop for the Steampunk stub) without a per-pixel shader.
+// W3 S0 cleanup: deprecated authority references removed; the AI-generated
+// PNG bundle at `_Reference/ai_generated_assets/` is the new visual
+// authority that S1 transitions to.
 //
 // The layer is anchored to the camera's scroll origin; scrollFactor 0.4
 // means moving the camera 100 px right shifts the silhouette 40 px right

@@ -301,7 +301,7 @@ export class UIScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.DESTROY, () => this.cleanup());
 
     // Expose a Playwright readiness signal so smoke tests can poll until
-    // UIScene mounted. Mirror Helios-v2 + scene-art conventions
+    // UIScene mounted. Mirror Helios-v2 conventions
     // (window.__NERIUM_TEST__).
     if (typeof window !== 'undefined') {
       const w = window as unknown as Record<string, unknown>;

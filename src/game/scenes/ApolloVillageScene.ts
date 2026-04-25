@@ -4,8 +4,9 @@
 // Main lobby scene for the vertical slice. Medieval Desert world aesthetic,
 // top-down JRPG perspective. Helios-v2 W3 CORRECTION: rewritten ground paint
 // + character sprite textures + foliage canopy + horizon haze to reach the
-// Sea of Stars / Crosscode visual_inspiration tier after Run #1 returned
-// VISUAL DRIFT SEVERE.
+// Sea of Stars / Crosscode polish tier after Run #1 returned VISUAL DRIFT
+// SEVERE. W3 S0 cleanup neutralized deprecated authority references; S1
+// transitions to AI-asset PNG transplant.
 //
 // Visual stack (5 layer + ambient FX):
 //   Layer 0 (sky_gradient): per-world dusk gradient via buildSkyGradient
@@ -88,8 +89,9 @@ const WORLD_W = VILLAGE_COLS * TILE_PX;
 const WORLD_H = VILLAGE_ROWS * TILE_PX;
 
 // Pixel-rect character sprites are authored 8-10 px wide / 10-16 px tall
-// to match the scene-art.js reference; on a 32 px tile world we render
-// them at 3x so they read at proper character size (24-30 px tall body).
+// to match the per-world palette directive; on a 32 px tile world we
+// render them at 3x so they read at proper character size (24-30 px
+// tall body).
 const CHARACTER_SPRITE_SCALE = 3;
 
 export class ApolloVillageScene extends Phaser.Scene {
@@ -173,8 +175,8 @@ export class ApolloVillageScene extends Phaser.Scene {
     );
     buildParallaxLayer(this, { rects: nearRects, scrollFactor: 0.5, alpha: 0.95 });
 
-    // Distant village fort silhouette on the far ridge (continuity with
-    // scene-art.js scene1() distant village)
+    // Distant village fort silhouette on the far ridge (depth + horizon
+    // anchor for the Apollo Village far ridge layer)
     this.spawnDistantFort(width, height);
 
     // Layer 1b: horizon haze blend strip (sea of stars depth feel)

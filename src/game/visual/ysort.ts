@@ -4,7 +4,10 @@
 // Helios-v2 W3 S1: dynamic y-sort utility per visual_manifest.contract
 // Section 4.2 + agent prompt scene matrix Section "Dynamic y-sort".
 //
-// Pattern transplanted verbatim from _Reference/phaserjs-oakwoods (MIT).
+// Pattern transplanted via `.claude/skills/phaser-scene-authoring/SKILL.md`
+// (Talos-v2 W3 skill artifact, MIT-attributed upstream). The deprecated
+// raw folder reference is removed per W3 S0 cleanup; the surviving skill
+// artifact preserves license attribution.
 // Top-down JRPG world layer requires that a player or NPC standing in front
 // (larger y) of another sprite occludes the sprite behind (smaller y).
 // Phaser default depth ordering uses creation order, so without dynamic

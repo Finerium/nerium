@@ -4,8 +4,10 @@
 // Helios-v2 W3 S2: hand-placed pixel-rect decoration primitives. Each prop
 // (tent, cactus, well, firepit, lamp post, palm tree) is built from a
 // stack of small Phaser.GameObjects.Rectangle instances grouped in a
-// container. Pattern transplanted from
-// _Reference/visual_inspiration/claude_design_output/scene-art.js.
+// container. Pattern is direct Phaser canvas primitive composition.
+// W3 S0 cleanup: deprecated authority reference removed; the AI-generated
+// PNG bundle at `_Reference/ai_generated_assets/` is the new visual
+// authority that S1 transitions to.
 //
 // Why rectangles instead of a sprite atlas: the existing CC0 atlas at
 // public/assets/worlds/medieval_desert/atlas_32.png ships a 16-slot 32x32

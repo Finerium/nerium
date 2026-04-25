@@ -7,10 +7,12 @@
 //
 // Why rectangles instead of a true gradient shader: Phaser canvas is cheap
 // for solid fill rectangles (no shader uniforms, no Pipeline cost) and the
-// banded look reproduces the scene-art.js authoritative pattern at
-// _Reference/visual_inspiration/claude_design_output/scene-art.js
-// (8-band sky for desert, 4-band for cyberpunk void, etc.). The bands are
-// fixed once per scene; day-night MULTIPLY overlay handles the tint sweep.
+// banded look reproduces the per-world palette directive (8-band sky for
+// the Medieval Desert dusk, 4-band for the Cyberpunk Shanghai void, etc.).
+// The bands are fixed once per scene; day-night MULTIPLY overlay handles
+// the tint sweep. W3 S0 cleanup: deprecated authority references removed;
+// the AI-generated PNG bundle at `_Reference/ai_generated_assets/` is the
+// new visual authority that S1 transitions to.
 //
 // Note: bands use scrollFactor 0 so they remain anchored to the camera and
 // fill the viewport regardless of camera scroll. Depth is locked to

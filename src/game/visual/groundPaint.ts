@@ -1,27 +1,34 @@
 //
 // src/game/visual/groundPaint.ts
 //
-// Helios-v2 W3 CORRECTION: hand-placed multi-band ground paint primitives.
-// Replaces the bright-orange CC0 atlas tile checkerboard that rendered in
-// the Run #1 snapshot.
+// DEPRECATED in W3 S0 (legacy reference cleanup). This file ships the SVG
+// hand-placed multi-band ground paint approach from prior session SHA
+// 1a8484b. The W3 visual revamp full restart pivot replaces this approach
+// with AI-generated PNG asset transplant from
+// `_Reference/ai_generated_assets/`. S1 will replace consumer call sites
+// (ApolloVillageScene, CaravanRoadScene, CyberpunkShanghaiScene) with a
+// `this.load.image()` preload + `this.add.image()` flow, then rename this
+// file to `groundPaint.ts.deprecated` and drop the barrel export from
+// `src/game/visual/index.ts`. Until then this file remains live to keep
+// the build green and the three scenes rendering at their current SHA.
 //
-// Pattern transplanted from
-// _Reference/visual_inspiration/claude_design_output/scene-art.js scene1()
-// ground paint sequence (lines 92-127). Each ground variant paints 4-5
+// Helios-v2 W3 CORRECTION origin (historical): hand-placed multi-band
+// ground paint primitives that replaced the bright-orange CC0 atlas tile
+// checkerboard from the Run #1 snapshot. Each ground variant paints 4-5
 // horizontal bands (back to fore warm progression) plus a speckle dither
 // scatter for organic tile-detail variance, plus a winding trail of darker
 // dirt slabs from foreground toward the courtyard center.
 //
-// Why bands instead of tiles:
+// Why bands were used (historical justification):
 //   - The shipped CC0 atlas tile is 32x32 with one of two saturated colors
 //     (bright orange + speckled cream). A 24x16 grid of those tiles renders
 //     as flat checkerboard, the Run #1 visual drift root cause.
-//   - Multi-band rect paint matches the proven scene-art.js recipe: warm
-//     progression dark-back -> warm-mid -> bright-near -> shadowed-fore so
-//     the floor reads volumetric (Sea of Stars dusk floor).
+//   - Multi-band rect paint delivered a warm progression dark-back ->
+//     warm-mid -> bright-near -> shadowed-fore so the floor reads
+//     volumetric (Sea of Stars dusk floor).
 //   - Speckle dither overlay (60-80 random 1x1 pixels per band) supplies
-//     the tile-detail variance that scene-inspiration screenshots show
-//     (no zone uses single repeating tile).
+//     the tile-detail variance the visual target requires (no zone uses
+//     single repeating tile).
 //   - Trail slabs widen toward foreground (trapezoid feel) so the player
 //     reads "path leads from foreground toward Apollo at center".
 //

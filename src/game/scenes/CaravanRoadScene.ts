@@ -270,8 +270,8 @@ export class CaravanRoadScene extends Phaser.Scene {
   }
 
   /**
-   * Caravan wagon centerpiece. Hand-placed pixel rectangles matching
-   * scene-art.js scene2() reference caravan ox + cart bed + canvas awning.
+   * Caravan wagon centerpiece. Hand-placed pixel rectangles composing the
+   * caravan ox + cart bed + canvas awning silhouette.
    */
   private spawnCaravanWagon(): void {
     const wagonX = 14 * TILE_PX;
