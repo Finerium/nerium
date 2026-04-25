@@ -18,6 +18,11 @@ import blueprintFixture from './moment/fixtures/blueprint_lumio_2026_04_25.json'
 import type { BlueprintMomentDefinition } from './moment/types';
 import { HarnessShell } from '../_harness/HarnessShell';
 import { BuilderTierGate } from '../../src/components/builder/BuilderTierGate';
+import {
+  ModelSelectionModal,
+  useBuilderModelSelectionStore,
+} from '../../src/components/builder';
+import type { SekuriComplexity } from '../../src/lib/sekuriTemplate';
 
 export default function BuilderPage() {
   const definition = useMemo<BlueprintMomentDefinition>(
@@ -57,6 +62,9 @@ export default function BuilderPage() {
           description="Single prompt to production with priority routing."
         />
       </section>
+
+      <ModelSelectionLauncher />
+      <ModelSelectionModal />
 
       <section style={{ marginBottom: '2rem' }}>
         <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.15rem' }}>
@@ -116,5 +124,74 @@ export default function BuilderPage() {
         />
       </section>
     </HarnessShell>
+  );
+}
+
+function ModelSelectionLauncher() {
+  const openModal = useBuilderModelSelectionStore((s) => s.openModal);
+  const [tier, setTier] = useState<SekuriComplexity>('large');
+
+  return (
+    <section
+      style={{ marginBottom: '2rem' }}
+      data-testid="model-selection-launcher"
+    >
+      <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.15rem' }}>
+        Model selection (multi-vendor preview)
+      </h2>
+      <p
+        style={{
+          margin: '0 0 0.75rem 0',
+          fontSize: '0.85rem',
+          color: 'var(--color-muted, #94a3c4)',
+        }}
+      >
+        Builder surfaces a vendor lineup picker after Sekuri classifies
+        complexity. Live runtime stays Anthropic-only at submission.
+      </p>
+      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <label
+          htmlFor="model-selection-tier"
+          style={{ fontSize: '0.8rem', color: 'var(--color-muted, #94a3c4)' }}
+        >
+          Tier
+        </label>
+        <select
+          id="model-selection-tier"
+          data-testid="model-selection-tier-select"
+          value={tier}
+          onChange={(evt) => setTier(evt.target.value as SekuriComplexity)}
+          style={{
+            padding: '0.35rem 0.55rem',
+            fontSize: '0.85rem',
+            borderRadius: 'var(--radius-md, 0.375rem)',
+            background: 'transparent',
+            color: 'inherit',
+            border: '1px solid var(--color-border, #24244c)',
+          }}
+        >
+          <option value="small">Small</option>
+          <option value="medium">Medium</option>
+          <option value="large">Large</option>
+        </select>
+        <button
+          type="button"
+          onClick={() => openModal(tier)}
+          data-testid="model-selection-open"
+          style={{
+            padding: '0.4rem 1rem',
+            fontSize: '0.85rem',
+            borderRadius: 'var(--radius-md, 0.375rem)',
+            background: 'oklch(0.88 0.15 140)',
+            color: 'oklch(0.14 0.012 250)',
+            border: '1px solid oklch(0.88 0.15 140)',
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          Open model selection
+        </button>
+      </div>
+    </section>
   );
 }
