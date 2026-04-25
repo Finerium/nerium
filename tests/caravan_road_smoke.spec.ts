@@ -13,16 +13,7 @@
 
 import { expect, test } from '@playwright/test';
 
-declare global {
-  interface Window {
-    __NERIUM_TEST__?: {
-      phaserMounted?: boolean;
-      ready?: boolean;
-      activeSceneKey?: string;
-      worldId?: string;
-    };
-  }
-}
+// Window augmentation lives in tests/types/nerium-test-window.d.ts.
 
 test.describe('Helios-v2 S3 CaravanRoadScene smoke', () => {
   test('CaravanRoadScene boots after explicit scene.start invocation', async ({ page }) => {

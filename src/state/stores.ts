@@ -184,3 +184,12 @@ export const useUIStore = create<UIStore>()(
 // same singleton the audio engine does (src/lib/audioEngine.ts). Pattern
 // predates the Harmonia consolidation and is kept as-is.
 export { useAudioStore, type AudioStore } from '../stores/audioStore';
+
+// ---- chatStore (Boreas authority, canonical at src/stores/chatStore.ts) ----
+//
+// NP W3 Session 1. Powers the Minecraft chat-style UIScene that replaces the
+// deprecated React HUD on `/play`. Re-exported here so future bridge
+// subscribers observe the same singleton the UIScene + focus arbitration
+// hook + Playwright tests already share. See chat_ui.contract.md +
+// game_state.contract.md v0.2.0 Section 3.6.
+export { useChatStore, newChatMessageId, type ChatStore, type ChatMode, type ChatMessage, type ChatRole } from '../stores/chatStore';

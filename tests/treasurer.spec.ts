@@ -35,16 +35,7 @@ interface FlagPayload {
   pricingLive: boolean;
 }
 
-declare global {
-  interface Window {
-    __NERIUM_TEST__?: {
-      phaserMounted?: boolean;
-      ready?: boolean;
-      activeSceneKey?: string;
-      worldId?: string;
-    };
-  }
-}
+// Window augmentation lives in tests/types/nerium-test-window.d.ts.
 
 function setupBackendRoutes(page: Page, flag: FlagPayload, tier: string) {
   page.route('**/v1/billing/subscription/me', async (route) => {

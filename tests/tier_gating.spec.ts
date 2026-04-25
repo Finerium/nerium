@@ -16,16 +16,7 @@
 
 import { expect, test, type Page } from '@playwright/test';
 
-declare global {
-  interface Window {
-    __NERIUM_TEST__?: {
-      phaserMounted?: boolean;
-      ready?: boolean;
-      activeSceneKey?: string;
-      worldId?: string;
-    };
-  }
-}
+// Window augmentation lives in tests/types/nerium-test-window.d.ts.
 
 function setupSubscriptionRoutes(page: Page, tier: string | null) {
   page.route('**/v1/billing/subscription/me', async (route) => {

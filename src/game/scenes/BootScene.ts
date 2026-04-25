@@ -25,7 +25,7 @@ export class BootScene extends Phaser.Scene {
     // Fallback: if the pack load fails for any reason, the preloader still
     // runs with a pure-rectangle progress bar rendered in PreloadScene.
     this.load.once(Phaser.Loader.Events.COMPLETE, () => {
-      this.scene.start('Preload');
+      this.launchUiAndPreload();
     });
 
     this.load.once(
@@ -34,7 +34,7 @@ export class BootScene extends Phaser.Scene {
         console.warn(
           `[BootScene] pack load error for ${fileObj.key}; continuing to Preload anyway`,
         );
-        this.scene.start('Preload');
+        this.launchUiAndPreload();
       },
     );
   }
@@ -43,6 +43,25 @@ export class BootScene extends Phaser.Scene {
     // Unreachable on normal success path (COMPLETE fires scene.start in
     // preload). Included as defense against the edge case where preload
     // emits no files and jumps directly to create.
+    this.launchUiAndPreload();
+  }
+
+  /**
+   * Boreas NP W3 Session 1: launch the persistent UIScene overlay before
+   * starting Preload + world scenes. UIScene mounts the Minecraft chat
+   * DOMElement input + history container with depth above world scenes;
+   * `bringToTop` ensures every later `scene.start()` between world scenes
+   * (Apollo -> CaravanRoad -> CyberpunkShanghai) leaves UIScene on top.
+   *
+   * Idempotent: running this method twice (e.g. on the COMPLETE +
+   * FILE_LOAD_ERROR race) only launches UIScene once because Phaser ignores
+   * duplicate launch calls for an already-active scene.
+   */
+  private launchUiAndPreload(): void {
+    if (!this.scene.isActive('UIScene') && !this.scene.isPaused('UIScene')) {
+      this.scene.launch('UIScene');
+    }
+    this.scene.bringToTop('UIScene');
     this.scene.start('Preload');
   }
 }

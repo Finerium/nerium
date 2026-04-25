@@ -12,16 +12,7 @@
 
 import { expect, test } from '@playwright/test';
 
-declare global {
-  interface Window {
-    __NERIUM_TEST__?: {
-      phaserMounted?: boolean;
-      ready?: boolean;
-      activeSceneKey?: string;
-      worldId?: string;
-    };
-  }
-}
+// Window augmentation lives in tests/types/nerium-test-window.d.ts.
 
 test.describe('Thalia-v2 Phaser scenes core smoke', () => {
   test('PhaserCanvas mounts and ApolloVillageScene announces ready', async ({ page }) => {

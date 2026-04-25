@@ -29,21 +29,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 // Explicit global typing so the spec does not rely on the smoke test's
 // declaration and so the read surface remains a contract, not an accident.
-declare global {
-  interface Window {
-    __NERIUM_TEST__?: {
-      phaserMounted?: boolean;
-      ready?: boolean;
-      activeSceneKey?: string;
-      worldId?: string;
-      cinematicPlaying?: boolean;
-      cinematicKey?: string;
-      cinematicLastCompletedKey?: string;
-      cinematicLastDurationMs?: number;
-    };
-    __NERIUM_BUS_COLLECTOR__?: Array<{ topic: string; payload?: unknown; at: number }>;
-  }
-}
+// Window augmentation lives in tests/types/nerium-test-window.d.ts.
 
 const ROUTE = '/play';
 const READY_TIMEOUT_MS = 25_000;

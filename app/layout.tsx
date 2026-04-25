@@ -22,6 +22,11 @@ import type { ReactNode } from 'react';
 import { ClientThemeBoot } from './_harness/ClientThemeBoot';
 import './globals.css';
 import './_harness/harness.css';
+// Boreas NP W3 Session 1: Minecraft chat UIScene stylesheet. Imported at
+// the root layout so the DOMElement-mounted <div id="nerium-chat"> picks
+// up the CRT phosphor + VT323 + Space Grotesk theme regardless of which
+// route renders the Phaser canvas.
+import '../src/frontend/styles/chat.css';
 
 export const metadata: Metadata = {
   title: 'NERIUM. Infrastructure for the AI agent economy.',

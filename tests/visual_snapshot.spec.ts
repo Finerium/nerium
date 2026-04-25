@@ -20,16 +20,7 @@
 
 import { test } from '@playwright/test';
 
-declare global {
-  interface Window {
-    __NERIUM_TEST__?: {
-      phaserMounted?: boolean;
-      ready?: boolean;
-      activeSceneKey?: string;
-      worldId?: string;
-    };
-  }
-}
+// Window augmentation lives in tests/types/nerium-test-window.d.ts.
 
 test.describe('Helios-v2 visual correction snapshot capture', () => {
   test('capture Apollo Village corrected', async ({ page }) => {

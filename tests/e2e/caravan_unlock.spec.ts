@@ -29,17 +29,7 @@
 
 import { expect, test, type Page } from '@playwright/test';
 
-declare global {
-  interface Window {
-    __NERIUM_TEST__?: {
-      phaserMounted?: boolean;
-      ready?: boolean;
-      activeSceneKey?: string;
-      worldId?: string;
-    };
-    __NERIUM_BUS_COLLECTOR__?: Array<{ topic: string; payload?: unknown; at: number }>;
-  }
-}
+// Window augmentation lives in tests/types/nerium-test-window.d.ts.
 
 const ROUTE = '/play';
 const READY_TIMEOUT_MS = 25_000;

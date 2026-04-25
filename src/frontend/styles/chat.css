@@ -1,0 +1,264 @@
+/*
+ * src/frontend/styles/chat.css
+ *
+ * Boreas NP W3 Session 1. Stylesheet for the Minecraft chat-style UIScene.
+ * Aligned to Marshall pricing landing OKLCH design tokens (cross-ref
+ * src/game/visual/palette.ts SHARED tier). VT323 pixel headline +
+ * Space Grotesk body + JetBrains Mono command echo.
+ *
+ * Palette anchor (matches palette.ts SHARED hex):
+ *   --chat-ink:        #14181f
+ *   --chat-ink-soft:   #1c2027
+ *   --chat-line:       #353c47
+ *   --chat-phos:       #82f0a0
+ *   --chat-phos-dim:   #4ea063
+ *   --chat-phos-deep:  #386944
+ *   --chat-amber:      #f0b45a
+ *   --chat-rose:       #f08070
+ *   --chat-bone:       #f4eedf
+ *
+ * No em dash, no emoji per CLAUDE.md anti-patterns.
+ * No external @import for fonts (Next.js manages font loading via
+ * `next/font` in app/layout.tsx); this stylesheet falls back through the
+ * font stack until the project provider injects VT323/Space Grotesk.
+ */
+
+:root {
+  --chat-ink: #14181f;
+  --chat-ink-soft: #1c2027;
+  --chat-ink-deep: #0a0d12;
+  --chat-line: #353c47;
+  --chat-phos: #82f0a0;
+  --chat-phos-dim: #4ea063;
+  --chat-phos-deep: #386944;
+  --chat-phos-faint: #2a4a33;
+  --chat-amber: #f0b45a;
+  --chat-rose: #f08070;
+  --chat-fog: #b4bac6;
+  --chat-bone: #f4eedf;
+  --chat-shadow: 0 0 0 1px rgba(53, 60, 71, 0.7), 0 8px 24px rgba(0, 0, 0, 0.55);
+}
+
+/* ----------------------------------------------------------------------
+ * Root container. Hidden when chat is closed; visible when mode === 'chat'.
+ * Pointer-events scoped to children so the canvas behind still receives
+ * clicks when the chat is hidden.
+ * ---------------------------------------------------------------------- */
+
+.nerium-chat {
+  position: relative;
+  width: min(720px, 90vw);
+  max-width: 96vw;
+  font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--chat-bone);
+  pointer-events: none;
+  user-select: none;
+}
+
+.nerium-chat--hidden {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 80ms linear, visibility 0s linear 80ms;
+}
+
+/* While hidden, ensure no descendant intercepts pointer events. */
+.nerium-chat--hidden,
+.nerium-chat--hidden .nerium-chat__history,
+.nerium-chat--hidden .nerium-chat__bar {
+  pointer-events: none;
+}
+
+.nerium-chat--visible {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 80ms linear;
+}
+
+/* ----------------------------------------------------------------------
+ * Scrollable chat history. Sits above the input bar. Sticky scrollbar
+ * styled to match the CRT phosphor look without being too aggressive.
+ * ---------------------------------------------------------------------- */
+
+.nerium-chat__history {
+  background: linear-gradient(
+    to bottom,
+    rgba(20, 24, 31, 0.0) 0%,
+    rgba(20, 24, 31, 0.86) 16%,
+    rgba(20, 24, 31, 0.92) 100%
+  );
+  border-left: 2px solid var(--chat-phos-deep);
+  border-right: 2px solid var(--chat-phos-deep);
+  border-top: 2px solid var(--chat-phos-deep);
+  border-radius: 8px 8px 0 0;
+  padding: 12px 14px 8px 14px;
+  max-height: min(40vh, 420px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: auto;
+  font-size: 14px;
+  line-height: 1.45;
+  box-shadow: var(--chat-shadow);
+  scrollbar-width: thin;
+  scrollbar-color: var(--chat-phos-deep) transparent;
+}
+
+.nerium-chat__history::-webkit-scrollbar {
+  width: 8px;
+}
+
+.nerium-chat__history::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nerium-chat__history::-webkit-scrollbar-thumb {
+  background: var(--chat-phos-deep);
+  border-radius: 4px;
+}
+
+/* Per-message bubbles. Role-specific accent color on the role label. */
+
+.nerium-chat__msg {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 2px 4px;
+  border-radius: 3px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.nerium-chat__msg-role {
+  font-family: 'VT323', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14px;
+  text-transform: lowercase;
+  letter-spacing: 0.04em;
+  flex: 0 0 auto;
+  min-width: 78px;
+  padding: 0 4px;
+  border-radius: 2px;
+  user-select: none;
+}
+
+.nerium-chat__msg-content {
+  flex: 1 1 auto;
+  user-select: text;
+  color: var(--chat-bone);
+}
+
+.nerium-chat__msg--user .nerium-chat__msg-role {
+  color: var(--chat-amber);
+  background: rgba(240, 180, 90, 0.08);
+}
+
+.nerium-chat__msg--assistant .nerium-chat__msg-role {
+  color: var(--chat-phos);
+  background: rgba(130, 240, 160, 0.08);
+}
+
+.nerium-chat__msg--system .nerium-chat__msg-role {
+  color: var(--chat-fog);
+  background: rgba(180, 186, 198, 0.08);
+}
+
+.nerium-chat__msg--system .nerium-chat__msg-content {
+  color: var(--chat-fog);
+}
+
+.nerium-chat__msg--command .nerium-chat__msg-role {
+  color: var(--chat-rose);
+  background: rgba(240, 128, 112, 0.08);
+}
+
+.nerium-chat__msg--command .nerium-chat__msg-content {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--chat-rose);
+}
+
+.nerium-chat__msg--streaming .nerium-chat__msg-content::after {
+  content: '_';
+  display: inline-block;
+  margin-left: 2px;
+  color: var(--chat-phos);
+  animation: nerium-chat-blink 1.1s steps(2, end) infinite;
+}
+
+@keyframes nerium-chat-blink {
+  0%, 60% { opacity: 1; }
+  61%, 100% { opacity: 0; }
+}
+
+/* ----------------------------------------------------------------------
+ * Input bar. Sits flush against the history bottom. CRT phosphor border +
+ * subtle inner glow on focus.
+ * ---------------------------------------------------------------------- */
+
+.nerium-chat__bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(10, 13, 18, 0.94);
+  border: 2px solid var(--chat-phos-deep);
+  border-top: 1px solid var(--chat-phos-faint);
+  border-radius: 0 0 8px 8px;
+  pointer-events: auto;
+  box-shadow: var(--chat-shadow);
+}
+
+.nerium-chat__prompt {
+  font-family: 'VT323', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--chat-phos);
+  font-size: 18px;
+  line-height: 1;
+  user-select: none;
+  text-shadow: 0 0 6px rgba(130, 240, 160, 0.45);
+}
+
+.nerium-chat__input {
+  flex: 1 1 auto;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--chat-bone);
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14px;
+  line-height: 1.4;
+  caret-color: var(--chat-phos);
+  padding: 4px 0;
+}
+
+.nerium-chat__input::placeholder {
+  color: rgba(180, 186, 198, 0.5);
+  font-style: italic;
+}
+
+.nerium-chat__input:focus {
+  outline: none;
+}
+
+.nerium-chat:focus-within .nerium-chat__bar {
+  border-color: var(--chat-phos);
+  box-shadow:
+    0 0 0 1px var(--chat-phos),
+    0 0 18px rgba(130, 240, 160, 0.35),
+    0 8px 24px rgba(0, 0, 0, 0.55);
+}
+
+/* ----------------------------------------------------------------------
+ * Reduced motion preference: skip the streaming caret blink animation.
+ * Respect users who set prefers-reduced-motion.
+ * ---------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .nerium-chat__msg--streaming .nerium-chat__msg-content::after {
+    animation: none;
+    opacity: 1;
+  }
+  .nerium-chat--hidden,
+  .nerium-chat--visible {
+    transition: none;
+  }
+}

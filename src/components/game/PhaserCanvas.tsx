@@ -19,7 +19,7 @@
 // Strict Mode guarantee: only one Phaser.Game instance exists at any time.
 //
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import * as Phaser from 'phaser';
 import { BootScene } from '../../game/scenes/BootScene';
 import { PreloadScene } from '../../game/scenes/PreloadScene';
@@ -27,12 +27,21 @@ import { ApolloVillageScene } from '../../game/scenes/ApolloVillageScene';
 import { CaravanRoadScene } from '../../game/scenes/CaravanRoadScene';
 import { CyberpunkShanghaiScene } from '../../game/scenes/CyberpunkShanghaiScene';
 import { MiniBuilderCinematicScene } from '../../game/scenes/MiniBuilderCinematicScene';
+import { UIScene } from '../../game/scenes/UIScene';
 import { wireBridge, type GameBridge } from '../../state/gameBridge';
+import { useFocusArbitration } from '../../lib/focusArbitration';
 
 export default function PhaserCanvas() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
   const bridgeRef = useRef<GameBridge | null>(null);
+
+  // Boreas NP W3 Session 1: focus arbitration hook reads the live Phaser.Game
+  // instance through this getter. The hook is called unconditionally on every
+  // render; the getter lets it observe gameRef.current after it is assigned in
+  // useEffect below, avoiding a useEffect-inside-useEffect chain.
+  const getGame = useCallback(() => gameRef.current, []);
+  useFocusArbitration(getGame);
 
   useEffect(() => {
     // Strict Mode double-mount guard: if a Phaser.Game instance is already
@@ -48,6 +57,14 @@ export default function PhaserCanvas() {
       backgroundColor: '#0b0f19',
       pixelArt: true,
       antialias: false,
+      // Boreas NP W3 Session 1: enable Phaser DOMElement container so the
+      // chat UIScene can mount native <input type="text"> elements above
+      // the canvas. Without this flag, scene.add.dom() returns a no-op and
+      // the Minecraft chat surface cannot host its IME-aware input.
+      // Cross-ref: docs/contracts/chat_ui.contract.md Section 4.2.
+      dom: {
+        createContainer: true,
+      },
       scale: {
         mode: Phaser.Scale.RESIZE,
         width: '100%',
@@ -67,6 +84,10 @@ export default function PhaserCanvas() {
       // CaravanRoad and CyberpunkShanghai are started by the scene transition
       // manager (Helios-v2 S7 wiring) when the quest engine fires the
       // scene_transition effect; the cinematic launches on play_cinematic.
+      //
+      // UIScene is the persistent overlay that hosts the Minecraft chat-style
+      // chrome (Boreas NP W3). BootScene launches it (scene.launch + bringToTop)
+      // post-preload; it survives every world scene transition.
       scene: [
         BootScene,
         PreloadScene,
@@ -74,6 +95,7 @@ export default function PhaserCanvas() {
         CaravanRoadScene,
         CyberpunkShanghaiScene,
         MiniBuilderCinematicScene,
+        UIScene,
       ],
     });
 
