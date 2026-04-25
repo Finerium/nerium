@@ -28,7 +28,14 @@ import { ApolloTempleInteriorScene } from '../../game/scenes/ApolloTempleInterio
 import { ApolloMarketplaceBazaarScene } from '../../game/scenes/ApolloMarketplaceBazaarScene';
 import { ApolloOasisScene } from '../../game/scenes/ApolloOasisScene';
 import { CaravanRoadScene } from '../../game/scenes/CaravanRoadScene';
+import { CaravanWayhouseInteriorScene } from '../../game/scenes/CaravanWayhouseInteriorScene';
+import { CaravanForestCrossroadScene } from '../../game/scenes/CaravanForestCrossroadScene';
+import { CaravanMountainPassScene } from '../../game/scenes/CaravanMountainPassScene';
 import { CyberpunkShanghaiScene } from '../../game/scenes/CyberpunkShanghaiScene';
+import { CyberSkyscraperLobbyScene } from '../../game/scenes/CyberSkyscraperLobbyScene';
+import { CyberRooftopScene } from '../../game/scenes/CyberRooftopScene';
+import { CyberUndergroundAlleyScene } from '../../game/scenes/CyberUndergroundAlleyScene';
+import { CyberServerRoomScene } from '../../game/scenes/CyberServerRoomScene';
 import { MiniBuilderCinematicScene } from '../../game/scenes/MiniBuilderCinematicScene';
 import { UIScene } from '../../game/scenes/UIScene';
 import { wireBridge, type GameBridge } from '../../state/gameBridge';
@@ -95,6 +102,17 @@ export default function PhaserCanvas() {
       // (Temple Interior). Registered here so scene.start() can resolve them
       // at sub-area entry. They do not auto-start.
       //
+      // Helios-v2 W3 S6: 7 additional sub-area scenes (3 Caravan + 4 Cyber)
+      // ship for narrative depth. Caravan Wayhouse Interior + Caravan Forest
+      // Crossroad + Caravan Mountain Pass extend the Caravan world; Cyber
+      // Skyscraper Lobby + Cyber Rooftop + Cyber Underground Alley + Cyber
+      // Server Room extend the Cyberpunk Shanghai world. Sub-area scenes
+      // register here so scene.start() can resolve them; main-scene wire-up
+      // (E-key proximity entry triggers + dual-path prompts) ships in S7.
+      // For S6 testability the new scenes are reachable via debug-only
+      // __nerium_game__.scene.start mirroring the S5 ApolloTempleInterior
+      // precedent.
+      //
       // UIScene is the persistent overlay that hosts the Minecraft chat-style
       // chrome (Boreas NP W3). BootScene launches it (scene.launch + bringToTop)
       // post-preload; it survives every world scene transition.
@@ -106,7 +124,14 @@ export default function PhaserCanvas() {
         ApolloMarketplaceBazaarScene,
         ApolloOasisScene,
         CaravanRoadScene,
+        CaravanWayhouseInteriorScene,
+        CaravanForestCrossroadScene,
+        CaravanMountainPassScene,
         CyberpunkShanghaiScene,
+        CyberSkyscraperLobbyScene,
+        CyberRooftopScene,
+        CyberUndergroundAlleyScene,
+        CyberServerRoomScene,
         MiniBuilderCinematicScene,
         UIScene,
       ],

@@ -82,7 +82,34 @@ import { ASSET_KEYS } from '../visual/asset_keys';
 interface CaravanRoadSceneData {
   worldId?: WorldId;
   spawn?: { x: number; y: number };
+  /**
+   * Set when the player is returning from a Caravan sub-area scene
+   * (Helios-v2 W3 S6). Lets create() respawn the player at the matching
+   * sub-area approach instead of the default west-edge spawn coord.
+   */
+  returnFromSubArea?: 'wayhouse_interior' | 'forest_crossroad' | 'mountain_pass';
 }
+
+/**
+ * Helios-v2 W3 S6 sub-area entry binding. CaravanRoad has 3 sub-area
+ * destinations reachable via E-key proximity on existing main-scene props.
+ * Mirrors the ApolloVillage S5 dual-path pattern but without the UI choice
+ * prompt: caravan sub-areas are NOT NERIUM-pillar landmarks, so E-key
+ * proximity triggers a direct fade transition without a prompt overlay
+ * (S6 directive 4 + 5 ambient discoverable secondary entry).
+ */
+interface SubAreaEntryBinding {
+  name: string; // sub-area identifier
+  x: number; // anchor coord (main-scene prop center)
+  y: number;
+  radius: number; // proximity trigger radius (px)
+  sceneKey:
+    | 'CaravanWayhouseInterior'
+    | 'CaravanForestCrossroad'
+    | 'CaravanMountainPass';
+}
+
+const SUB_AREA_INTERACT_COOLDOWN_MS = 500;
 
 // World dimensions match the caravan_road_bg.jpg native 1408 x 792 with a
 // tiny vertical headroom strip (8 px) absorbed by the sky gradient. The
@@ -134,12 +161,26 @@ export class CaravanRoadScene extends Phaser.Scene {
   private dropShadows: Phaser.GameObjects.Ellipse[] = [];
   private autumnLeavesOverlay?: Phaser.GameObjects.Image;
 
+  // Helios-v2 W3 S6 sub-area entry state.
+  private subAreaBindings: SubAreaEntryBinding[] = [];
+  private eKey?: Phaser.Input.Keyboard.Key;
+  private lastSubAreaEmitAt: Record<string, number> = {};
+  private subAreaTransitioning = false;
+  // Honor incoming S6 sub-area return spawn override.
+  private spawnOverride?: { x: number; y: number };
+
   constructor() {
     super({ key: 'CaravanRoad' } satisfies Phaser.Types.Scenes.SettingsConfig);
   }
 
   init(data: CaravanRoadSceneData) {
     if (data.worldId) this.worldId = data.worldId;
+    if (data.spawn) {
+      this.spawnOverride = { x: data.spawn.x, y: data.spawn.y };
+    } else {
+      this.spawnOverride = undefined;
+    }
+    this.subAreaTransitioning = false;
   }
 
   create() {
@@ -189,6 +230,13 @@ export class CaravanRoadScene extends Phaser.Scene {
     // Per directive 4: S3 ships baseline overlay; S9 polishes drift tween.
     this.spawnAutumnLeavesOverlay(width, height);
 
+    // Helios-v2 W3 S6: register the 3 sub-area entry bindings + bind E-key.
+    this.registerSubAreaBindings();
+    const keyboard = this.input.keyboard;
+    if (keyboard) {
+      this.eKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+    }
+
     this.configureCamera(width, height);
     this.registerSceneCleanup();
 
@@ -231,6 +279,9 @@ export class CaravanRoadScene extends Phaser.Scene {
 
     // Per-frame y-sort across all registered dynamic sprites + drop shadows.
     this.sorter?.tick();
+
+    // Helios-v2 W3 S6: E-key sub-area entry trigger polling.
+    this.checkSubAreaInteraction(time);
   }
 
   // ---- Ambient props (Layer 3, 7 placements per directive) ----
@@ -372,8 +423,11 @@ export class CaravanRoadScene extends Phaser.Scene {
   // ---- Player + Caravan Vendor NPC ----
 
   private spawnPlayer(): void {
-    const spawnX = 96;
-    const spawnY = 480;
+    // Helios-v2 W3 S6 sub-area roundtrip: if the player is returning from a
+    // sub-area scene the spawn coord is the matching sub-area approach,
+    // otherwise the default west-edge journey-start.
+    const spawnX = this.spawnOverride?.x ?? 96;
+    const spawnY = this.spawnOverride?.y ?? 480;
     this.player = new Player(this, spawnX, spawnY, {
       textureKey: ASSET_KEYS.characters.player_spritesheet,
       frame: 0,
@@ -432,6 +486,80 @@ export class CaravanRoadScene extends Phaser.Scene {
         }
       });
     }
+  }
+
+  // ---- Sub-area entry bindings (Helios-v2 W3 S6) ----
+
+  /**
+   * Register the 3 Caravan sub-area entry bindings. Each binding is a
+   * proximity zone anchored on an existing main-scene ambient prop:
+   *   - wayhouse_interior: anchored on caravan_wayhouse_filler (440, 480)
+   *   - forest_crossroad: anchored on caravan_rope_bridge (1280, 380)
+   *   - mountain_pass: anchored east-edge of caravan_rope_bridge (debug-only
+   *     for S6, S7 may add a dedicated mountain_pass discovery prompt)
+   *
+   * Per directive 4 + 5 the entries are NOT NERIUM-pillar landmarks; they
+   * trigger a direct fade transition to the sub-area scene without the
+   * UI choice prompt overlay used by S5 dual-path landmarks.
+   */
+  private registerSubAreaBindings(): void {
+    this.subAreaBindings = [
+      {
+        name: 'wayhouse_interior',
+        x: 440,
+        y: 480,
+        radius: 96,
+        sceneKey: 'CaravanWayhouseInterior',
+      },
+      {
+        name: 'forest_crossroad',
+        x: 1280,
+        y: 380,
+        radius: 96,
+        sceneKey: 'CaravanForestCrossroad',
+      },
+    ];
+    // Mountain Pass entry is debug-only for S6 (no proximity binding).
+    // S7 may add a dual-path or dedicated discovery zone.
+  }
+
+  /**
+   * Per-frame E-key sub-area entry trigger polling. Mirrors the landmark
+   * E-key polling pattern from ApolloVillageScene S2 + S5 but emits a
+   * direct fade transition instead of a UI event topic. The
+   * subAreaTransitioning flag prevents double-fire while the fade is in
+   * progress.
+   */
+  private checkSubAreaInteraction(time: number): void {
+    if (!this.player || !this.eKey || this.subAreaTransitioning) return;
+    if (!Phaser.Input.Keyboard.JustDown(this.eKey)) return;
+    for (const sa of this.subAreaBindings) {
+      const dx = this.player.x - sa.x;
+      const dy = this.player.y - sa.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist > sa.radius) continue;
+      const last = this.lastSubAreaEmitAt[sa.name] ?? 0;
+      if (time - last < SUB_AREA_INTERACT_COOLDOWN_MS) continue;
+      this.lastSubAreaEmitAt[sa.name] = time;
+      this.triggerSubAreaEntry(sa);
+      break;
+    }
+  }
+
+  /**
+   * Fade out and start the bound sub-area scene. The scene-start payload
+   * carries `from: 'CaravanRoad'` so the sub-area scene can route exit
+   * back here.
+   */
+  private triggerSubAreaEntry(sa: SubAreaEntryBinding): void {
+    this.subAreaTransitioning = true;
+    this.cameras.main.fadeOut(500, 0, 0, 0);
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      this.scene.start(sa.sceneKey, {
+        worldId: 'medieval_desert',
+        from: 'CaravanRoad',
+      });
+    });
   }
 
   // ---- Atmospheric overlay (Layer 6 autumn_leaves) ----
@@ -555,6 +683,12 @@ export class CaravanRoadScene extends Phaser.Scene {
 
       this.sorter?.unregisterAll();
       this.sorter = undefined;
+
+      // Helios-v2 W3 S6: clear sub-area binding state so a fresh scene
+      // start (e.g. via fade transition return) starts with no leaked
+      // cooldown timers.
+      this.subAreaBindings = [];
+      this.lastSubAreaEmitAt = {};
 
       for (const unsub of this.unsubscribers) {
         try {
