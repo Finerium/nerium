@@ -24,7 +24,13 @@
 //
 
 import * as Phaser from 'phaser';
-import { ASSET_KEYS, ASSET_PATHS } from '../visual/asset_keys';
+import {
+  ASSET_KEYS,
+  assetUrl,
+  isAssetManifestReady,
+  setAssetManifest,
+  type AssetManifestEntry,
+} from '../visual/asset_keys';
 
 const SCENE_KEY = 'Title';
 const FADE_IN_MS = 600;
@@ -48,12 +54,47 @@ export class TitleScene extends Phaser.Scene {
     // assets are not yet in the texture cache. Load only what we need at
     // this scene specifically. The full registry preload follows in
     // PreloadScene.
-    if (!this.textures.exists(ASSET_KEYS.ui.title.title_screen)) {
-      this.load.image(
-        ASSET_KEYS.ui.title.title_screen,
-        ASSET_PATHS.title_screen,
-      );
+    //
+    // Aether-Vercel T6 Phase 1.7.4: when the title route is forced via
+    // /play?title=1 BEFORE BootScene finishes, the asset manifest may not
+    // yet be installed. Defensively load the manifest first if absent, then
+    // chain the title image enqueue inside the loader complete handler.
+    if (isAssetManifestReady()) {
+      if (!this.textures.exists(ASSET_KEYS.ui.title.title_screen)) {
+        this.load.image(
+          ASSET_KEYS.ui.title.title_screen,
+          assetUrl('title_screen'),
+        );
+      }
+      return;
     }
+    this.load.json('asset_manifest', '/asset_manifest.json');
+    this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+      const m = this.cache.json.get('asset_manifest') as
+        | Record<string, AssetManifestEntry>
+        | undefined;
+      if (!m) {
+        console.error(
+          '[TitleScene] /asset_manifest.json missing from cache; title image cannot resolve',
+        );
+        return;
+      }
+      try {
+        setAssetManifest(m);
+      } catch (err) {
+        console.error('[TitleScene] setAssetManifest threw', err);
+        return;
+      }
+      // Queue the title image now that the manifest is installed. The
+      // create() lifecycle waits for textures to exist before composition.
+      if (!this.textures.exists(ASSET_KEYS.ui.title.title_screen)) {
+        this.load.image(
+          ASSET_KEYS.ui.title.title_screen,
+          assetUrl('title_screen'),
+        );
+        this.load.start();
+      }
+    });
   }
 
   create() {

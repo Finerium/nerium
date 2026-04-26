@@ -34,6 +34,7 @@ import {
   type CapabilityTag,
   type VendorOrigin,
 } from '../schema/listing.schema';
+import { loadAssetManifest } from '../../../src/lib/assetManifest';
 import type {
   BrowseCanvasProps,
   BrowseSortOrder,
@@ -165,6 +166,29 @@ export function BrowseCanvas(props: BrowseCanvasProps) {
   const [selectedVendors, setSelectedVendors] = useState<VendorOrigin[]>(
     filter.vendor_origin ? [filter.vendor_origin] : [],
   );
+
+  // Aether-Vercel T6 Phase 1.7.4: AI assets ship via Vercel Blob, the
+  // marketplace hero banner + empty-state illustration are resolved through
+  // the manifest fetched once at mount. While the URLs are loading, the CSS
+  // backgroundImage falls back to a flat color so layout does not flash.
+  const [heroBannerUrl, setHeroBannerUrl] = useState<string | null>(null);
+  const [emptyStateUrl, setEmptyStateUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    loadAssetManifest()
+      .then((m) => {
+        if (cancelled) return;
+        setHeroBannerUrl(m['ui/marketplace/marketplace_hero_banner']?.url ?? null);
+        setEmptyStateUrl(m['ui/marketplace/marketplace_empty_state']?.url ?? null);
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        console.warn('[BrowseCanvas] asset manifest load failed', e);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -361,7 +385,7 @@ export function BrowseCanvas(props: BrowseCanvasProps) {
           maxHeight: '260px',
           overflow: 'hidden',
           borderRadius: 'var(--radius-lg, 0.75rem)',
-          backgroundImage: 'url(/assets/ai/ui/marketplace/marketplace_hero_banner.jpg)',
+          backgroundImage: heroBannerUrl ? `url(${heroBannerUrl})` : 'none',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -617,7 +641,7 @@ export function BrowseCanvas(props: BrowseCanvasProps) {
           )}
 
           {!loading && !error && visibleListings.length === 0 && (
-            <EmptyState onClearAll={handleClearAll} />
+            <EmptyState onClearAll={handleClearAll} bgUrl={emptyStateUrl} />
           )}
 
           {!loading && !error && visibleListings.length > 0 && (
@@ -644,7 +668,13 @@ export function BrowseCanvas(props: BrowseCanvasProps) {
   );
 }
 
-function EmptyState({ onClearAll }: { onClearAll: () => void }) {
+function EmptyState({
+  onClearAll,
+  bgUrl,
+}: {
+  onClearAll: () => void;
+  bgUrl: string | null;
+}) {
   return (
     <div
       role="status"
@@ -658,9 +688,11 @@ function EmptyState({ onClearAll }: { onClearAll: () => void }) {
         textAlign: 'center',
         borderRadius: 'var(--radius-lg, 0.75rem)',
         border: '1px dashed var(--color-border, #1e293b)',
-        // Helios-v2 W3 S10: marketplace empty-state hero illustration.
-        backgroundImage:
-          'linear-gradient(0deg, rgba(10, 10, 15, 0.78), rgba(10, 10, 15, 0.78)), url(/assets/ai/ui/marketplace/marketplace_empty_state.png)',
+        // Aether-Vercel T6 Phase 1.7.4: marketplace empty-state hero
+        // illustration resolved via Vercel Blob manifest (BrowseCanvas).
+        backgroundImage: bgUrl
+          ? `linear-gradient(0deg, rgba(10, 10, 15, 0.78), rgba(10, 10, 15, 0.78)), url(${bgUrl})`
+          : 'linear-gradient(0deg, rgba(10, 10, 15, 0.78), rgba(10, 10, 15, 0.78))',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',

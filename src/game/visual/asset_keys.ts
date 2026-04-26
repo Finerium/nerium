@@ -170,137 +170,220 @@ export const ASSET_KEYS = {
 } as const;
 
 // ============================================================================
-// PATH REGISTRY (key -> Next.js public asset URL)
+// PATH REGISTRY (key -> manifest stem)
 // ============================================================================
 
 /**
- * Maps every asset key to its served URL under Next.js `public/`. The actual
- * files live at `_Reference/ai_generated_assets/...` and are mirrored to
- * `public/assets/ai/...` via per-category relative symlinks (created in S1).
+ * Aether-Vercel T6 Phase 1.7.4: previously this map carried `/assets/ai/...`
+ * paths served via per-category symlinks under `public/assets/ai/`. The
+ * 369 MB asset bundle pushed the Lambda function past the 500 MB ephemeral
+ * storage limit on Vercel, so the assets were migrated to Vercel Blob (1 GB
+ * free tier, region iad1, matches Neon Postgres region). The migration
+ * script `scripts/upload-assets-to-blob.ts` emits `public/asset_manifest.json`
+ * mapping stem (relative path without extension) to the public blob URL.
  *
- * Format flexibility lock: extensions match the actual on-disk filename. Some
- * stems are .png (transparent), some are .jpg (full bg context). Do not
- * normalize extensions; consumers of `ASSET_PATHS` get the served URL.
+ * Each `ASSET_PATHS` entry is now a manifest stem like
+ * `backgrounds/apollo_village_bg`, NOT a runtime URL. Consumers must call
+ * `assetUrl(key)` to resolve a key to the served blob URL after the manifest
+ * has been loaded (BootScene loads it via `this.load.json('asset_manifest',
+ * '/asset_manifest.json')` and calls `setManifestFromCache()`).
+ *
+ * Format flexibility lock per S1 directive: stems are extension-free so the
+ * manifest entry can carry the actual content type. Some on-disk files are
+ * .png (transparent), some .jpg (full bg context). The blob URL preserves the
+ * original extension.
  */
 export const ASSET_PATHS: Readonly<Record<AssetKey, string>> = Object.freeze({
-  // ---- backgrounds (13, all .jpg) ----
-  apollo_village_bg: '/assets/ai/backgrounds/apollo_village_bg.jpg',
-  apollo_marketplace_bazaar: '/assets/ai/backgrounds/apollo_marketplace_bazaar.jpg',
-  apollo_oasis: '/assets/ai/backgrounds/apollo_oasis.jpg',
-  apollo_temple_interior: '/assets/ai/backgrounds/apollo_temple_interior.jpg',
-  caravan_road_bg: '/assets/ai/backgrounds/caravan_road_bg.jpg',
-  caravan_forest_crossroad: '/assets/ai/backgrounds/caravan_forest_crossroad.jpg',
-  caravan_mountain_pass: '/assets/ai/backgrounds/caravan_mountain_pass.jpg',
-  caravan_wayhouse_interior: '/assets/ai/backgrounds/caravan_wayhouse_interior.jpg',
-  cyberpunk_shanghai_bg: '/assets/ai/backgrounds/cyberpunk_shanghai_bg.jpg',
-  cyber_underground_alley: '/assets/ai/backgrounds/cyber_underground_alley.jpg',
-  cyber_rooftop: '/assets/ai/backgrounds/cyber_rooftop.jpg',
-  cyber_skyscraper_lobby: '/assets/ai/backgrounds/cyber_skyscraper_lobby.jpg',
-  cyber_server_room: '/assets/ai/backgrounds/cyber_server_room.jpg',
+  // ---- backgrounds (13) ----
+  apollo_village_bg: 'backgrounds/apollo_village_bg',
+  apollo_marketplace_bazaar: 'backgrounds/apollo_marketplace_bazaar',
+  apollo_oasis: 'backgrounds/apollo_oasis',
+  apollo_temple_interior: 'backgrounds/apollo_temple_interior',
+  caravan_road_bg: 'backgrounds/caravan_road_bg',
+  caravan_forest_crossroad: 'backgrounds/caravan_forest_crossroad',
+  caravan_mountain_pass: 'backgrounds/caravan_mountain_pass',
+  caravan_wayhouse_interior: 'backgrounds/caravan_wayhouse_interior',
+  cyberpunk_shanghai_bg: 'backgrounds/cyberpunk_shanghai_bg',
+  cyber_underground_alley: 'backgrounds/cyber_underground_alley',
+  cyber_rooftop: 'backgrounds/cyber_rooftop',
+  cyber_skyscraper_lobby: 'backgrounds/cyber_skyscraper_lobby',
+  cyber_server_room: 'backgrounds/cyber_server_room',
 
-  // ---- characters (13, all .png; spritesheets handled by SPRITESHEET_FRAMES) ----
-  player_portrait: '/assets/ai/characters/player_portrait.png',
-  apollo: '/assets/ai/characters/apollo.png',
-  apollo_portrait: '/assets/ai/characters/apollo_portrait.png',
-  caravan_vendor: '/assets/ai/characters/caravan_vendor.png',
-  synth_vendor: '/assets/ai/characters/synth_vendor.png',
-  synth_vendor_portrait: '/assets/ai/characters/synth_vendor_portrait.png',
-  treasurer: '/assets/ai/characters/treasurer.png',
-  treasurer_portrait: '/assets/ai/characters/treasurer_portrait.png',
-  player_spritesheet: '/assets/ai/characters/player_spritesheet.png',
-  apollo_spritesheet: '/assets/ai/characters/apollo_spritesheet.png',
-  caravan_vendor_spritesheet: '/assets/ai/characters/caravan_vendor_spritesheet.png',
-  synth_vendor_spritesheet: '/assets/ai/characters/synth_vendor_spritesheet.png',
-  treasurer_spritesheet: '/assets/ai/characters/treasurer_spritesheet.png',
+  // ---- characters (13; spritesheets handled by SPRITESHEET_FRAMES) ----
+  player_portrait: 'characters/player_portrait',
+  apollo: 'characters/apollo',
+  apollo_portrait: 'characters/apollo_portrait',
+  caravan_vendor: 'characters/caravan_vendor',
+  synth_vendor: 'characters/synth_vendor',
+  synth_vendor_portrait: 'characters/synth_vendor_portrait',
+  treasurer: 'characters/treasurer',
+  treasurer_portrait: 'characters/treasurer_portrait',
+  player_spritesheet: 'characters/player_spritesheet',
+  apollo_spritesheet: 'characters/apollo_spritesheet',
+  caravan_vendor_spritesheet: 'characters/caravan_vendor_spritesheet',
+  synth_vendor_spritesheet: 'characters/synth_vendor_spritesheet',
+  treasurer_spritesheet: 'characters/treasurer_spritesheet',
 
-  // ---- overlays (2, all .png) ----
-  autumn_leaves: '/assets/ai/overlays/autumn_leaves.png',
-  smog_wisps: '/assets/ai/overlays/smog_wisps.png',
+  // ---- overlays (2) ----
+  autumn_leaves: 'overlays/autumn_leaves',
+  smog_wisps: 'overlays/smog_wisps',
 
-  // ---- props apollo_village (16, all .png) ----
-  apollo_house_filler: '/assets/ai/props/apollo_village/apollo_house_filler.png',
-  apollo_ruined_shrine: '/assets/ai/props/apollo_village/apollo_ruined_shrine.png',
-  apollo_temple_altar: '/assets/ai/props/apollo_village/apollo_temple_altar.png',
-  builder_workshop_landmark: '/assets/ai/props/apollo_village/builder_workshop_landmark.png',
-  cypress_tree: '/assets/ai/props/apollo_village/cypress_tree.png',
-  date_palm_cluster: '/assets/ai/props/apollo_village/date_palm_cluster.png',
-  hanging_lantern: '/assets/ai/props/apollo_village/hanging_lantern.png',
-  market_stall: '/assets/ai/props/apollo_village/market_stall.png',
-  marketplace_stall_landmark: '/assets/ai/props/apollo_village/marketplace_stall_landmark.png',
-  registry_pillar_landmark: '/assets/ai/props/apollo_village/registry_pillar_landmark.png',
-  stone_column: '/assets/ai/props/apollo_village/stone_column.png',
-  stone_signpost: '/assets/ai/props/apollo_village/stone_signpost.png',
-  stone_well: '/assets/ai/props/apollo_village/stone_well.png',
-  temple_arch: '/assets/ai/props/apollo_village/temple_arch.png',
-  trust_shrine_landmark: '/assets/ai/props/apollo_village/trust_shrine_landmark.png',
-  wooden_cart: '/assets/ai/props/apollo_village/wooden_cart.png',
+  // ---- props apollo_village (16) ----
+  apollo_house_filler: 'props/apollo_village/apollo_house_filler',
+  apollo_ruined_shrine: 'props/apollo_village/apollo_ruined_shrine',
+  apollo_temple_altar: 'props/apollo_village/apollo_temple_altar',
+  builder_workshop_landmark: 'props/apollo_village/builder_workshop_landmark',
+  cypress_tree: 'props/apollo_village/cypress_tree',
+  date_palm_cluster: 'props/apollo_village/date_palm_cluster',
+  hanging_lantern: 'props/apollo_village/hanging_lantern',
+  market_stall: 'props/apollo_village/market_stall',
+  marketplace_stall_landmark: 'props/apollo_village/marketplace_stall_landmark',
+  registry_pillar_landmark: 'props/apollo_village/registry_pillar_landmark',
+  stone_column: 'props/apollo_village/stone_column',
+  stone_signpost: 'props/apollo_village/stone_signpost',
+  stone_well: 'props/apollo_village/stone_well',
+  temple_arch: 'props/apollo_village/temple_arch',
+  trust_shrine_landmark: 'props/apollo_village/trust_shrine_landmark',
+  wooden_cart: 'props/apollo_village/wooden_cart',
 
-  // ---- props caravan_road (11; 10 .png + 1 .jpg cobblestone_tile) ----
-  campfire_ring: '/assets/ai/props/caravan_road/campfire_ring.png',
-  caravan_fireplace: '/assets/ai/props/caravan_road/caravan_fireplace.png',
-  caravan_rope_bridge: '/assets/ai/props/caravan_road/caravan_rope_bridge.png',
-  caravan_tavern_table: '/assets/ai/props/caravan_road/caravan_tavern_table.png',
-  caravan_wayhouse_filler: '/assets/ai/props/caravan_road/caravan_wayhouse_filler.png',
-  cobblestone_tile: '/assets/ai/props/caravan_road/cobblestone_tile.jpg',
-  fallen_log: '/assets/ai/props/caravan_road/fallen_log.png',
-  lantern_post: '/assets/ai/props/caravan_road/lantern_post.png',
-  roadside_signpost: '/assets/ai/props/caravan_road/roadside_signpost.png',
-  wooden_barrel: '/assets/ai/props/caravan_road/wooden_barrel.png',
-  wooden_wagon: '/assets/ai/props/caravan_road/wooden_wagon.png',
+  // ---- props caravan_road (11) ----
+  campfire_ring: 'props/caravan_road/campfire_ring',
+  caravan_fireplace: 'props/caravan_road/caravan_fireplace',
+  caravan_rope_bridge: 'props/caravan_road/caravan_rope_bridge',
+  caravan_tavern_table: 'props/caravan_road/caravan_tavern_table',
+  caravan_wayhouse_filler: 'props/caravan_road/caravan_wayhouse_filler',
+  cobblestone_tile: 'props/caravan_road/cobblestone_tile',
+  fallen_log: 'props/caravan_road/fallen_log',
+  lantern_post: 'props/caravan_road/lantern_post',
+  roadside_signpost: 'props/caravan_road/roadside_signpost',
+  wooden_barrel: 'props/caravan_road/wooden_barrel',
+  wooden_wagon: 'props/caravan_road/wooden_wagon',
 
-  // ---- props cyberpunk_shanghai (26, all .png) ----
-  admin_hall_landmark: '/assets/ai/props/cyberpunk_shanghai/admin_hall_landmark.png',
-  bank_treasury_landmark: '/assets/ai/props/cyberpunk_shanghai/bank_treasury_landmark.png',
-  crate_stack: '/assets/ai/props/cyberpunk_shanghai/crate_stack.png',
-  cyber_apartment_filler: '/assets/ai/props/cyberpunk_shanghai/cyber_apartment_filler.png',
-  cyber_billboard_closeup: '/assets/ai/props/cyberpunk_shanghai/cyber_billboard_closeup.png',
-  cyber_chrome_sculpture: '/assets/ai/props/cyberpunk_shanghai/cyber_chrome_sculpture.png',
-  cyber_data_terminal: '/assets/ai/props/cyberpunk_shanghai/cyber_data_terminal.png',
-  cyber_elevator_door: '/assets/ai/props/cyberpunk_shanghai/cyber_elevator_door.png',
-  cyber_industrial_pipe: '/assets/ai/props/cyberpunk_shanghai/cyber_industrial_pipe.png',
-  cyber_lantern: '/assets/ai/props/cyberpunk_shanghai/cyber_lantern.png',
-  cyber_marketplace_landmark: '/assets/ai/props/cyberpunk_shanghai/cyber_marketplace_landmark.png',
-  cyber_reception_desk: '/assets/ai/props/cyberpunk_shanghai/cyber_reception_desk.png',
-  cyber_server_rack: '/assets/ai/props/cyberpunk_shanghai/cyber_server_rack.png',
-  drone: '/assets/ai/props/cyberpunk_shanghai/drone.png',
-  holo_ad_panel: '/assets/ai/props/cyberpunk_shanghai/holo_ad_panel.png',
-  hologram_glitch: '/assets/ai/props/cyberpunk_shanghai/hologram_glitch.png',
-  laundry_line: '/assets/ai/props/cyberpunk_shanghai/laundry_line.png',
-  neon_market_stall: '/assets/ai/props/cyberpunk_shanghai/neon_market_stall.png',
-  neon_sign_vertical: '/assets/ai/props/cyberpunk_shanghai/neon_sign_vertical.png',
-  protocol_gateway_landmark: '/assets/ai/props/cyberpunk_shanghai/protocol_gateway_landmark.png',
-  refrigerator: '/assets/ai/props/cyberpunk_shanghai/refrigerator.png',
-  steam_vent: '/assets/ai/props/cyberpunk_shanghai/steam_vent.png',
-  synth_vendor_cart: '/assets/ai/props/cyberpunk_shanghai/synth_vendor_cart.png',
-  trash_bin: '/assets/ai/props/cyberpunk_shanghai/trash_bin.png',
-  vendor_cart_alt: '/assets/ai/props/cyberpunk_shanghai/vendor_cart_alt.png',
-  wet_puddle: '/assets/ai/props/cyberpunk_shanghai/wet_puddle.png',
+  // ---- props cyberpunk_shanghai (26) ----
+  admin_hall_landmark: 'props/cyberpunk_shanghai/admin_hall_landmark',
+  bank_treasury_landmark: 'props/cyberpunk_shanghai/bank_treasury_landmark',
+  crate_stack: 'props/cyberpunk_shanghai/crate_stack',
+  cyber_apartment_filler: 'props/cyberpunk_shanghai/cyber_apartment_filler',
+  cyber_billboard_closeup: 'props/cyberpunk_shanghai/cyber_billboard_closeup',
+  cyber_chrome_sculpture: 'props/cyberpunk_shanghai/cyber_chrome_sculpture',
+  cyber_data_terminal: 'props/cyberpunk_shanghai/cyber_data_terminal',
+  cyber_elevator_door: 'props/cyberpunk_shanghai/cyber_elevator_door',
+  cyber_industrial_pipe: 'props/cyberpunk_shanghai/cyber_industrial_pipe',
+  cyber_lantern: 'props/cyberpunk_shanghai/cyber_lantern',
+  cyber_marketplace_landmark: 'props/cyberpunk_shanghai/cyber_marketplace_landmark',
+  cyber_reception_desk: 'props/cyberpunk_shanghai/cyber_reception_desk',
+  cyber_server_rack: 'props/cyberpunk_shanghai/cyber_server_rack',
+  drone: 'props/cyberpunk_shanghai/drone',
+  holo_ad_panel: 'props/cyberpunk_shanghai/holo_ad_panel',
+  hologram_glitch: 'props/cyberpunk_shanghai/hologram_glitch',
+  laundry_line: 'props/cyberpunk_shanghai/laundry_line',
+  neon_market_stall: 'props/cyberpunk_shanghai/neon_market_stall',
+  neon_sign_vertical: 'props/cyberpunk_shanghai/neon_sign_vertical',
+  protocol_gateway_landmark: 'props/cyberpunk_shanghai/protocol_gateway_landmark',
+  refrigerator: 'props/cyberpunk_shanghai/refrigerator',
+  steam_vent: 'props/cyberpunk_shanghai/steam_vent',
+  synth_vendor_cart: 'props/cyberpunk_shanghai/synth_vendor_cart',
+  trash_bin: 'props/cyberpunk_shanghai/trash_bin',
+  vendor_cart_alt: 'props/cyberpunk_shanghai/vendor_cart_alt',
+  wet_puddle: 'props/cyberpunk_shanghai/wet_puddle',
 
-  // ---- ui icons (7, all .png) ----
-  category_agent: '/assets/ai/ui/icons/category_agent.png',
-  category_dataset: '/assets/ai/ui/icons/category_dataset.png',
-  category_pipeline: '/assets/ai/ui/icons/category_pipeline.png',
-  category_plugin: '/assets/ai/ui/icons/category_plugin.png',
-  category_prompt_template: '/assets/ai/ui/icons/category_prompt_template.png',
-  category_skill: '/assets/ai/ui/icons/category_skill.png',
-  category_tileset: '/assets/ai/ui/icons/category_tileset.png',
+  // ---- ui icons (7) ----
+  category_agent: 'ui/icons/category_agent',
+  category_dataset: 'ui/icons/category_dataset',
+  category_pipeline: 'ui/icons/category_pipeline',
+  category_plugin: 'ui/icons/category_plugin',
+  category_prompt_template: 'ui/icons/category_prompt_template',
+  category_skill: 'ui/icons/category_skill',
+  category_tileset: 'ui/icons/category_tileset',
 
-  // ---- ui loading + transitions (3, all .jpg) ----
-  loading_screen: '/assets/ai/ui/loading/loading_screen.jpg',
-  transition_apollo_to_caravan: '/assets/ai/ui/loading/transition_apollo_to_caravan.jpg',
-  transition_caravan_to_cyber: '/assets/ai/ui/loading/transition_caravan_to_cyber.jpg',
+  // ---- ui loading + transitions (3) ----
+  loading_screen: 'ui/loading/loading_screen',
+  transition_apollo_to_caravan: 'ui/loading/transition_apollo_to_caravan',
+  transition_caravan_to_cyber: 'ui/loading/transition_caravan_to_cyber',
 
-  // ---- ui marketplace (2; 1 .png + 1 .jpg) ----
-  marketplace_empty_state: '/assets/ai/ui/marketplace/marketplace_empty_state.png',
-  marketplace_hero_banner: '/assets/ai/ui/marketplace/marketplace_hero_banner.jpg',
+  // ---- ui marketplace (2) ----
+  marketplace_empty_state: 'ui/marketplace/marketplace_empty_state',
+  marketplace_hero_banner: 'ui/marketplace/marketplace_hero_banner',
 
-  // ---- ui quest (2, all .png) ----
-  quest_exclamation: '/assets/ai/ui/quest/quest_exclamation.png',
-  quest_question: '/assets/ai/ui/quest/quest_question.png',
+  // ---- ui quest (2) ----
+  quest_exclamation: 'ui/quest/quest_exclamation',
+  quest_question: 'ui/quest/quest_question',
 
-  // ---- ui title (1, .jpg) ----
-  title_screen: '/assets/ai/ui/title/title_screen.jpg',
+  // ---- ui title (1) ----
+  title_screen: 'ui/title/title_screen',
 });
+
+// ============================================================================
+// MANIFEST RESOLVER (stem -> blob URL via loaded manifest)
+// ============================================================================
+
+/**
+ * Aether-Vercel T6 Phase 1.7.4: shape of one entry in
+ * `public/asset_manifest.json` produced by `scripts/upload-assets-to-blob.ts`.
+ */
+export interface AssetManifestEntry {
+  stem: string;
+  url: string;
+  size: number;
+  contentType: string;
+}
+
+/**
+ * Module-scoped cache for the loaded manifest. Populated by
+ * `setAssetManifest` (called once from BootScene after Phaser loads
+ * `/asset_manifest.json` as a JSON asset). Subsequent calls are idempotent.
+ */
+let MANIFEST: Readonly<Record<string, AssetManifestEntry>> | null = null;
+
+/**
+ * Install the manifest map from a parsed JSON object. Idempotent: a second
+ * call with the same object is a no-op; a different object replaces the
+ * previous map (used by hot reload + tests). Throws on null/undefined.
+ */
+export function setAssetManifest(
+  m: Record<string, AssetManifestEntry> | null | undefined,
+): void {
+  if (!m || typeof m !== 'object') {
+    throw new Error('setAssetManifest called with non-object payload');
+  }
+  MANIFEST = Object.freeze(m);
+}
+
+/**
+ * Returns true after the manifest has been installed. Phaser scenes that load
+ * during the very first paint should consult this gate before invoking
+ * `assetUrl()` to surface useful error messages.
+ */
+export function isAssetManifestReady(): boolean {
+  return MANIFEST !== null;
+}
+
+/**
+ * Resolves a typed `AssetKey` (e.g. `apollo_village_bg`) to the served blob
+ * URL via the manifest stem stored in `ASSET_PATHS`. Throws with a precise
+ * message when the manifest is absent or the stem is missing so misconfig
+ * is loud rather than silent (a missing texture in Phaser surfaces as the
+ * default green-stripe placeholder which is unhelpful at debug time).
+ */
+export function assetUrl(key: AssetKey): string {
+  if (MANIFEST === null) {
+    throw new Error(
+      `assetUrl(${key}) called before asset manifest loaded. ` +
+        'Ensure BootScene loads /asset_manifest.json and calls setAssetManifest() ' +
+        'before any subsequent scene runs preload().',
+    );
+  }
+  const stem = ASSET_PATHS[key];
+  const entry = MANIFEST[stem];
+  if (!entry) {
+    throw new Error(
+      `assetUrl(${key}) found no manifest entry for stem "${stem}". ` +
+        'Verify scripts/upload-assets-to-blob.ts produced public/asset_manifest.json ' +
+        'and the stem in ASSET_PATHS matches a key in the manifest.',
+    );
+  }
+  return entry.url;
+}
 
 // ============================================================================
 // SPRITESHEET FRAME METADATA

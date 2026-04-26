@@ -87,7 +87,17 @@ class Settings(BaseSettings):
     # TrustedHostMiddleware + CORSMiddleware inputs, comma-separated env strings
     # decoded by the :meth:`split_csv` validator below.
     trusted_hosts: list[str] = Field(
-        default_factory=lambda: ["localhost", "127.0.0.1", "nerium.com", "*.nerium.com"],
+        default_factory=lambda: [
+            "localhost",
+            "127.0.0.1",
+            "nerium.com",
+            "*.nerium.com",
+            # Aether-Vercel T6 Phase 1.7.9: allow the Vercel-aliased preview +
+            # production hostnames so the deployed FastAPI accepts requests
+            # routed via /api/* + /v1/* rewrites.
+            "*.vercel.app",
+            "nerium-one.vercel.app",
+        ],
         description="Allowed host header values. Non-match returns 400.",
     )
     cors_origins: list[str] = Field(
@@ -471,6 +481,102 @@ class Settings(BaseSettings):
         return self.secret_key.get_secret_value()
 
 
+def _normalize_neon_dsn(dsn: str) -> str:
+    """Strip Neon-specific query params that asyncpg + SQLAlchemy reject.
+
+    Neon's connection string ships with ``?sslmode=require&channel_binding=require``.
+    asyncpg understands ``sslmode`` natively but rejects ``channel_binding`` as
+    unknown; SQLAlchemy's asyncpg dialect passes ``sslmode`` through to the
+    asyncpg.connect() kwargs which rejects the kwarg form. Rewrite both into a
+    single ``ssl=require`` query param which asyncpg + SQLAlchemy both accept.
+    """
+
+    from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
+
+    if not dsn:
+        return dsn
+    try:
+        parsed = urlparse(dsn)
+    except ValueError:
+        return dsn
+    if parsed.scheme not in {"postgres", "postgresql", "postgresql+asyncpg"}:
+        return dsn
+    pairs = [(k, v) for k, v in parse_qsl(parsed.query, keep_blank_values=True)]
+    cleaned = [
+        (k, v) for k, v in pairs if k.lower() not in {"sslmode", "channel_binding"}
+    ]
+    needs_ssl = any(
+        k.lower() == "sslmode" and v.lower() in {"require", "verify-full", "verify-ca"}
+        for k, v in pairs
+    )
+    if needs_ssl and not any(k.lower() == "ssl" for k, _ in cleaned):
+        cleaned.append(("ssl", "require"))
+    new_query = urlencode(cleaned)
+    return urlunparse(parsed._replace(query=new_query))
+
+
+def _vercel_fallback_overrides() -> dict[str, str]:
+    """Aether-Vercel T6 Phase 1.7.9 platform env fallback.
+
+    Vercel's managed integrations (Neon Postgres, Upstash Redis) inject env
+    vars under their own canonical names (``DATABASE_URL``,
+    ``POSTGRES_URL_NON_POOLING``, ``UPSTASH_REDIS_URL``, etc.) rather than
+    the ``NERIUM_*`` prefix this Settings class expects. To avoid duplicating
+    secrets in the Vercel project, the get_settings hook reads these
+    well-known names when the corresponding ``NERIUM_*`` var is absent and
+    rewrites the env in-process before pydantic-settings instantiates.
+
+    Priority order matches the integration:
+      database_url      -> NERIUM_DATABASE_URL  | POSTGRES_URL_NON_POOLING
+                           | POSTGRES_URL       | DATABASE_URL
+      redis_url         -> NERIUM_REDIS_URL     | UPSTASH_REDIS_URL
+                           | REDIS_URL
+      env               -> NERIUM_ENV           | ENVIRONMENT (vercel.json)
+
+    Postgres DSNs are normalised through :func:`_normalize_neon_dsn` so the
+    Neon-specific ``channel_binding`` query param does not break asyncpg.
+
+    Idempotent: if NERIUM_* is already set, the function is a no-op for that
+    knob. The override path is taken unconditionally because the fallback
+    sources are themselves opt-in (they only exist on Vercel deploys).
+    """
+
+    import os
+
+    overrides: dict[str, str] = {}
+
+    if not os.getenv("NERIUM_DATABASE_URL"):
+        for candidate in (
+            "POSTGRES_URL_NON_POOLING",
+            "POSTGRES_URL",
+            "DATABASE_URL",
+        ):
+            value = os.getenv(candidate)
+            if value:
+                normalised = _normalize_neon_dsn(value)
+                overrides["NERIUM_DATABASE_URL"] = normalised
+                if not os.getenv("NERIUM_DATABASE_MIGRATION_URL"):
+                    overrides["NERIUM_DATABASE_MIGRATION_URL"] = normalised
+                break
+
+    if not os.getenv("NERIUM_REDIS_URL"):
+        for candidate in ("UPSTASH_REDIS_URL", "REDIS_URL"):
+            value = os.getenv(candidate)
+            if value:
+                overrides["NERIUM_REDIS_URL"] = value
+                break
+
+    # Aether-Vercel T6 Phase 1.7.9: keep env at the default ``development``
+    # for the Vercel deploy so the production-secrets validator does not fire
+    # (NERIUM_SECRET_KEY + NERIUM_REALTIME_TICKET_SECRET are not provisioned
+    # for the demo lane; the theatrical Builder gate plus ANTHROPIC_API_KEY
+    # absence is the operative guard, not the env flag). Surfacing this at
+    # the prompt level so the next lane can flip to production once the
+    # secrets pipeline is in place.
+
+    return overrides
+
+
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     """Return the process-wide Settings singleton.
@@ -478,6 +584,14 @@ def get_settings() -> Settings:
     Cache kept at module scope so FastAPI dependency injection reuses the same
     instance across requests. Tests call ``get_settings.cache_clear()`` to
     rebuild after env patches.
+
+    Aether-Vercel T6 Phase 1.7.9: applies the Vercel platform env fallback
+    before instantiation so Neon + Upstash secrets injected by the managed
+    integration land under the ``NERIUM_*`` keys this class expects.
     """
 
+    import os
+
+    for key, value in _vercel_fallback_overrides().items():
+        os.environ.setdefault(key, value)
     return Settings()

@@ -11,6 +11,10 @@
 
 import * as Phaser from 'phaser';
 
+import { setAssetManifest, type AssetManifestEntry } from '../visual/asset_keys';
+
+const MANIFEST_KEY = 'asset_manifest';
+
 export class BootScene extends Phaser.Scene {
   constructor() {
     super({ key: 'Boot' } satisfies Phaser.Types.Scenes.SettingsConfig);
@@ -22,9 +26,19 @@ export class BootScene extends Phaser.Scene {
     // blocks for as short a time as possible.
     this.load.pack('boot-pack', '/assets/packs/boot-asset-pack.json');
 
+    // Aether-Vercel T6 Phase 1.7.5: load the AI-asset manifest emitted by
+    // `scripts/upload-assets-to-blob.ts`. Every downstream scene resolves
+    // texture keys via `assetUrl(key)` which reads this manifest, so it MUST
+    // land in the cache before PreloadScene + TitleScene + LoadingScene
+    // queue their image loads. Phaser routes the JSON file through the same
+    // loader so the existing COMPLETE handler covers both the pack and the
+    // manifest fetch.
+    this.load.json(MANIFEST_KEY, '/asset_manifest.json');
+
     // Fallback: if the pack load fails for any reason, the preloader still
     // runs with a pure-rectangle progress bar rendered in PreloadScene.
     this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+      this.installManifest();
       this.launchUiAndPreload();
     });
 
@@ -34,9 +48,38 @@ export class BootScene extends Phaser.Scene {
         console.warn(
           `[BootScene] pack load error for ${fileObj.key}; continuing to Preload anyway`,
         );
+        // Manifest may still have loaded even if the boot pack failed.
+        this.installManifest();
         this.launchUiAndPreload();
       },
     );
+  }
+
+  /**
+   * Pull the loaded manifest JSON out of the Phaser cache and hand it to the
+   * asset_keys.ts module so `assetUrl(key)` resolves. Idempotent and tolerant
+   * of an absent cache entry: surfaces a single console error so downstream
+   * `assetUrl` exceptions point at the root cause without flooding logs.
+   */
+  private installManifest(): void {
+    const m = this.cache.json.get(MANIFEST_KEY) as
+      | Record<string, AssetManifestEntry>
+      | undefined;
+    if (!m) {
+      console.error(
+        '[BootScene] /asset_manifest.json missing from cache. ' +
+          'Verify scripts/upload-assets-to-blob.ts ran and the file is served by Next.js public/.',
+      );
+      return;
+    }
+    try {
+      setAssetManifest(m);
+      console.info(
+        `[BootScene] asset manifest installed (${Object.keys(m).length} entries)`,
+      );
+    } catch (err) {
+      console.error('[BootScene] setAssetManifest threw', err);
+    }
   }
 
   create() {

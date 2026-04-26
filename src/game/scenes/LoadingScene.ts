@@ -24,7 +24,7 @@
 //
 
 import * as Phaser from 'phaser';
-import { ASSET_KEYS, ASSET_PATHS, type AssetKey } from '../visual/asset_keys';
+import { ASSET_KEYS, assetUrl, type AssetKey } from '../visual/asset_keys';
 
 const SCENE_KEY = 'Loading';
 const MIN_DISPLAY_MS = 1500;
@@ -71,7 +71,7 @@ export class LoadingScene extends Phaser.Scene {
     if (!this.textures.exists(ASSET_KEYS.ui.loading.loading_screen)) {
       this.load.image(
         ASSET_KEYS.ui.loading.loading_screen,
-        ASSET_PATHS.loading_screen,
+        assetUrl('loading_screen'),
       );
     }
     if (
@@ -80,7 +80,7 @@ export class LoadingScene extends Phaser.Scene {
     ) {
       this.load.image(
         this.transitionImageKey,
-        ASSET_PATHS[this.transitionImageKey],
+        assetUrl(this.transitionImageKey),
       );
     }
   }

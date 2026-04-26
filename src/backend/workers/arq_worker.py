@@ -49,6 +49,7 @@ Contract references
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any, Awaitable, Callable
 
 from arq.connections import RedisSettings
@@ -113,10 +114,26 @@ def build_redis_settings(settings: Settings | None = None) -> RedisSettings:
     Arq uses its own Redis connection pool (not redis-py's) because it
     maintains worker-side pub/sub and list pops. We share the same URL
     so operators see only one Redis process to manage.
+
+    Aether-Vercel T6 Phase 1.7.9: tolerate an empty or malformed
+    ``redis_url`` at module import time when running on Vercel where the
+    Arq worker never actually starts (the ``api/index.py`` entry serves
+    only the FastAPI app, with the worker running off-Lambda or not at
+    all for the demo lane). The class-level ``redis_settings`` attribute
+    must still resolve to *some* :class:`RedisSettings`, so fall back to
+    a localhost stub that will never be exercised in the deploy. The
+    explicit Vercel guard around realtime + flag listener startup in
+    ``main.py`` keeps the FastAPI lifespan from touching this stub.
     """
 
     effective = settings or get_settings()
-    return RedisSettings.from_dsn(effective.redis_url)
+    url = effective.redis_url or "redis://localhost:6379/0"
+    try:
+        return RedisSettings.from_dsn(url)
+    except RuntimeError:
+        if os.getenv("VERCEL") == "1":
+            return RedisSettings.from_dsn("redis://localhost:6379/0")
+        raise
 
 
 async def _on_startup(ctx: dict[str, Any]) -> None:

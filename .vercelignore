@@ -1,0 +1,31 @@
+# Vercel build context exclusions.
+#
+# Owner: Aether-Vercel (NP T6 deploy lane).
+#
+# Aether-Vercel resume-4 update: AI-asset bundle migrated off-Lambda to
+# Vercel Blob (region iad1, 1 GB free tier). The 96 active assets are
+# uploaded via `npm run upload-assets` (scripts/upload-assets-to-blob.ts)
+# and resolved at runtime through `public/asset_manifest.json`. The
+# `_Reference/` source tree is no longer needed in the deploy upload at
+# all; this exclusion drops the upload from ~650 MB raw + ~370 MB
+# resolved (resume-2 state) to a thin Lambda well under the 500 MB
+# ephemeral storage limit.
+#
+# Original V6 D1 decision: active asset bundle was included via
+# per-category symlinks under public/assets/ai/. Resume-2 superseded D1
+# with local pre-resolve. Resume-4 supersedes resume-2 with the Blob
+# migration (build still failed at the Lambda 500 MB ceiling).
+
+.git
+node_modules
+.next
+.venv
+__pycache__
+tests/
+.env
+.env.local
+_skills_staging/
+_meta/
+_Reference/
+*.test.ts
+*.spec.ts

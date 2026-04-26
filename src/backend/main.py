@@ -38,6 +38,7 @@ Session 3 will add:
 from __future__ import annotations
 
 import logging
+import os
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
@@ -109,29 +110,57 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     set_pool(pool)
 
     # 2) Redis pool (required for rate limit + session + arq enqueue).
-    try:
-        redis_pool = await create_redis_pool(settings)
-    except Exception:
-        # Unwind the DB pool so we don't leak connections if Redis is down.
-        await close_pool()
-        raise
+    # Aether-Vercel T6 Phase 1.7.9: when ``UPSTASH_REDIS_URL`` is missing or
+    # empty AND we are running on Vercel, skip the Redis bootstrap entirely
+    # so the FastAPI app still boots in a degraded mode where rate limit +
+    # session + arq enqueue paths return their no-redis-fallback envelopes.
+    # The marketplace browse + pricing + health endpoints do not exercise
+    # Redis on the critical demo path, so the lane stays green.
+    redis_pool = None
+    redis_url = (settings.redis_url or "").strip()
+    redis_url_valid = redis_url.startswith(("redis://", "rediss://", "unix://"))
+    is_vercel_env = os.getenv("VERCEL") == "1"
+    if not redis_url_valid and is_vercel_env:
+        logger.warning(
+            "vercel.environment.skip subsystem=redis_pool reason=invalid_or_missing_url"
+        )
+    else:
+        try:
+            redis_pool = await create_redis_pool(settings)
+        except Exception as exc:
+            if is_vercel_env:
+                # Demo lane tolerance: log + continue without redis. The
+                # subsystems that depend on it surface 503s for their own
+                # routes, the rest of the API stays up.
+                logger.warning(
+                    "vercel.environment.skip subsystem=redis_pool err=%s",
+                    exc,
+                )
+            else:
+                # Unwind the DB pool so we don't leak connections if Redis
+                # is down on the standard hetzner deployment path.
+                await close_pool()
+                raise
     set_redis_pool(redis_pool)
 
     # 3) Arq redis handle. Kept optional so a minimal dev setup without
     #    Arq installed still boots; production always has arq pinned.
     arq_redis = None
-    try:
-        from arq import create_pool as arq_create_pool
+    if redis_pool is None and is_vercel_env:
+        logger.info("vercel.environment.skip subsystem=arq_enqueue reason=no_redis_pool")
+    else:
+        try:
+            from arq import create_pool as arq_create_pool
 
-        from src.backend.workers.arq_worker import build_redis_settings
+            from src.backend.workers.arq_worker import build_redis_settings
 
-        arq_redis = await arq_create_pool(build_redis_settings(settings))
-        set_arq_redis(arq_redis)
-    except Exception as exc:  # pragma: no cover - defensive
-        logger.warning(
-            "lifespan.arq.unavailable err=%s; background enqueues will raise",
-            exc,
-        )
+            arq_redis = await arq_create_pool(build_redis_settings(settings))
+            set_arq_redis(arq_redis)
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.warning(
+                "lifespan.arq.unavailable err=%s; background enqueues will raise",
+                exc,
+            )
 
     app.state.settings = settings
     app.state.db_pool = pool
@@ -148,6 +177,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # ``alembic upgrade``) the bootstrap swallows the failure so the
     # API still boots.
     flag_listener = None
+    is_vercel = os.getenv("VERCEL") == "1"
     try:
         from src.backend.flags.invalidator import start_invalidation_listener
         from src.backend.flags.service import bootstrap_all_flags
@@ -160,7 +190,17 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 "run alembic upgrade + apply default_flags seed",
                 exc,
             )
-        flag_listener = await start_invalidation_listener()
+        if is_vercel:
+            # Vercel's stateless serverless runtime cannot host a long-lived
+            # Redis pub/sub subscriber. The bootstrap dict above is loaded
+            # per cold invocation and naturally re-reads from Postgres on
+            # the next warm container, so flag changes propagate within the
+            # cold-start window without the pub/sub channel.
+            logger.info(
+                "vercel.environment.skip subsystem=flag_invalidation_listener"
+            )
+        else:
+            flag_listener = await start_invalidation_listener()
 
         # Moros (W2 NP P3 S1) idempotent flag seed. Creates the three
         # budget flags if absent (ma.daily_budget_usd, ma.monthly_budget_usd,
@@ -196,15 +236,22 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # 5) Nike realtime ConnectionManager. Installed after Redis so it
     #    can grab a pub/sub subscriber connection. Best-effort: a
     #    failure here logs + continues so the API still boots when the
-    #    realtime subsystem is degraded.
-    try:
-        from src.backend.realtime.lifespan import install_realtime
-
-        await install_realtime()
-        app.state.realtime_up = True
-    except Exception as exc:  # pragma: no cover - defensive
-        logger.warning("lifespan.realtime.install_failed err=%s", exc)
+    #    realtime subsystem is degraded. Skipped under Vercel because
+    #    serverless functions cannot host the persistent WebSocket fanout
+    #    or the pub/sub subscriber loop; the realtime surface is served
+    #    from a separate long-lived process post-MVP.
+    if is_vercel:
+        logger.info("vercel.environment.skip subsystem=realtime")
         app.state.realtime_up = False
+    else:
+        try:
+            from src.backend.realtime.lifespan import install_realtime
+
+            await install_realtime()
+            app.state.realtime_up = True
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.warning("lifespan.realtime.install_failed err=%s", exc)
+            app.state.realtime_up = False
 
     logger.info(
         "lifespan.startup.complete pool_min=%d pool_max=%d redis_max=%d arq=%s flags=%s realtime=%s",
@@ -220,12 +267,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         logger.info("lifespan.shutdown.begin")
-        try:
-            from src.backend.realtime.lifespan import shutdown_realtime
+        if not is_vercel:
+            try:
+                from src.backend.realtime.lifespan import shutdown_realtime
 
-            await shutdown_realtime()
-        except Exception as exc:  # pragma: no cover - defensive
-            logger.warning("lifespan.realtime.shutdown_failed err=%s", exc)
+                await shutdown_realtime()
+            except Exception as exc:  # pragma: no cover - defensive
+                logger.warning("lifespan.realtime.shutdown_failed err=%s", exc)
         if flag_listener is not None:
             try:
                 from src.backend.flags.invalidator import (
@@ -422,7 +470,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # parsing per MCP spec revision 2025-06-18.
     app.include_router(oauth_router)
     app.include_router(well_known_router)
-    mount_mcp(app)
+    # Aether-Vercel T6 Phase 1.7.9: the ``mcp`` package ships in the
+    # ``[project.optional-dependencies] mcp`` group, NOT main dependencies, so
+    # the Vercel Lambda virtualenv does not install it (the prod demo path
+    # never exercises /mcp because the theatrical Builder is gated client-side
+    # by the whitelist plus ANTHROPIC_API_KEY absence). Skip the mount on
+    # Vercel and surface a single info log so the OAuth + .well-known surface
+    # remains intact for any judge crawl while /mcp returns the standard 404.
+    if os.getenv("VERCEL") == "1":
+        logger.info("vercel.environment.skip subsystem=mcp_streamable_http")
+    else:
+        mount_mcp(app)
 
     # Pheme (W1 transactional email). Three routers ship:
     #   * unsubscribe: ``GET /unsubscribe`` landing (public, no prefix)

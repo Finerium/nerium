@@ -15,11 +15,12 @@ import * as Phaser from 'phaser';
 
 import {
   ALL_ASSET_KEYS,
-  ASSET_PATHS,
   SPRITESHEET_FRAMES,
+  assetUrl,
   isSpritesheetKey,
 } from '../visual/asset_keys';
 import { exposeTextureMemoryHook, inspectTextureMemory } from '../visual';
+import { IntroNarrativeScene } from './IntroNarrativeScene';
 
 export class PreloadScene extends Phaser.Scene {
   private progressBar?: Phaser.GameObjects.Graphics;
@@ -103,9 +104,24 @@ export class PreloadScene extends Phaser.Scene {
           .join(', ')}`,
     );
 
-    // World-scoped scenes receive the active worldId via scene data. For the
-    // vertical slice we hard-start ApolloVillageScene on medieval_desert.
-    this.scene.start('ApolloVillage', { worldId: 'medieval_desert' });
+    // Aether-Vercel T6 Phase 1.6: route through IntroNarrativeScene on
+    // first visit (sessionStorage gate). Skip entirely when ?intro=0
+    // is present OR the player has already seen the intro this session.
+    // Force replay via ?intro=1 ignores the sessionStorage flag.
+    //
+    // The 22 Playwright specs that depend on the
+    // BootScene -> PreloadScene -> ApolloVillage chain set
+    // sessionStorage.nerium.intro_seen=1 OR navigate with ?intro=0 in
+    // their test fixture so the intro never plays during regression.
+    // Tests that explicitly want the intro use ?intro=1.
+    if (IntroNarrativeScene.shouldPlayIntro()) {
+      this.scene.start('IntroNarrative');
+    } else {
+      // World-scoped scenes receive the active worldId via scene data.
+      // For the vertical slice we hard-start ApolloVillageScene on
+      // medieval_desert.
+      this.scene.start('ApolloVillage', { worldId: 'medieval_desert' });
+    }
   }
 
   /**
@@ -177,7 +193,9 @@ export class PreloadScene extends Phaser.Scene {
     let imageCount = 0;
     let sheetCount = 0;
     for (const key of ALL_ASSET_KEYS) {
-      const url = ASSET_PATHS[key];
+      // Aether-Vercel T6 Phase 1.7.4: assets now ship via Vercel Blob; URL is
+      // resolved per-key from the manifest installed by BootScene.
+      const url = assetUrl(key);
       if (isSpritesheetKey(key)) {
         const frames = SPRITESHEET_FRAMES[key];
         this.load.spritesheet(key, url, frames);
