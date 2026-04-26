@@ -69,6 +69,7 @@ import { Player } from '../objects/Player';
 import { NPC } from '../objects/NPC';
 import { Caravan } from '../objects/Caravan';
 import { TreasurerNPC } from '../objects/TreasurerNPC';
+import { TransitionZone } from '../objects/TransitionZone';
 import type { GameEventBus } from '../../state/GameEventBus';
 import {
   SceneSorter,
@@ -327,6 +328,13 @@ export class ApolloVillageScene extends Phaser.Scene {
   // consumed by spawnPlayer().
   private spawnOverride?: { x: number; y: number };
 
+  // T-WORLD W7: inter-world transition gates. Apollo Village ships one
+  // east-edge gate to CaravanRoad. New gates are owned + cleaned up by the
+  // bottom-of-class spawnInterWorldGates / tearDownInterWorldGates pair so
+  // the player init + WASD input handler region (T-REGR territory) stays
+  // untouched.
+  private interWorldGates: TransitionZone[] = [];
+
   constructor() {
     super({ key: 'ApolloVillage' } satisfies Phaser.Types.Scenes.SettingsConfig);
   }
@@ -513,6 +521,11 @@ export class ApolloVillageScene extends Phaser.Scene {
         worldId: this.worldId,
       };
     }
+
+    // T-WORLD W7: spawn inter-world transition gates. Always last in
+    // create() so the camera + bus + window hook above are settled by the
+    // time gate visuals + tweens go live.
+    this.spawnInterWorldGates();
   }
 
   update(time: number, delta: number) {
@@ -555,6 +568,12 @@ export class ApolloVillageScene extends Phaser.Scene {
     // pressed, emit `landmark.<name>.interact`. Cooldown gate prevents
     // double-fire on key auto-repeat.
     this.checkLandmarkInteraction(time);
+
+    // T-WORLD W7: per-frame inter-world transition gate proximity polling.
+    // Gates are placed at the east edge (x ~1370) far from the landmark
+    // cluster, so a co-fire with checkLandmarkInteraction is impossible
+    // with the 96px / 128px radii.
+    this.updateInterWorldGates(time);
   }
 
   /**
@@ -1681,8 +1700,77 @@ export class ApolloVillageScene extends Phaser.Scene {
       }
       this.unsubscribers = [];
 
+      // T-WORLD W7: tear down inter-world transition gates. Each gate owns
+      // its chevron container, prompt text, and tweens; destroy() is
+      // idempotent so the order with the global keyboard plugin teardown
+      // does not matter.
+      this.tearDownInterWorldGates();
+
       const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
       bus?.emit('game.scene.shutdown', { sceneKey: this.scene.key });
     });
+  }
+
+  // ---- T-WORLD W7 inter-world transition gates ----
+
+  /**
+   * Spawn the inter-world transition gates for ApolloVillage. The single
+   * outbound gate at the east edge takes the player to CaravanRoad; the
+   * westward return path is owned by CaravanRoadScene.
+   *
+   * Gate position notes:
+   *   - x = 1372 sits just past the existing Caravan game object at
+   *     (1280, 400) and just inside the world.right boundary (1408).
+   *   - y = 480 aligns with the dirt-road altitude shared by Caravan
+   *     west-edge spawn (96, 480) so the player exits Apollo eastward
+   *     and arrives in Caravan at the same vertical level.
+   *   - color = 0xfff5e0 (warm cream) matches the Apollo palette and
+   *     reads against the desert sand backdrop.
+   *   - radius 96 px is the same as Caravan's sub-area bindings so
+   *     proximity feels consistent across worlds.
+   */
+  private spawnInterWorldGates(): void {
+    const eastGate = new TransitionZone(this, 1372, 480, {
+      destSceneKey: 'CaravanRoad',
+      destSceneData: {
+        worldId: 'medieval_desert',
+        // Spawn at (160, 480) instead of CaravanRoad's default (96, 480)
+        // so the player respawns 124 px east of the Caravan west-return
+        // gate at (36, 480) (which has 96 px proximity radius). 124 > 96
+        // means the player does not immediately re-trigger the return gate.
+        spawn: { x: 160, y: 480 },
+      },
+      promptLabel: 'Press E to travel to Caravan Road',
+      direction: 'east',
+      color: 0xfff5e0,
+      radius: 96,
+    });
+    this.interWorldGates.push(eastGate);
+  }
+
+  /**
+   * Per-frame proximity + E-key polling for every inter-world gate. Cheap
+   * O(N) walk where N <= 1 in ApolloVillage.
+   */
+  private updateInterWorldGates(time: number): void {
+    if (this.interWorldGates.length === 0) return;
+    for (const gate of this.interWorldGates) {
+      gate.update(time, this.player);
+    }
+  }
+
+  /**
+   * SHUTDOWN-time teardown for every inter-world gate. Each gate destroys
+   * its own visuals + tweens.
+   */
+  private tearDownInterWorldGates(): void {
+    for (const gate of this.interWorldGates) {
+      try {
+        gate.destroy();
+      } catch (err) {
+        console.error('[ApolloVillageScene] inter-world gate destroy threw', err);
+      }
+    }
+    this.interWorldGates = [];
   }
 }

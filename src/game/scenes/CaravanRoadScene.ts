@@ -70,6 +70,7 @@ import * as Phaser from 'phaser';
 import type { WorldId } from '../../state/types';
 import { Player } from '../objects/Player';
 import { NPC } from '../objects/NPC';
+import { TransitionZone } from '../objects/TransitionZone';
 import type { GameEventBus } from '../../state/GameEventBus';
 import {
   SceneSorter,
@@ -177,6 +178,12 @@ export class CaravanRoadScene extends Phaser.Scene {
   private subAreaTransitioning = false;
   // Honor incoming S6 sub-area return spawn override.
   private spawnOverride?: { x: number; y: number };
+
+  // T-WORLD W7: inter-world transition gates. CaravanRoad is the middle
+  // hub between Apollo Village and Cyberpunk Shanghai, so it ships two
+  // gates: west-edge return to Apollo, east-edge gate to Cyber. Owned +
+  // cleaned up by spawnInterWorldGates / tearDownInterWorldGates.
+  private interWorldGates: TransitionZone[] = [];
 
   constructor() {
     super({ key: 'CaravanRoad' } satisfies Phaser.Types.Scenes.SettingsConfig);
@@ -319,6 +326,10 @@ export class CaravanRoadScene extends Phaser.Scene {
         worldId: this.worldId,
       };
     }
+
+    // T-WORLD W7: spawn inter-world transition gates. Always last in
+    // create() so the camera + bus + window hook above are settled.
+    this.spawnInterWorldGates();
   }
 
   update(time: number, delta: number) {
@@ -332,6 +343,11 @@ export class CaravanRoadScene extends Phaser.Scene {
 
     // Helios-v2 W3 S6: E-key sub-area entry trigger polling.
     this.checkSubAreaInteraction(time);
+
+    // T-WORLD W7: per-frame inter-world transition gate proximity polling.
+    // Gates live at the world east + west edges, far from the sub-area
+    // anchors, so a co-fire is impossible at the 96 px proximity radius.
+    this.updateInterWorldGates(time);
   }
 
   // ---- Ambient props (Layer 3, 7 placements per directive) ----
@@ -568,9 +584,20 @@ export class CaravanRoadScene extends Phaser.Scene {
         radius: 96,
         sceneKey: 'CaravanForestCrossroad',
       },
+      // T-WORLD W7: shipped binding for the third Caravan sub-area
+      // CaravanMountainPass. Anchored at the campfire ring (660, 580)
+      // so the mountain-pass entry reads as "branch off the camp". The
+      // 96 px radius matches the other two sub-areas. Demo blocker fix:
+      // before T-WORLD this scene was unreachable in-game, only via
+      // debug __nerium_game__.scene.start.
+      {
+        name: 'mountain_pass',
+        x: 660,
+        y: 580,
+        radius: 96,
+        sceneKey: 'CaravanMountainPass',
+      },
     ];
-    // Mountain Pass entry is debug-only for S6 (no proximity binding).
-    // S7 may add a dual-path or dedicated discovery zone.
   }
 
   /**
@@ -765,8 +792,81 @@ export class CaravanRoadScene extends Phaser.Scene {
       }
       this.unsubscribers = [];
 
+      // T-WORLD W7: tear down inter-world transition gates.
+      this.tearDownInterWorldGates();
+
       const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
       bus?.emit('game.scene.shutdown', { sceneKey: this.scene.key });
     });
+  }
+
+  // ---- T-WORLD W7 inter-world transition gates ----
+
+  /**
+   * Spawn the inter-world transition gates for CaravanRoad. The west-edge
+   * gate returns to ApolloVillage; the east-edge gate continues to
+   * CyberpunkShanghai. Both use 96 px proximity radius for parity with the
+   * sub-area bindings.
+   *
+   * Gate position notes:
+   *   - West gate at x = 36 sits at the world.left margin near the
+   *     roadside_signpost (90, 540) but offset enough that the player
+   *     visually exits past the sign.
+   *   - East gate at x = 1372 sits past the wooden_wagon (1180, 600) and
+   *     just inside world.right (1408). y = 480 aligns with the dirt path.
+   *   - Apollo east-edge spawn at (1372, 480) is too close to the world
+   *     edge for player physics; return-to-Apollo passes spawn (1320, 480)
+   *     so the player respawns inside Apollo with comfortable headroom.
+   *   - Cyber west-edge spawn at (160, 640) follows the existing
+   *     CyberpunkShanghai default spawn coord.
+   */
+  private spawnInterWorldGates(): void {
+    const westReturn = new TransitionZone(this, 36, 480, {
+      destSceneKey: 'ApolloVillage',
+      destSceneData: {
+        worldId: 'medieval_desert',
+        // Spawn at (1180, 480) puts the player 192 px west of the Apollo
+        // east-edge gate at (1372, 480) (96 px radius), so the player
+        // does not re-trigger the gate the moment they respawn.
+        spawn: { x: 1180, y: 480 },
+      },
+      promptLabel: 'Press E to return to Apollo Village',
+      direction: 'west',
+      color: 0xfff5e0,
+      radius: 96,
+    });
+    this.interWorldGates.push(westReturn);
+
+    const eastGate = new TransitionZone(this, 1372, 480, {
+      destSceneKey: 'CyberpunkShanghai',
+      destSceneData: {
+        worldId: 'cyberpunk_shanghai',
+        spawn: { x: 160, y: 640 },
+      },
+      promptLabel: 'Press E to travel to Cyberpunk Shanghai',
+      direction: 'east',
+      color: 0x5ad6ff,
+      radius: 96,
+    });
+    this.interWorldGates.push(eastGate);
+  }
+
+  private updateInterWorldGates(time: number): void {
+    if (this.interWorldGates.length === 0) return;
+    if (this.subAreaTransitioning) return;
+    for (const gate of this.interWorldGates) {
+      gate.update(time, this.player);
+    }
+  }
+
+  private tearDownInterWorldGates(): void {
+    for (const gate of this.interWorldGates) {
+      try {
+        gate.destroy();
+      } catch (err) {
+        console.error('[CaravanRoadScene] inter-world gate destroy threw', err);
+      }
+    }
+    this.interWorldGates = [];
   }
 }

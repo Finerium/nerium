@@ -85,6 +85,7 @@ import * as Phaser from 'phaser';
 import type { WorldId } from '../../state/types';
 import { Player } from '../objects/Player';
 import { NPC } from '../objects/NPC';
+import { TransitionZone } from '../objects/TransitionZone';
 import type { GameEventBus } from '../../state/GameEventBus';
 import {
   SceneSorter,
@@ -228,12 +229,31 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
   // Helios-v2 W3 S7 hovering glyph + proximity prompt state.
   private landmarkVisuals: LandmarkVisualHandle[] = [];
 
+  // T-WORLD W7: incoming spawn coord override (e.g. when returning from
+  // CaravanRoad via the west-return inter-world gate). Set in init() and
+  // consumed by spawnPlayer.
+  private spawnOverride?: { x: number; y: number };
+
+  // T-WORLD W7: inter-world transition gates + sub-area entry gates. Cyber
+  // ships 1 west-return gate to Caravan plus 4 sub-area entries (Skyscraper
+  // Lobby, Rooftop, Underground Alley, Server Room) so all 4 cyber sub-area
+  // scenes are reachable in-game. Owned + cleaned up by spawnInterWorldGates.
+  private interWorldGates: TransitionZone[] = [];
+
   constructor() {
     super({ key: 'CyberpunkShanghai' } satisfies Phaser.Types.Scenes.SettingsConfig);
   }
 
   init(data: CyberpunkShanghaiSceneData) {
     if (data.worldId) this.worldId = data.worldId;
+    // T-WORLD W7: honor spawn override forwarded by inter-world gates so
+    // returning from CaravanRoad lands the player at the correct re-entry
+    // coord instead of the hard-coded default.
+    if (data.spawn) {
+      this.spawnOverride = { x: data.spawn.x, y: data.spawn.y };
+    } else {
+      this.spawnOverride = undefined;
+    }
   }
 
   create() {
@@ -394,6 +414,11 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
         worldId: this.worldId,
       };
     }
+
+    // T-WORLD W7: spawn west-return inter-world gate + 4 sub-area entry
+    // gates. Always last in create() so prior camera + bus + window hook
+    // setup is settled.
+    this.spawnInterWorldGates();
   }
 
   update(time: number, delta: number) {
@@ -414,6 +439,11 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
 
     // Landmark E-key interaction polling.
     this.checkLandmarkInteraction(time);
+
+    // T-WORLD W7: per-frame proximity polling for inter-world + sub-area
+    // gates. Gates live at world edges + offset positions chosen to clear
+    // the 4 NERIUM-pillar landmark proximity radii so co-fire is impossible.
+    this.updateInterWorldGates(time);
   }
 
   // ---- Layer 2: wet_puddle ground tiles (player walks OVER) ----
@@ -916,8 +946,10 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
   // ---- Player ----
 
   private spawnPlayer() {
-    const spawnX = 160;
-    const spawnY = 640;
+    // T-WORLD W7: honor inter-world gate spawn override; otherwise fall
+    // back to the canonical (160, 640) west-edge entry coord.
+    const spawnX = this.spawnOverride?.x ?? 160;
+    const spawnY = this.spawnOverride?.y ?? 640;
     this.player = new Player(this, spawnX, spawnY, {
       textureKey: ASSET_KEYS.characters.player_spritesheet,
       frame: 0,
@@ -1182,8 +1214,140 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
       }
       this.unsubscribers = [];
 
+      // T-WORLD W7: tear down inter-world + sub-area transition gates.
+      this.tearDownInterWorldGates();
+
       const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
       bus?.emit('game.scene.shutdown', { sceneKey: this.scene.key });
     });
+  }
+
+  // ---- T-WORLD W7 inter-world + sub-area transition gates ----
+
+  /**
+   * Spawn the west-return inter-world gate plus the 4 sub-area entry gates.
+   *
+   * Position rationale (each gate radius 96 px, NERIUM landmark radius
+   * 128 px, so anchors must be > 224 px from any landmark center to avoid
+   * E-key co-fire):
+   *
+   *   West-return to CaravanRoad: (36, 240)
+   *     - Bank treasury landmark (130, 480) is 254 px away (clear)
+   *     - Upper-left corner reads as "back westward through the gateway"
+   *
+   *   CyberSkyscraperLobby: (1390, 200)
+   *     - Marketplace landmark (1180, 460) is 339 px away (clear)
+   *     - Upper-right corner anchors near cyber_industrial_pipe (1380, 360)
+   *       and reads as "skyscraper towering up"
+   *
+   *   CyberRooftop: (820, 100)
+   *     - All 4 landmarks > 400 px away (clear)
+   *     - Top-center anchored above the laundry_line (820, 160) and the
+   *       drone (820, 240) so the cluster reads as "rooftop skyway"
+   *
+   *   CyberUndergroundAlley: (700, 700)
+   *     - Admin hall (1260, 760) is 564 px away, protocol gateway
+   *       (320, 720) is 381 px away (clear)
+   *     - Lower-mid pavement near the steam_vent (700, 700) and
+   *       cyber_data_terminal (480, 740) reads as "manhole leading down"
+   *
+   *   CyberServerRoom: (820, 480)
+   *     - All 4 landmarks > 350 px away (clear)
+   *     - Mid-center near the holo_ad_panel (640, 380) reads as
+   *       "datacenter the drone watches"
+   */
+  private spawnInterWorldGates(): void {
+    // West-return gate to CaravanRoad. Cyan tint matches the cyberpunk
+    // palette and signals "back through the cyber gateway".
+    const westReturn = new TransitionZone(this, 36, 240, {
+      destSceneKey: 'CaravanRoad',
+      destSceneData: {
+        worldId: 'medieval_desert',
+        // Spawn at (1180, 480) inside CaravanRoad so the player respawns
+        // 192 px west of Caravan's east-gate at (1372, 480) (96 px radius)
+        // and does not re-trigger the gate.
+        spawn: { x: 1180, y: 480 },
+      },
+      promptLabel: 'Press E to return to Caravan Road',
+      direction: 'west',
+      color: 0x5ad6ff,
+      radius: 96,
+    });
+    this.interWorldGates.push(westReturn);
+
+    // Sub-area entry: CyberSkyscraperLobby (upper-right corner).
+    const lobby = new TransitionZone(this, 1390, 200, {
+      destSceneKey: 'CyberSkyscraperLobby',
+      destSceneData: {
+        worldId: 'cyberpunk_shanghai',
+        from: 'CyberpunkShanghai',
+      },
+      promptLabel: 'Press E to enter Skyscraper Lobby',
+      direction: 'north',
+      color: 0xff2db5,
+      radius: 96,
+    });
+    this.interWorldGates.push(lobby);
+
+    // Sub-area entry: CyberRooftop (top center, upward).
+    const rooftop = new TransitionZone(this, 820, 100, {
+      destSceneKey: 'CyberRooftop',
+      destSceneData: {
+        worldId: 'cyberpunk_shanghai',
+        from: 'CyberpunkShanghai',
+      },
+      promptLabel: 'Press E to climb to Rooftop',
+      direction: 'north',
+      color: 0x00f0ff,
+      radius: 96,
+    });
+    this.interWorldGates.push(rooftop);
+
+    // Sub-area entry: CyberUndergroundAlley (lower-mid, downward).
+    const alley = new TransitionZone(this, 700, 700, {
+      destSceneKey: 'CyberUndergroundAlley',
+      destSceneData: {
+        worldId: 'cyberpunk_shanghai',
+        from: 'CyberpunkShanghai',
+      },
+      promptLabel: 'Press E to descend to Alley',
+      direction: 'south',
+      color: 0x8b5cf6,
+      radius: 96,
+    });
+    this.interWorldGates.push(alley);
+
+    // Sub-area entry: CyberServerRoom (mid-center).
+    const serverRoom = new TransitionZone(this, 820, 480, {
+      destSceneKey: 'CyberServerRoom',
+      destSceneData: {
+        worldId: 'cyberpunk_shanghai',
+        from: 'CyberpunkShanghai',
+      },
+      promptLabel: 'Press E to enter Server Room',
+      direction: 'east',
+      color: 0xff5020,
+      radius: 96,
+      useLoadingScene: false,
+    });
+    this.interWorldGates.push(serverRoom);
+  }
+
+  private updateInterWorldGates(time: number): void {
+    if (this.interWorldGates.length === 0) return;
+    for (const gate of this.interWorldGates) {
+      gate.update(time, this.player);
+    }
+  }
+
+  private tearDownInterWorldGates(): void {
+    for (const gate of this.interWorldGates) {
+      try {
+        gate.destroy();
+      } catch (err) {
+        console.error('[CyberpunkShanghaiScene] gate destroy threw', err);
+      }
+    }
+    this.interWorldGates = [];
   }
 }

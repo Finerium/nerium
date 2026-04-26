@@ -97,3 +97,12 @@ export {
   exposeTextureMemoryHook,
   type TextureMemoryReport,
 } from './textureMemory';
+
+export {
+  buildDirectionChevron,
+  buildGateRing,
+  buildGateIdleTween,
+  buildGateProximityTween,
+  type ChevronDirection,
+  type ChevronOptions,
+} from './transition_hints';
