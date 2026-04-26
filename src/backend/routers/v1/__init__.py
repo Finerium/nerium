@@ -206,6 +206,15 @@ _PILLAR_REGISTRY: tuple[tuple[str, str, str], ...] = (
     # USER JWT (request.state.auth) NOT the agent JWT; these are
     # tenant operator credentials configured by humans.
     ("protocol.keys", "src.backend.routers.v1.protocol_keys", "protocol_keys_router"),
+    # Aether-Vercel T6 Phase 1.5: BYOK Anthropic Messages forwarder.
+    # ``POST /v1/builder/sessions/live`` consumes a user-supplied
+    # Anthropic API key and proxies a single Messages API SSE stream
+    # back to the browser. ZERO usage of NERIUM-side ANTHROPIC_API_KEY.
+    # Public path (no auth required); the user's voluntary key is the
+    # only credential that hits Anthropic. Path is registered in
+    # ``DEFAULT_PUBLIC_PATHS`` (src/backend/middleware/auth.py) so the
+    # AuthMiddleware bypasses bearer enforcement.
+    ("builder.live_session", "src.backend.routers.v1.builder", "live_session_router"),
     # Future W2 slots. Keeping the label namespace so Nemea can assert
     # pillars are mounted before their dependent tests run.
 )

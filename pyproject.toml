@@ -81,6 +81,14 @@ dependencies = [
   # Used by ``src/backend/billing/invoices/pdf_generator.py`` to render
   # marketplace purchase receipts at A4 paper size.
   "reportlab>=4.2.0,<5.0.0",
+
+  # Aether-Vercel NP T6: Mangum ASGI-to-Lambda adapter wraps the FastAPI
+  # app for Vercel's Python serverless runtime. Lifespan="on" runs the
+  # FastAPI startup + shutdown hooks per cold invocation so the asyncpg
+  # pool, redis client, and Hemera flag bootstrap initialise inside the
+  # warm container per V6 D2 decision. Pinned to the 0.17.x line which
+  # ships the lifespan=on path that warms module-level pool state.
+  "mangum>=0.17.0,<0.20.0",
 ]
 
 [project.optional-dependencies]

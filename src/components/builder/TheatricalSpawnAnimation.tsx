@@ -37,9 +37,17 @@ import {
 import { motion, useReducedMotion, AnimatePresence } from 'framer-motion';
 
 import type { SekuriTemplate } from '../../lib/sekuri';
+import { useApolloBuilderDialogueStore } from '../../stores/apolloBuilderDialogueStore';
+import {
+  invokeLiveBuilder,
+  type BuilderRunResult,
+} from '../../lib/builder/liveRuntime';
 
 const SPAWN_HONEST_CLAIM_CAPTION =
   'Demo flow uses pre-canned templates. Live runtime reactivates post-launch.';
+
+const SPAWN_LIVE_CLAIM_CAPTION =
+  'Live runtime active. Browser to Anthropic via stateless backend forwarder. Usage charges go to your Anthropic account.';
 
 export interface TheatricalSpawnAnimationProps {
   template: SekuriTemplate;
@@ -50,6 +58,14 @@ export interface TheatricalSpawnAnimationProps {
   // When true, the animation runs once on mount. When false, it stays
   // paused on its first frame until the prop flips true.
   active: boolean;
+  // Aether-Vercel T6 Phase 1.5: optional override for the live runtime
+  // invoker. Tests pass a fake to avoid real network calls. Default is
+  // `invokeLiveBuilder` from src/lib/builder/liveRuntime.
+  liveInvoker?: typeof invokeLiveBuilder;
+  // Optional override of the user's prompt (otherwise reads from the
+  // dialogue store). Lets the parent component supply a richer prompt
+  // such as the structured agent roster JSON.
+  livePrompt?: string;
 }
 
 // Vendor accent palette mirrors ModelSelectionModal so the per-vendor
@@ -160,8 +176,25 @@ export function TheatricalSpawnAnimation({
   onComplete,
   onSkip,
   active,
+  liveInvoker,
+  livePrompt,
 }: TheatricalSpawnAnimationProps) {
   const reducedMotion = useReducedMotion();
+
+  // Aether-Vercel T6 Phase 1.5: detect live mode + read user API key from
+  // the Apollo Builder dialogue store. Live mode runs the canned visuals
+  // PLUS a parallel SSE invocation. Theatrical mode runs visuals only.
+  const runtimeMode = useApolloBuilderDialogueStore((s) => s.runtimeMode);
+  const userApiKey = useApolloBuilderDialogueStore((s) => s.userApiKey);
+  const userPromptFromStore = useApolloBuilderDialogueStore(
+    (s) => s.userPrompt,
+  );
+  const decrementLiveRuns = useApolloBuilderDialogueStore(
+    (s) => s.decrementLiveRuns,
+  );
+  const liveRunsRemaining = useApolloBuilderDialogueStore(
+    (s) => s.liveRunsRemaining,
+  );
 
   const terminals = useMemo<TerminalEntry[]>(
     () => buildTerminals(template, perAgentVendorOverrides, spawnCommandTemplate),
@@ -171,8 +204,13 @@ export function TheatricalSpawnAnimation({
   const [revealedCount, setRevealedCount] = useState(0);
   const [typedChars, setTypedChars] = useState<Record<string, number>>({});
   const [showFinal, setShowFinal] = useState(false);
+  const [liveResult, setLiveResult] = useState<BuilderRunResult | null>(null);
+  const [liveFallbackToast, setLiveFallbackToast] = useState<string | null>(
+    null,
+  );
   const skipBtnRef = useRef<HTMLButtonElement | null>(null);
   const completedFiredRef = useRef(false);
+  const liveInvocationFiredRef = useRef(false);
 
   const finalize = useCallback(() => {
     setRevealedCount(terminals.length);
@@ -253,6 +291,64 @@ export function TheatricalSpawnAnimation({
     }
   }, [active]);
 
+  // Aether-Vercel T6 Phase 1.5: live mode parallel SSE invocation. Fires
+  // once per active mount in live runtime mode with a non-empty user API
+  // key. Errors fall back silently to the canned theatrical response and
+  // surface a small toast.
+  useEffect(() => {
+    if (!active) return;
+    if (runtimeMode !== 'live') return;
+    if (!userApiKey) return;
+    if (liveInvocationFiredRef.current) return;
+    if (liveRunsRemaining <= 0) {
+      setLiveFallbackToast(
+        'Live runs exhausted for this session. Showing demo response.',
+      );
+      return;
+    }
+    liveInvocationFiredRef.current = true;
+    decrementLiveRuns();
+    const fn = liveInvoker ?? invokeLiveBuilder;
+    let cancelled = false;
+    const prompt =
+      (livePrompt && livePrompt.trim()) ||
+      (userPromptFromStore && userPromptFromStore.trim()) ||
+      'Build the project as outlined.';
+    fn({
+      prompt,
+      complexityTier: template.complexity,
+      userApiKey,
+    })
+      .then((result) => {
+        if (cancelled) return;
+        setLiveResult(result);
+        if (result.status !== 'ok') {
+          setLiveFallbackToast(
+            'Live runtime unavailable, demo response shown.',
+          );
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLiveFallbackToast(
+          'Live runtime unavailable, demo response shown.',
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    active,
+    runtimeMode,
+    userApiKey,
+    livePrompt,
+    userPromptFromStore,
+    template.complexity,
+    liveInvoker,
+    liveRunsRemaining,
+    decrementLiveRuns,
+  ]);
+
   if (!active) return null;
 
   // Group terminals by parallel group label so we can visually box per group.
@@ -273,25 +369,44 @@ export function TheatricalSpawnAnimation({
       data-testid="theatrical-spawn-animation"
     >
       <header style={headerStyle}>
-        <span style={eyebrowStyle}>NERIUM Builder // Theatrical spawn</span>
-        <button
-          ref={skipBtnRef}
-          type="button"
-          onClick={() => {
-            finalize();
-            onSkip?.();
-          }}
-          style={skipBtnStyle}
-          aria-label="Skip animation"
-          data-testid="theatrical-spawn-skip"
-        >
-          Skip
-        </button>
+        <span style={eyebrowStyle}>
+          NERIUM Builder // {runtimeMode === 'live' ? 'Live spawn' : 'Theatrical spawn'}
+        </span>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          {runtimeMode === 'live' ? (
+            <span style={liveBadgeStyle} data-testid="theatrical-spawn-live-badge">
+              LIVE
+            </span>
+          ) : null}
+          <button
+            ref={skipBtnRef}
+            type="button"
+            onClick={() => {
+              finalize();
+              onSkip?.();
+            }}
+            style={skipBtnStyle}
+            aria-label="Skip animation"
+            data-testid="theatrical-spawn-skip"
+          >
+            Skip
+          </button>
+        </div>
       </header>
 
       <p style={honestClaimStyle} role="note">
-        {SPAWN_HONEST_CLAIM_CAPTION}
+        {runtimeMode === 'live' ? SPAWN_LIVE_CLAIM_CAPTION : SPAWN_HONEST_CLAIM_CAPTION}
       </p>
+
+      {liveFallbackToast ? (
+        <p
+          style={fallbackToastStyle}
+          role="status"
+          data-testid="theatrical-spawn-fallback-toast"
+        >
+          {liveFallbackToast}
+        </p>
+      ) : null}
 
       <section
         aria-live="polite"
@@ -368,10 +483,20 @@ export function TheatricalSpawnAnimation({
                 APP
               </span>
               <span style={finalLabelStyle}>BUILD COMPLETE</span>
-              <span style={finalDetailStyle}>
-                {terminals.length} agents, {groupLabels.length} parallel groups,
-                ~{template.estimated_duration_minutes} min wallclock estimate.
-              </span>
+              {runtimeMode === 'live' && liveResult && liveResult.status === 'ok' && liveResult.text ? (
+                <pre
+                  style={liveResponseStyle}
+                  data-testid="theatrical-spawn-live-response"
+                >
+                  {liveResult.text.slice(0, 600)}
+                  {liveResult.text.length > 600 ? '...' : ''}
+                </pre>
+              ) : (
+                <span style={finalDetailStyle}>
+                  {terminals.length} agents, {groupLabels.length} parallel groups,
+                  ~{template.estimated_duration_minutes} min wallclock estimate.
+                </span>
+              )}
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -576,6 +701,49 @@ const finalDetailStyle: CSSProperties = {
   fontFamily: FONT_MONO,
   fontSize: '11px',
   color: 'oklch(0.72 0.02 250)',
+};
+
+const liveBadgeStyle: CSSProperties = {
+  fontFamily: FONT_MONO,
+  fontSize: '10px',
+  letterSpacing: '0.22em',
+  textTransform: 'uppercase',
+  padding: '0.2rem 0.5rem',
+  borderRadius: '999px',
+  background: 'oklch(0.66 0.27 5 / 0.18)',
+  color: 'oklch(0.66 0.27 5)',
+  border: '1px solid oklch(0.66 0.27 5)',
+  fontWeight: 700,
+};
+
+const fallbackToastStyle: CSSProperties = {
+  margin: '0 0 0.6rem 0',
+  padding: '0.4rem 0.7rem',
+  borderRadius: '0.4rem',
+  background: 'oklch(0.78 0.17 55 / 0.12)',
+  border: '1px solid oklch(0.78 0.17 55)',
+  fontFamily: FONT_MONO,
+  fontSize: '11px',
+  color: 'oklch(0.78 0.17 55)',
+};
+
+const liveResponseStyle: CSSProperties = {
+  margin: 0,
+  padding: '0.5rem 0.65rem',
+  borderRadius: '0.45rem',
+  background: 'oklch(0.10 0.012 250 / 0.6)',
+  border: '1px solid oklch(0.32 0.02 250)',
+  fontFamily: FONT_MONO,
+  fontSize: '11px',
+  lineHeight: 1.5,
+  color: 'oklch(0.95 0.01 85)',
+  whiteSpace: 'pre-wrap',
+  wordBreak: 'break-word',
+  maxHeight: '180px',
+  overflowY: 'auto',
+  textAlign: 'left',
+  width: '100%',
+  maxWidth: '600px',
 };
 
 // Inject the cursor blink keyframe into a style tag once. Avoids global CSS

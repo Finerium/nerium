@@ -59,6 +59,7 @@ import ModelSelectionModalWithResponsiveStyles, {
   useBuilderModelSelectionStore,
   type ConfirmedModelSelection,
 } from '../builder/ModelSelectionModal';
+import { ApiKeyModal } from '../builder/ApiKeyModal';
 
 const BUS_TOPIC_MODEL_CONFIRM = 'nerium.builder.model_selection_confirmed';
 const BUS_TOPIC_OPEN_MODAL = 'nerium.builder.open_model_selection';
@@ -94,6 +95,9 @@ export function ApolloBuilderWorkshopDialogue() {
     (s) => s.goStructureProposal,
   );
   const setModelConfig = useApolloBuilderDialogueStore((s) => s.setModelConfig);
+  const goAwaitingRuntimeChoice = useApolloBuilderDialogueStore(
+    (s) => s.goAwaitingRuntimeChoice,
+  );
   const goSpawning = useApolloBuilderDialogueStore((s) => s.goSpawning);
   const goComplete = useApolloBuilderDialogueStore((s) => s.goComplete);
   const goRevising = useApolloBuilderDialogueStore((s) => s.goRevising);
@@ -109,6 +113,29 @@ export function ApolloBuilderWorkshopDialogue() {
   const titleId = useId();
 
   const open = phase !== 'closed';
+
+  // -------------------------------------------------------------------------
+  // Aether-Vercel T6 Phase 1.5: expose the apollo dialogue store under a
+  // namespaced window handle so Playwright specs can drive transitions
+  // without simulating the full UI flow. Mirrors the precedent set by
+  // PhaserCanvas under `window.__nerium_game__`. The handle is purely a
+  // test convenience; production code does not depend on it.
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const w = window as unknown as Record<string, unknown>;
+    w.__nerium_test_apollo_store__ = useApolloBuilderDialogueStore.getState();
+    // Re-publish on every state change so the test hook always reflects
+    // the current API surface (actions are stable refs but selectors
+    // refresh).
+    const unsub = useApolloBuilderDialogueStore.subscribe((s) => {
+      w.__nerium_test_apollo_store__ = s;
+    });
+    return () => {
+      unsub();
+      delete w.__nerium_test_apollo_store__;
+    };
+  }, []);
 
   // -------------------------------------------------------------------------
   // Listen for model_selection_confirmed via window CustomEvent emitted by
@@ -235,6 +262,7 @@ export function ApolloBuilderWorkshopDialogue() {
   return (
     <>
       <ModelSelectionModalWithResponsiveStyles />
+      <ApiKeyModal />
       <AnimatePresence>
         {open && !showSpawnAnimation ? (
           <motion.div
@@ -300,7 +328,7 @@ export function ApolloBuilderWorkshopDialogue() {
                   template={template}
                   modelConfig={modelConfig}
                   perAgentVendorOverrides={perAgentVendorOverridesPreview}
-                  onAccept={goSpawning}
+                  onAccept={goAwaitingRuntimeChoice}
                   onRevise={handleOpenRevise}
                 />
               ) : null}
@@ -366,6 +394,7 @@ function DialogueHeader({ titleId, phase, onClose }: DialogueHeaderProps) {
     classifying: 'Classifying',
     template_summary: 'Sekuri Template',
     structure_proposal: 'Agent Structure',
+    awaiting_runtime_choice: 'Choose Runtime',
     spawning: 'Spawning',
     complete: 'Build Complete',
     revising: 'Revise Structure',

@@ -73,6 +73,13 @@ DEFAULT_PUBLIC_PATHS: tuple[str, ...] = (
     # catalogue). Allows the marketplace + admin tooling to render a
     # vendor list without holding a session token.
     "/v1/protocol/vendors",
+    # Aether-Vercel T6 Phase 1.5: BYOK Anthropic Messages forwarder.
+    # The user supplies their OWN Anthropic API key in the request
+    # body; the endpoint proxies a single Messages API call. There is
+    # NO NERIUM-side credential involved, so no NERIUM bearer token is
+    # required. Anonymous browser visitors can opt in. The endpoint
+    # does NOT log/persist the user's key.
+    "/v1/builder/sessions/live",
 )
 """Paths that bypass auth entirely. Docs + health probes + OpenAPI spec."""
 

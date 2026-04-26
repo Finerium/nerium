@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "framework": "nextjs",
+  "functions": {
+    "api/index.py": {
+      "memory": 1024,
+      "maxDuration": 15,
+      "excludeFiles": "{public/**,_Reference/**,node_modules/**,.next/cache/**,**/*.png,**/*.jpg,**/*.jpeg,**/*.webp,**/*.mp3,**/*.wav,**/*.ogg,tests/**}"
+    }
+  },
+  "rewrites": [
+    { "source": "/v1/:path*", "destination": "/api/index.py" },
+    { "source": "/api/:path*", "destination": "/api/index.py" }
+  ],
+  "crons": [
+    { "path": "/api/cron/trust-refresh", "schedule": "0 2 * * *" },
+    { "path": "/api/cron/key-rotation", "schedule": "0 3 * * 0" }
+  ],
+  "env": { "ENVIRONMENT": "production" }
+}

@@ -34,6 +34,8 @@
     "_skills_staging",
     "_deprecated",
     "_Reference",
-    "cache"
+    "cache",
+    "src/backend/email/templates",
+    "tests"
   ]
 }

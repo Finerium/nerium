@@ -25,6 +25,7 @@ import { BootScene } from '../../game/scenes/BootScene';
 import { PreloadScene } from '../../game/scenes/PreloadScene';
 import { TitleScene } from '../../game/scenes/TitleScene';
 import { LoadingScene } from '../../game/scenes/LoadingScene';
+import { IntroNarrativeScene } from '../../game/scenes/IntroNarrativeScene';
 import { ApolloVillageScene } from '../../game/scenes/ApolloVillageScene';
 import { ApolloTempleInteriorScene } from '../../game/scenes/ApolloTempleInteriorScene';
 import { ApolloMarketplaceBazaarScene } from '../../game/scenes/ApolloMarketplaceBazaarScene';
@@ -129,6 +130,12 @@ export default function PhaserCanvas() {
         // transitionImageKey?, ... }) for cinematic inter-world fade.
         TitleScene,
         LoadingScene,
+        // Aether-Vercel T6 Phase 1.6: IntroNarrativeScene registered here
+        // so PreloadScene can route to it conditionally on first visit
+        // (sessionStorage flag + ?intro=N query param). Three redundant
+        // skip paths inside the scene itself; on completion or skip the
+        // scene transitions to ApolloVillageScene.
+        IntroNarrativeScene,
         ApolloVillageScene,
         ApolloTempleInteriorScene,
         ApolloMarketplaceBazaarScene,

@@ -66,9 +66,59 @@ Model distribution for this submission is 100 percent Opus 4.7. Sixteen active a
 
 ---
 
-## Getting started
+## Production Deploy
 
-Scaffold assumes Node 20 plus, a modern browser with WebGL, and optionally Python 3.11 plus a recent Claude Code CLI for the orchestration lane. A typical local run:
+The submission is live at a single Vercel project that hosts both the Next.js frontend and the FastAPI backend through a Mangum ASGI adapter. The same domain serves the public landing, the `/play` Phaser slice, the marketplace, and every `/v1/*` and `/api/*` route.
+
+Architecture
+- Vercel Edge Network and Vercel Serverless Functions for the public surface
+- Vercel Postgres provisioned via Neon for primary persistence (multi-tenant Postgres 16 with Row-Level Security per the Aether contract)
+- Upstash Redis over a TCP `rediss://` URL for session, rate limiting, and Hemera flag bootstrap
+- Vercel Cron Jobs hit two HTTP entries (`/api/cron/trust-refresh` daily 02:00 UTC and `/api/cron/key-rotation` weekly Sunday 03:00 UTC) instead of a long-lived Arq worker
+- Stripe in test mode for the Banking pillar checkout flow, gated behind a Hemera feature flag
+
+Reproduce the deploy
+```
+vercel link
+vercel storage add postgres
+vercel env pull .env.local
+vercel env add UPSTASH_REDIS_URL production
+vercel env add STRIPE_SECRET_KEY production
+vercel env add STRIPE_PUBLISHABLE_KEY production
+vercel env add STRIPE_WEBHOOK_SECRET production
+vercel env add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY production
+vercel env add JWT_SECRET production   # generate via: openssl rand -hex 64
+DATABASE_URL=$(grep ^POSTGRES_URL_NON_POOLING= .env.local | cut -d= -f2- | tr -d '"') alembic upgrade head
+vercel --prod
+```
+
+Honest claims for the deployed surface
+- **Stripe runs in test mode only.** Pre-Atlas business entity registration. The Stripe live mode key is never set on the deployed environment; live mode is additionally gated behind the Hemera flag `billing.live_mode_enabled`.
+- **Builder ships in theatrical demo mode.** The live runtime that spawns Managed Agents is gated behind the Hemera flag `builder.live` which is seeded `false`. Backend routes that would otherwise spawn an agent return HTTP 403 (`builder_not_enabled`) at the Kratos whitelist gate. ANTHROPIC_API_KEY is intentionally absent from the deployed environment, so even a flag flip cannot reach the Anthropic Managed Agents API without an additional secret rotation.
+- **Multi-vendor live runtime gated.** Crius vendor adapter dispatcher exists end-to-end but ships behind a feature flag. The `/builder` UI surfaces vendor selection as a UX preview only.
+- **54 plus specialist agents constructed via Opus 4.7.** The codebase was built by a 54-agent specialist roster across four waves (foundation, deep build, integration, polish). Every reasoning-layer agent ran on Opus 4.7 except a single Sonnet 4.6 exception for the Cassandra Prediction Layer per `CLAUDE.md` budget section.
+
+## Try Live Builder Runtime
+
+Builder ships in theatrical demo mode by default. Judges who want to see the real Builder runtime invoke against Anthropic can opt in via Bring Your Own Key (BYOK).
+
+How it works
+- The Apollo Workshop dialogue advances to a runtime choice modal after you accept the proposed agent structure. Theatrical (the default) plays the canned spawn animation. Live opens an input field for your own Anthropic API key.
+- The key is stored in `sessionStorage` only. It is cleared when you close the tab. NERIUM does not log, store, or transmit your key. There is no NERIUM-side database row, no NERIUM-side Redis key, no log line that contains the key value.
+- Live runs route through a stateless backend forwarder at `POST /v1/builder/sessions/live`. The forwarder receives the key in the request body, sets it as the `x-api-key` header on a single Anthropic Messages API call, proxies the SSE stream back to the browser, and the local variable falls out of scope at end of request.
+- All Anthropic usage charges go to your Anthropic account, not to NERIUM. We do not pay for or rate-share your usage.
+- A client-side counter caps live runs at 5 per browser session via `sessionStorage`. The cap is intentionally conservative.
+- On any error path (timeout, network failure, malformed key, upstream 401), the UI silently falls back to the canned theatrical response with a small toast indicator. The demo never breaks.
+
+What we do not do
+- We do not store your key in any persistent layer.
+- We do not echo your key in any log line, structured or unstructured.
+- We do not maintain any NERIUM-side `ANTHROPIC_API_KEY` env variable on the deployed environment. The forwarder cannot fall back to a NERIUM key because there is none.
+- We do not retain your prompt or your response. The forwarder is stateless and does not write to any database table.
+
+## Local Development
+
+Scaffold assumes Node 20 plus, a modern browser with WebGL, and optionally Python 3.12 plus a recent Claude Code CLI for the orchestration lane. A typical local run:
 
 ```
 npm install

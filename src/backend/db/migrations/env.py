@@ -86,7 +86,110 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
+def _split_multi_statements(sql: str) -> list[str]:
+    """Split a SQL block on ';' boundaries that are NOT inside dollar-quoted
+    bodies or single quotes.
+
+    asyncpg's wire protocol routes execute() through a prepared statement
+    that rejects multi-statement input. Migrations authored with multi-
+    statement op.execute(...) bodies must be split into individual
+    exec_driver_sql() calls so each statement runs through the simple
+    query path of the asyncpg dialect.
+
+    Aether-Vercel T6 patch: Vercel/Neon runs Python 3.12 with asyncpg.
+    Local dev historically used psycopg2 which tolerates multi-statement
+    text() blocks. The split here keeps multi-statement migrations
+    compatible across both drivers without authoring a sweep edit
+    across every migration file.
+    """
+
+    out: list[str] = []
+    buf: list[str] = []
+    i = 0
+    n = len(sql)
+    in_squote = False
+    in_dollar: str | None = None
+    while i < n:
+        ch = sql[i]
+        if in_dollar is not None:
+            buf.append(ch)
+            if ch == "$" and sql.startswith(in_dollar, i):
+                buf.extend(in_dollar[1:])
+                i += len(in_dollar)
+                in_dollar = None
+                continue
+            i += 1
+            continue
+        if in_squote:
+            buf.append(ch)
+            if ch == "'":
+                if i + 1 < n and sql[i + 1] == "'":
+                    buf.append("'")
+                    i += 2
+                    continue
+                in_squote = False
+            i += 1
+            continue
+        if ch == "'":
+            buf.append(ch)
+            in_squote = True
+            i += 1
+            continue
+        if ch == "$":
+            # Possible dollar-quoted string opener: $tag$
+            j = sql.find("$", i + 1)
+            if j > 0 and all(c.isalnum() or c == "_" for c in sql[i + 1:j]):
+                tag = sql[i:j + 1]
+                buf.append(tag)
+                in_dollar = tag
+                i = j + 1
+                continue
+            buf.append(ch)
+            i += 1
+            continue
+        if ch == ";":
+            stmt = "".join(buf).strip()
+            if stmt:
+                out.append(stmt)
+            buf = []
+            i += 1
+            continue
+        buf.append(ch)
+        i += 1
+    tail = "".join(buf).strip()
+    if tail:
+        out.append(tail)
+    return out
+
+
+def _patch_op_execute_for_asyncpg() -> None:
+    """Wrap alembic.op.execute so multi-statement text blocks split.
+
+    Idempotent: setting an attribute on the wrapped function prevents
+    double-wrapping in test runs that import env.py multiple times.
+    """
+
+    from alembic import op as alembic_op  # local import to avoid cycles
+
+    original = alembic_op.execute
+    if getattr(original, "_aether_split_wrapped", False):
+        return
+
+    def wrapped(sqltext, execution_options=None):
+        if isinstance(sqltext, str) and ";" in sqltext:
+            statements = _split_multi_statements(sqltext)
+            if len(statements) > 1:
+                for stmt in statements:
+                    original(stmt, execution_options=execution_options)
+                return
+        return original(sqltext, execution_options=execution_options)
+
+    wrapped._aether_split_wrapped = True  # type: ignore[attr-defined]
+    alembic_op.execute = wrapped  # type: ignore[assignment]
+
+
 def _do_run_migrations(connection: Connection) -> None:
+    _patch_op_execute_for_asyncpg()
     context.configure(connection=connection, target_metadata=target_metadata)
     with context.begin_transaction():
         context.run_migrations()
