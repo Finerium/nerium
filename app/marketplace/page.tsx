@@ -2,16 +2,19 @@
 //
 // app/marketplace/page.tsx
 //
-// Nemea Phase 5 QA emergency harness (2026-04-22). Renders the Artemis
-// BrowseCanvas against the shipped Artemis demo-seed catalog. Props managed
-// as local state because the canonical BrowseCanvasProps surface expects
-// filter, sort, and change callbacks to be owned by the parent.
+// T7 pixel-art rebuild (2026-04-26). Wraps the existing Phanes BrowseCanvas
+// and Hyperion MarketplaceSearchBar inside the
+// T7MarketplacePixelShell so the marketplace web companion route inherits
+// the Apollo Village night-themed shop interior aesthetic shipped by
+// Helios-v2 in /play. All existing functionality preserved:
 //
-// Hyperion W2 NP P1 V4 S2 (2026-04-26): added a prominent live-search
-// affordance at the top so the canonical browse landing surfaces the
-// hybrid /v1/marketplace/search endpoint. Submitting from the bar
-// navigates to /marketplace/search?q=... where the live results page
-// owns filters, URL state, and pagination.
+//   - Hyperion W2 NP P1 V4 S2 hybrid search affordance at the top routes
+//     to /marketplace/search?q=... on submit.
+//   - Artemis Phanes BrowseCanvas renders the demo seed catalog with the
+//     same filter + sort + listing grid logic shipped in P1.
+//
+// HarnessShell still wraps everything so judges see the cross-pillar nav,
+// the QA disclosure banner, and the canonical heading.
 //
 
 import { useRouter } from 'next/navigation';
@@ -21,6 +24,7 @@ import { BrowseCanvas } from './browse/BrowseCanvas';
 import type { BrowseFilter, BrowseSortOrder } from './browse/types';
 import { HarnessShell } from '../_harness/HarnessShell';
 import { MarketplaceSearchBar } from '../../src/components/marketplace/MarketplaceSearchBar';
+import { T7MarketplacePixelShell } from '../../src/components/marketplace/T7MarketplacePixelShell';
 
 export default function MarketplacePage() {
   const router = useRouter();
@@ -43,30 +47,29 @@ export default function MarketplacePage() {
       heading="Marketplace"
       sub="Open cross-vendor storefront for AI agents. Every listing here is demo seed data authored for the NERIUM hackathon prototype, not a live marketplace entry."
     >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1.5rem',
-          padding: '1.5rem 1.5rem 0',
-        }}
+      <T7MarketplacePixelShell
+        eyebrow="Marketplace stall, Apollo Village"
+        heading="Browse the storefront"
+        tagline="Pixel-art companion view of the in-game marketplace. The same Hyperion search and Phanes catalog power the canonical surface inside /play."
       >
-        <MarketplaceSearchBar
-          value={searchDraft}
-          onQueryChange={setSearchDraft}
-          onSubmit={handleSearchSubmit}
-          placeholder="Search the marketplace. Press Enter to open hybrid search."
+        <div className="t7-marketplace-search-frame">
+          <MarketplaceSearchBar
+            value={searchDraft}
+            onQueryChange={setSearchDraft}
+            onSubmit={handleSearchSubmit}
+            placeholder="Search the marketplace. Press Enter to open hybrid search."
+          />
+        </div>
+        <BrowseCanvas
+          filter={filter}
+          sort={sort}
+          onFilterChange={setFilter}
+          onSortChange={setSort}
+          onListingClick={() => {
+            /* demo: no-op */
+          }}
         />
-      </div>
-      <BrowseCanvas
-        filter={filter}
-        sort={sort}
-        onFilterChange={setFilter}
-        onSortChange={setSort}
-        onListingClick={() => {
-          /* demo: no-op */
-        }}
-      />
+      </T7MarketplacePixelShell>
     </HarnessShell>
   );
 }

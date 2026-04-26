@@ -9,6 +9,14 @@
 // it expects an event-bus-backed pipeline store that is provisioned in the
 // Apollo mount layer (post-harness scope).
 //
+// T7 pixel-art skin layered 2026-04-26. The body is wrapped in
+// T7BuilderPixelShell so the Builder web companion route inherits the
+// Apollo Village night-themed workshop interior aesthetic shipped by
+// Helios-v2 in /play. Section chrome re-skinned via .t7-builder-section.
+// Wave A T3 ModelSelectionModal + Phase 1.5 BYOK ApiKeyModal +
+// TheatricalSpawnAnimation are NOT modified per T7 anti-collision
+// discipline; they render unmodified inside the new chrome.
+//
 
 import { useMemo, useState } from 'react';
 import { LumioReplay } from './lumio/LumioReplay';
@@ -20,6 +28,9 @@ import { HarnessShell } from '../_harness/HarnessShell';
 import { BuilderTierGate } from '../../src/components/builder/BuilderTierGate';
 import {
   ModelSelectionModal,
+  T7BuilderPixelShell,
+  T7VendorBadge,
+  T7_VENDOR_IDS,
   useBuilderModelSelectionStore,
 } from '../../src/components/builder';
 import type { SekuriComplexity } from '../../src/lib/sekuriTemplate';
@@ -36,93 +47,132 @@ export default function BuilderPage() {
       heading="Builder"
       sub="Hero pillar. World switcher re-themes every surface, Lumio replays the cached Day-3 bake, Blueprint Moment reveals the 22-agent pipeline transparently."
     >
-      <section style={{ marginBottom: '2rem' }}>
-        <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.15rem' }}>
-          World aesthetic
-        </h2>
-        <WorldSwitcher session_id="session_demo_builder" />
-      </section>
-
-      <section
-        style={{
-          marginBottom: '2rem',
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '0.75rem',
-        }}
+      <T7BuilderPixelShell
+        eyebrow="Apollo blacksmith forge, after dark"
+        heading="Builder"
+        tagline="Hero pillar. World switcher re-themes every surface. Lumio replays the cached Day-3 bake. Blueprint Moment reveals the 22-agent pipeline transparently."
       >
-        <BuilderTierGate
-          feature="Guided mode"
-          requiredTier="team"
-          description="Multi-vendor model orchestration with team review."
-        />
-        <BuilderTierGate
-          feature="Express mode"
-          requiredTier="pro"
-          description="Single prompt to production with priority routing."
-        />
-      </section>
+        <section className="t7-builder-section">
+          <h2 className="t7-section-title">World aesthetic</h2>
+          <p className="t7-section-meta">
+            Three forge moods, one shared blueprint. Cyberpunk Shanghai is the
+            current default. Steampunk Victorian and Medieval Desert are the
+            sibling palettes that re-theme every Builder surface in lockstep.
+          </p>
+          <WorldSwitcher session_id="session_demo_builder" />
+        </section>
 
-      <ModelSelectionLauncher />
-      <ModelSelectionModal />
+        <section className="t7-builder-section">
+          <h2 className="t7-section-title">Tier gates</h2>
+          <p className="t7-section-meta">
+            Multi-vendor orchestration and priority routing unlock at higher
+            tiers. The Treasurer NPC inside /play handles upgrades with a one
+            tap subscription flow.
+          </p>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '12px',
+            }}
+          >
+            <BuilderTierGate
+              feature="Guided mode"
+              requiredTier="team"
+              description="Multi-vendor model orchestration with team review."
+            />
+            <BuilderTierGate
+              feature="Express mode"
+              requiredTier="pro"
+              description="Single prompt to production with priority routing."
+            />
+          </div>
+        </section>
 
-      <section style={{ marginBottom: '2rem' }}>
-        <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.15rem' }}>
-          Lumio cached replay
-        </h2>
-        <p
-          style={{
-            margin: '0 0 1rem 0',
-            fontSize: '0.85rem',
-            color: 'var(--color-muted, #94a3c4)',
-          }}
-        >
-          Dionysus bake produced cache/lumio_run_2026_04_24.json on Day 3.
-          Press Play to replay the 11-step Builder pipeline deterministically.
-        </p>
-        <LumioReplay autoStart={false} />
-      </section>
+        <section className="t7-builder-section">
+          <h2 className="t7-section-title">Model selection (multi-vendor preview)</h2>
+          <p className="t7-section-meta">
+            Builder surfaces a vendor lineup picker after Sekuri classifies
+            complexity. Live runtime stays Anthropic-only at submission. The
+            vendor badges below show the brass medallion lineup. Anthropic and
+            Google badges are hand-crafted; the remaining six tint the brass
+            medallion base for time discipline.
+          </p>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '14px',
+              alignItems: 'center',
+              marginBottom: '16px',
+            }}
+          >
+            {T7_VENDOR_IDS.map((vendor) => (
+              <div
+                key={vendor}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <T7VendorBadge vendor={vendor} size="md" />
+                <span
+                  style={{
+                    fontFamily: 'JetBrains Mono, monospace',
+                    fontSize: '11px',
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    color: 'oklch(0.72 0.02 250)',
+                  }}
+                >
+                  {vendor}
+                </span>
+              </div>
+            ))}
+          </div>
+          <ModelSelectionLauncher />
+          <ModelSelectionModal />
+        </section>
 
-      <section style={{ marginBottom: '2rem' }}>
-        <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.15rem' }}>
-          Blueprint Moment
-        </h2>
-        <p
-          style={{
-            margin: '0 0 1rem 0',
-            fontSize: '0.85rem',
-            color: 'var(--color-muted, #94a3c4)',
-          }}
-        >
-          Urania 40-second transparency reveal. 22-agent pipeline with the
-          Heracles MA highlight. Toggle play to pause the narration loop.
-        </p>
-        <button
-          type="button"
-          onClick={() => setIsPlaying((p) => !p)}
-          style={{
-            padding: '0.35rem 0.9rem',
-            marginBottom: '1rem',
-            fontSize: '0.85rem',
-            borderRadius: 'var(--radius-md, 0.375rem)',
-            border:
-              '1px solid color-mix(in oklch, var(--color-border, #24244c) 80%, transparent)',
-            background: 'transparent',
-            color: 'inherit',
-            cursor: 'pointer',
-          }}
-        >
-          {isPlaying ? 'Pause' : 'Play'}
-        </button>
-        <BlueprintReveal
-          definition={definition}
-          pipeline_run_id="run_demo_blueprint"
-          onComplete={() => {
-            /* demo: loop handled externally */
-          }}
-          isPlaying={isPlaying}
-        />
-      </section>
+        <section className="t7-builder-section">
+          <h2 className="t7-section-title">Lumio cached replay</h2>
+          <p className="t7-section-meta">
+            Dionysus bake produced cache/lumio_run_2026_04_24.json on Day 3.
+            Press Play to replay the 11-step Builder pipeline deterministically.
+          </p>
+          <div className="t7-builder-spawn-terminal">
+            <LumioReplay autoStart={false} />
+          </div>
+        </section>
+
+        <section className="t7-builder-section">
+          <h2 className="t7-section-title">Blueprint Moment</h2>
+          <p className="t7-section-meta">
+            Urania 40-second transparency reveal. 22-agent pipeline with the
+            Heracles MA highlight. Toggle play to pause the narration loop.
+          </p>
+          <button
+            type="button"
+            onClick={() => setIsPlaying((p) => !p)}
+            className="t7-builder-button"
+            style={{ marginBottom: '14px' }}
+          >
+            {isPlaying ? 'Pause' : 'Play'}
+          </button>
+          <div className="t7-builder-structure-graph">
+            <BlueprintReveal
+              definition={definition}
+              pipeline_run_id="run_demo_blueprint"
+              onComplete={() => {
+                /* demo: loop handled externally */
+              }}
+              isPlaying={isPlaying}
+            />
+          </div>
+        </section>
+      </T7BuilderPixelShell>
     </HarnessShell>
   );
 }
@@ -132,27 +182,24 @@ function ModelSelectionLauncher() {
   const [tier, setTier] = useState<SekuriComplexity>('large');
 
   return (
-    <section
-      style={{ marginBottom: '2rem' }}
-      data-testid="model-selection-launcher"
-    >
-      <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.15rem' }}>
-        Model selection (multi-vendor preview)
-      </h2>
-      <p
+    <div data-testid="model-selection-launcher">
+      <div
         style={{
-          margin: '0 0 0.75rem 0',
-          fontSize: '0.85rem',
-          color: 'var(--color-muted, #94a3c4)',
+          display: 'flex',
+          gap: '10px',
+          alignItems: 'center',
+          flexWrap: 'wrap',
         }}
       >
-        Builder surfaces a vendor lineup picker after Sekuri classifies
-        complexity. Live runtime stays Anthropic-only at submission.
-      </p>
-      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
         <label
           htmlFor="model-selection-tier"
-          style={{ fontSize: '0.8rem', color: 'var(--color-muted, #94a3c4)' }}
+          style={{
+            fontSize: '12px',
+            color: 'oklch(0.72 0.02 250)',
+            fontFamily: 'JetBrains Mono, monospace',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+          }}
         >
           Tier
         </label>
@@ -161,14 +208,6 @@ function ModelSelectionLauncher() {
           data-testid="model-selection-tier-select"
           value={tier}
           onChange={(evt) => setTier(evt.target.value as SekuriComplexity)}
-          style={{
-            padding: '0.35rem 0.55rem',
-            fontSize: '0.85rem',
-            borderRadius: 'var(--radius-md, 0.375rem)',
-            background: 'transparent',
-            color: 'inherit',
-            border: '1px solid var(--color-border, #24244c)',
-          }}
         >
           <option value="small">Small</option>
           <option value="medium">Medium</option>
@@ -178,20 +217,12 @@ function ModelSelectionLauncher() {
           type="button"
           onClick={() => openModal(tier)}
           data-testid="model-selection-open"
-          style={{
-            padding: '0.4rem 1rem',
-            fontSize: '0.85rem',
-            borderRadius: 'var(--radius-md, 0.375rem)',
-            background: 'oklch(0.88 0.15 140)',
-            color: 'oklch(0.14 0.012 250)',
-            border: '1px solid oklch(0.88 0.15 140)',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
+          className="t7-builder-button"
+          data-primary="true"
         >
           Open model selection
         </button>
       </div>
-    </section>
+    </div>
   );
 }

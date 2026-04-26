@@ -27,6 +27,14 @@ import './_harness/harness.css';
 // up the CRT phosphor + VT323 + Space Grotesk theme regardless of which
 // route renders the Phaser canvas.
 import '../src/frontend/styles/chat.css';
+// T7 (2026-04-26): pixel-art skin layers for the Marketplace + Builder
+// web companion routes. Both stylesheets are scoped under their own
+// ancestor classes (`.t7-marketplace-pixel`, `.t7-builder-pixel`) so
+// they have zero effect on the other pillar routes or the in-game
+// `/play` Phaser canvas. Asset bundle: 15 JPGs in public/marketplace-assets/
+// downsized via macOS sips (1.7 MB total).
+import '../src/styles/marketplace-pixel-art.css';
+import '../src/styles/builder-pixel-art.css';
 
 export const metadata: Metadata = {
   title: 'NERIUM. Infrastructure for the AI agent economy.',

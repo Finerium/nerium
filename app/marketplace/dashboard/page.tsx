@@ -11,13 +11,18 @@
 //   5. Reviews list (sortable)
 //   6. Quick actions
 //
+// T7 pixel-art skin layered 2026-04-26. SummaryCard + SectionShell +
+// Action helpers re-skinned via the .t7-marketplace-stat-card,
+// .t7-marketplace-section, and .t7-marketplace-action classes declared
+// in src/styles/marketplace-pixel-art.css. Existing chart + table +
+// payout + reviews components render unchanged inside the new chrome.
+//
 // The route lives under the marketplace prefix so it sits next to
 // /marketplace/listings, /marketplace/browse, /marketplace/leads, etc.
 // The pre-existing /dashboard stub is left in place so the older
 // linking surface still resolves; it can redirect here in a follow-up.
 //
 
-import Link from 'next/link';
 import { HarnessShell } from '../../_harness/HarnessShell';
 import { EarningsChart } from './EarningsChart';
 import { ListingsGrid } from './ListingsGrid';
@@ -25,6 +30,7 @@ import { PayoutPanel } from './PayoutPanel';
 import { ReviewsList } from './ReviewsList';
 import { TransactionsTable } from './TransactionsTable';
 import { DASHBOARD_SEED, formatUsdCents } from './seedData';
+import { T7MarketplacePixelShell } from '../../../src/components/marketplace/T7MarketplacePixelShell';
 
 export const metadata = {
   title: 'Creator Dashboard | NERIUM Marketplace',
@@ -50,76 +56,88 @@ export default function CreatorDashboardPage() {
       heading={`Creator dashboard, ${seed.creator.displayName}`}
       sub="Earnings, sales, payouts, and reviews for your marketplace listings. Demo seeded with cached commerce data; the live read endpoint /v1/commerce/dashboard ships post-hackathon."
     >
-      <section
-        aria-label="Top-level stats"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-          gap: '12px',
-          marginBottom: '24px',
-        }}
+      <T7MarketplacePixelShell
+        eyebrow={`Caravan ledger, ${seed.creator.displayName}`}
+        heading="Creator dashboard"
+        tagline="Earnings, sales, payouts, and reviews for your marketplace listings. Stats hydrated from seed commerce data; the live /v1/commerce/dashboard endpoint ships post-hackathon."
       >
-        <SummaryCard label="Total revenue" value={formatUsdCents(totalRevenueCents)} accent />
-        <SummaryCard label="Net YTD 2026" value={formatUsdCents(ytdNetCents)} />
-        <SummaryCard label="Active listings" value={String(activeListings)} />
-        <SummaryCard
-          label="Avg rating"
-          value={Number.isFinite(avgRating) ? `${avgRating.toFixed(2)} / 5` : 'No reviews'}
-        />
-      </section>
+        <section
+          aria-label="Top-level stats"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '12px',
+            marginBottom: '24px',
+          }}
+        >
+          <T7SummaryCard
+            label="Total revenue"
+            value={formatUsdCents(totalRevenueCents)}
+            accent
+          />
+          <T7SummaryCard label="Net YTD 2026" value={formatUsdCents(ytdNetCents)} />
+          <T7SummaryCard label="Active listings" value={String(activeListings)} />
+          <T7SummaryCard
+            label="Avg rating"
+            value={
+              Number.isFinite(avgRating) ? `${avgRating.toFixed(2)} / 5` : 'No reviews'
+            }
+          />
+        </section>
 
-      <SectionShell title="Quick actions">
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-          <Action href="/creator/submit" primary>
-            Add new listing
-          </Action>
-          <Action href="/marketplace">View public marketplace</Action>
-          <Action href="/marketplace/listings">All my listings</Action>
-          <Action href="/banking">Banking & subscriptions</Action>
+        <T7Section title="Quick actions">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+            <T7Action href="/creator/submit" primary>
+              Add new listing
+            </T7Action>
+            <T7Action href="/marketplace">View public marketplace</T7Action>
+            <T7Action href="/marketplace/listings">All my listings</T7Action>
+            <T7Action href="/banking">Banking and subscriptions</T7Action>
+          </div>
+        </T7Section>
+
+        <T7Section title="Earnings, last 12 months">
+          <EarningsChart data={seed.earnings} />
+        </T7Section>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)',
+            gap: '20px',
+            marginBottom: '24px',
+          }}
+          className="dash-two-col"
+        >
+          <T7Section title="Recent transactions">
+            <TransactionsTable transactions={seed.transactions} />
+          </T7Section>
+          <T7Section title="Payout">
+            <PayoutPanel payout={seed.payout} verified={seed.creator.verified} />
+          </T7Section>
         </div>
-      </SectionShell>
 
-      <SectionShell title="Earnings, last 12 months">
-        <EarningsChart data={seed.earnings} />
-      </SectionShell>
+        <T7Section title="Listings overview">
+          <ListingsGrid listings={seed.listings} />
+        </T7Section>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)',
-          gap: '20px',
-          marginBottom: '24px',
-        }}
-        className="dash-two-col"
-      >
-        <SectionShell title="Recent transactions">
-          <TransactionsTable transactions={seed.transactions} />
-        </SectionShell>
-        <SectionShell title="Payout">
-          <PayoutPanel payout={seed.payout} verified={seed.creator.verified} />
-        </SectionShell>
-      </div>
+        <T7Section title="Reviews">
+          <ReviewsList reviews={seed.reviews} />
+        </T7Section>
 
-      <SectionShell title="Listings overview">
-        <ListingsGrid listings={seed.listings} />
-      </SectionShell>
-
-      <SectionShell title="Reviews">
-        <ReviewsList reviews={seed.reviews} />
-      </SectionShell>
-
-      <style>{`
-        @media (max-width: 960px) {
-          .dash-two-col {
-            grid-template-columns: 1fr !important;
+        <style>{`
+          @media (max-width: 960px) {
+            .dash-two-col {
+              grid-template-columns: 1fr !important;
+            }
           }
-        }
-      `}</style>
+        `}</style>
+      </T7MarketplacePixelShell>
     </HarnessShell>
   );
 }
 
-function SummaryCard({
+function T7SummaryCard({
   label,
   value,
   accent = false,
@@ -129,62 +147,25 @@ function SummaryCard({
   accent?: boolean;
 }) {
   return (
-    <div
-      style={{
-        background: 'oklch(0.18 0.015 250)',
-        border: '1px solid oklch(0.32 0.02 250)',
-        borderRadius: '10px',
-        padding: '14px 16px',
-      }}
-    >
-      <div
-        style={{
-          fontSize: '11px',
-          color: 'oklch(0.6 0.02 250)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.06em',
-          fontFamily: 'JetBrains Mono, monospace',
-        }}
-      >
-        {label}
-      </div>
-      <div
-        style={{
-          marginTop: '6px',
-          fontSize: '20px',
-          fontWeight: 600,
-          color: accent ? 'oklch(0.85 0.18 140)' : 'oklch(0.92 0.02 250)',
-          fontFamily: 'JetBrains Mono, monospace',
-        }}
-      >
+    <div className="t7-marketplace-stat-card">
+      <div className="t7-stat-label">{label}</div>
+      <div className="t7-stat-value" data-accent={accent ? 'true' : 'false'}>
         {value}
       </div>
     </div>
   );
 }
 
-function SectionShell({ title, children }: { title: string; children: React.ReactNode }) {
+function T7Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section style={{ marginBottom: '24px' }}>
-      <h2
-        style={{
-          margin: '0 0 12px',
-          fontSize: '12px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.06em',
-          color: 'oklch(0.6 0.02 250)',
-          fontFamily: 'JetBrains Mono, monospace',
-          fontWeight: 500,
-        }}
-      >
-        {title}
-      </h2>
+    <section className="t7-marketplace-section">
+      <h2 className="t7-section-title">{title}</h2>
       {children}
     </section>
   );
 }
 
-function Action({
+function T7Action({
   href,
   primary = false,
   children,
@@ -194,26 +175,12 @@ function Action({
   children: React.ReactNode;
 }) {
   return (
-    <Link
+    <a
       href={href}
-      prefetch={false}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        padding: '8px 14px',
-        borderRadius: '6px',
-        background: primary ? 'oklch(0.85 0.18 140)' : 'transparent',
-        color: primary ? 'oklch(0.14 0.012 250)' : 'oklch(0.85 0.18 140)',
-        border: `1px solid ${primary ? 'oklch(0.85 0.18 140)' : 'oklch(0.55 0.12 140)'}`,
-        fontSize: '12px',
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-        fontFamily: 'JetBrains Mono, monospace',
-        textDecoration: 'none',
-        fontWeight: 600,
-      }}
+      className="t7-marketplace-action"
+      data-primary={primary ? 'true' : 'false'}
     >
       {children}
-    </Link>
+    </a>
   );
 }

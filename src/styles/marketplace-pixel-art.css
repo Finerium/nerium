@@ -1,0 +1,462 @@
+/*
+ * marketplace-pixel-art.css
+ *
+ * T7 (2026-04-26). Pixel-art skin layer for the Marketplace web routes
+ * (`app/marketplace/*`). Wraps the existing Phanes / Hyperion / Iapetus
+ * components shipped in P1 and Wave A T1, providing visual consistency
+ * with the in-game `/play` JRPG world authored by Helios-v2 (Apollo
+ * Village night ambiance: warm earth tones, fire glow, deep blue night).
+ *
+ * Scope. Every rule below is scoped via the `.t7-marketplace-pixel`
+ * ancestor class so the existing `app/_harness/harness.css` rules,
+ * Tailwind globals, and other pillar routes (`/banking`, `/registry`,
+ * `/protocol`, `/advisor`) remain untouched. Apply the wrapper class on
+ * a single `<div>` inside the `<HarnessShell>` children body and the
+ * marketplace surface re-skins without touching shared chrome.
+ *
+ * No em dash, no emoji.
+ */
+
+.t7-marketplace-pixel {
+  --t7m-ink: oklch(0.14 0.012 250);
+  --t7m-deep: oklch(0.22 0.04 250);
+  --t7m-bone: oklch(0.95 0.01 85);
+  --t7m-phos: oklch(0.88 0.15 140);
+  --t7m-phos-deep: oklch(0.55 0.12 140);
+  --t7m-amber: oklch(0.78 0.17 55);
+  --t7m-warm: oklch(0.55 0.10 50);
+  --t7m-warm-deep: oklch(0.32 0.06 50);
+  --t7m-fog: oklch(0.72 0.02 250);
+
+  position: relative;
+  min-height: 100vh;
+  background-image: url('/marketplace-assets/marketplace_shop_interior_bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-color: var(--t7m-ink);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  color: var(--t7m-bone);
+  isolation: isolate;
+}
+
+.t7-marketplace-pixel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    oklch(0.04 0.01 250 / 0.6) 0%,
+    oklch(0.04 0.01 250 / 0.45) 35%,
+    oklch(0.04 0.01 250 / 0.6) 100%
+  );
+  z-index: 0;
+  pointer-events: none;
+}
+
+.t7-marketplace-pixel-content {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 28px 24px 64px;
+}
+
+/* ================= HONEST-CLAIM BANNER ================= */
+
+.t7-honest-banner {
+  display: block;
+  text-align: center;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--t7m-bone);
+  background: oklch(0.04 0.01 250 / 0.78);
+  border: 1px solid oklch(0.55 0.10 50 / 0.55);
+  padding: 12px 18px;
+  margin: 0 auto 28px;
+  text-transform: uppercase;
+  max-width: 960px;
+}
+
+.t7-honest-banner a {
+  color: var(--t7m-phos);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  margin-left: 6px;
+}
+
+.t7-honest-banner a:hover,
+.t7-honest-banner a:focus-visible {
+  color: oklch(0.95 0.18 140);
+  text-decoration-thickness: 2px;
+}
+
+/* ================= TYPOGRAPHY ================= */
+
+.t7-marketplace-pixel h1,
+.t7-marketplace-pixel h2,
+.t7-marketplace-pixel h3 {
+  font-family: 'VT323', 'Courier New', monospace;
+  color: var(--t7m-bone);
+  text-shadow: 0 0 12px oklch(0.04 0.01 250 / 0.85),
+    0 1px 0 oklch(0.04 0.01 250);
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+.t7-marketplace-pixel h1 {
+  font-size: clamp(36px, 5vw, 56px);
+  margin-bottom: 8px;
+}
+
+.t7-marketplace-pixel h2 {
+  font-size: clamp(24px, 3vw, 36px);
+  margin: 28px 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px dashed oklch(0.55 0.10 50 / 0.55);
+}
+
+.t7-marketplace-pixel h3 {
+  font-size: clamp(20px, 2.4vw, 26px);
+  margin: 16px 0 10px;
+}
+
+.t7-marketplace-pixel p,
+.t7-marketplace-pixel li,
+.t7-marketplace-pixel span,
+.t7-marketplace-pixel label,
+.t7-marketplace-pixel small,
+.t7-marketplace-pixel dt,
+.t7-marketplace-pixel dd {
+  color: var(--t7m-bone);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+}
+
+.t7-marketplace-pixel p {
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 0 10px;
+}
+
+.t7-marketplace-pixel a:not(.t7-honest-banner a):not(.t7-marketplace-buy-button) {
+  color: var(--t7m-phos);
+  text-decoration: none;
+  border-bottom: 1px dotted oklch(0.88 0.15 140 / 0.45);
+}
+
+.t7-marketplace-pixel a:not(.t7-honest-banner a):not(.t7-marketplace-buy-button):hover,
+.t7-marketplace-pixel a:not(.t7-honest-banner a):not(.t7-marketplace-buy-button):focus-visible {
+  color: oklch(0.95 0.18 140);
+  border-bottom-style: solid;
+}
+
+/* ================= HEADER STRIP ================= */
+
+.t7-marketplace-header {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 18px 24px;
+  background: oklch(0.04 0.01 250 / 0.7);
+  border: 1px solid oklch(0.55 0.10 50 / 0.45);
+}
+
+.t7-marketplace-header .t7-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--t7m-amber);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.t7-marketplace-header h1 {
+  margin: 0 0 8px;
+}
+
+.t7-marketplace-header p {
+  font-size: 14px;
+  color: var(--t7m-fog);
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* ================= SEARCH BAR FRAME ================= */
+
+.t7-marketplace-search-frame {
+  position: relative;
+  background-image: url('/marketplace-assets/marketplace_search_bar_frame.jpg');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-color: oklch(0.10 0.02 250 / 0.6);
+  padding: 22px 28px;
+  margin-bottom: 24px;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  border: 1px solid oklch(0.55 0.10 50 / 0.4);
+}
+
+.t7-marketplace-search-frame > * {
+  width: 100%;
+}
+
+/* ================= CARD FRAME SLOTS ================= */
+
+.t7-marketplace-card-frame {
+  position: relative;
+  background-image: url('/marketplace-assets/marketplace_listing_card_frame.jpg');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-color: oklch(0.18 0.02 250 / 0.65);
+  padding: 32px 26px 28px;
+  border: 1px solid oklch(0.55 0.10 50 / 0.35);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  min-height: 220px;
+}
+
+.t7-marketplace-card-frame:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px oklch(0.04 0.01 250 / 0.6),
+    0 0 0 1px oklch(0.78 0.17 55 / 0.6);
+}
+
+/* When a card is wrapped around an existing rendered child, the child's
+ * internal background should not occlude the frame texture. Make the
+ * inner DOM transparent unless explicitly themed. */
+.t7-marketplace-card-frame > * {
+  background: transparent;
+}
+
+/* ================= BUY BUTTON ================= */
+
+.t7-marketplace-buy-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-image: url('/marketplace-assets/marketplace_buy_button_normal.jpg');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-color: var(--t7m-warm-deep);
+  border: 1px solid oklch(0.55 0.10 50 / 0.6);
+  cursor: pointer;
+  font-family: 'VT323', 'Courier New', monospace;
+  font-size: 22px;
+  color: var(--t7m-bone);
+  text-shadow: 0 1px 0 oklch(0.04 0.01 250),
+    0 0 8px oklch(0.04 0.01 250 / 0.8);
+  padding: 14px 32px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: transform 120ms ease, filter 120ms ease;
+  min-height: 52px;
+  min-width: 140px;
+}
+
+.t7-marketplace-buy-button:hover,
+.t7-marketplace-buy-button:focus-visible {
+  background-image: url('/marketplace-assets/marketplace_buy_button_hover.jpg');
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  outline: 2px solid var(--t7m-phos);
+  outline-offset: 3px;
+}
+
+.t7-marketplace-buy-button[data-variant='ghost'] {
+  background-image: none;
+  background-color: transparent;
+  color: var(--t7m-phos);
+  border-color: var(--t7m-phos-deep);
+  font-size: 18px;
+  padding: 10px 22px;
+  min-height: 42px;
+  min-width: 0;
+}
+
+.t7-marketplace-buy-button[data-variant='ghost']:hover {
+  background-color: oklch(0.88 0.15 140 / 0.1);
+  background-image: none;
+}
+
+/* ================= CATEGORY TABS ================= */
+
+.t7-marketplace-category-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 24px;
+}
+
+.t7-marketplace-category-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('/marketplace-assets/marketplace_category_tab_skill.jpg');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-color: var(--t7m-warm-deep);
+  padding: 12px 22px;
+  font-family: 'VT323', 'Courier New', monospace;
+  font-size: 20px;
+  color: var(--t7m-bone);
+  border: 1px solid oklch(0.55 0.10 50 / 0.55);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 oklch(0.04 0.01 250),
+    0 0 6px oklch(0.04 0.01 250 / 0.7);
+  transition: transform 120ms ease, filter 120ms ease;
+  min-height: 46px;
+  min-width: 100px;
+}
+
+.t7-marketplace-category-tab[data-category='core_agent'],
+.t7-marketplace-category-tab[data-category='agent'] {
+  background-image: url('/marketplace-assets/marketplace_category_tab_agent.jpg');
+}
+
+.t7-marketplace-category-tab[data-category='data'],
+.t7-marketplace-category-tab[data-category='dataset'] {
+  background-image: url('/marketplace-assets/marketplace_category_tab_dataset.jpg');
+}
+
+.t7-marketplace-category-tab:hover,
+.t7-marketplace-category-tab:focus-visible {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+  outline: 2px solid var(--t7m-phos);
+  outline-offset: 2px;
+}
+
+.t7-marketplace-category-tab[aria-pressed='true'],
+.t7-marketplace-category-tab[data-active='true'] {
+  filter: brightness(1.16) saturate(1.15);
+  border-color: var(--t7m-phos);
+  box-shadow: 0 0 12px oklch(0.88 0.15 140 / 0.45);
+}
+
+/* ================= STAT CARDS (DASHBOARD) ================= */
+
+.t7-marketplace-stat-card {
+  background: oklch(0.10 0.02 250 / 0.82);
+  border: 1px solid oklch(0.55 0.10 50 / 0.55);
+  padding: 18px 20px;
+  position: relative;
+}
+
+.t7-marketplace-stat-card::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px dashed oklch(0.55 0.10 50 / 0.4);
+  pointer-events: none;
+}
+
+.t7-marketplace-stat-card .t7-stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--t7m-fog);
+  margin-bottom: 6px;
+}
+
+.t7-marketplace-stat-card .t7-stat-value {
+  font-family: 'VT323', monospace;
+  font-size: 32px;
+  color: var(--t7m-bone);
+  text-shadow: 0 0 10px oklch(0.04 0.01 250);
+  line-height: 1;
+}
+
+.t7-marketplace-stat-card .t7-stat-value[data-accent='true'] {
+  color: var(--t7m-phos);
+}
+
+/* ================= SECTION CHROME (DASHBOARD) ================= */
+
+.t7-marketplace-section {
+  margin-bottom: 28px;
+  background: oklch(0.10 0.02 250 / 0.7);
+  border: 1px solid oklch(0.55 0.10 50 / 0.42);
+  padding: 22px 24px;
+}
+
+.t7-marketplace-section .t7-section-title {
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  color: var(--t7m-amber);
+  text-shadow: 0 0 8px oklch(0.04 0.01 250);
+  margin: 0 0 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-bottom: 1px dashed oklch(0.55 0.10 50 / 0.55);
+  padding-bottom: 6px;
+}
+
+/* ================= QUICK ACTION BUTTONS ================= */
+
+.t7-marketplace-action {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: transparent;
+  color: var(--t7m-phos);
+  border: 1px solid var(--t7m-phos-deep);
+  font-family: 'VT323', 'Courier New', monospace;
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+.t7-marketplace-action:hover,
+.t7-marketplace-action:focus-visible {
+  background: oklch(0.88 0.15 140 / 0.12);
+  border-color: var(--t7m-phos);
+  transform: translateY(-1px);
+}
+
+.t7-marketplace-action[data-primary='true'] {
+  background: var(--t7m-phos);
+  color: var(--t7m-ink);
+  border-color: var(--t7m-phos);
+}
+
+.t7-marketplace-action[data-primary='true']:hover {
+  background: oklch(0.95 0.18 140);
+  color: var(--t7m-ink);
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 768px) {
+  .t7-marketplace-pixel {
+    background-attachment: scroll;
+  }
+  .t7-marketplace-pixel-content {
+    padding: 16px 12px 48px;
+  }
+  .t7-marketplace-card-frame {
+    padding: 24px 18px 22px;
+  }
+  .t7-marketplace-buy-button {
+    font-size: 18px;
+    padding: 12px 22px;
+    min-height: 46px;
+  }
+  .t7-marketplace-category-tab {
+    font-size: 16px;
+    padding: 10px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t7-marketplace-pixel * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -3,7 +3,7 @@
 //
 // app/marketplace/search/page.tsx
 //
-// Owner: Hyperion (W2 NP P1 V4 S2).
+// Owner: Hyperion (W2 NP P1 V4 S2). T7 pixel-art skin layered 2026-04-26.
 //
 // Live marketplace search page consuming
 // ``GET /v1/marketplace/search`` shipped in P1 S1. URL state is the
@@ -11,6 +11,11 @@
 // safe; the page hydrates from `useSearchParams()` on mount and
 // pushes updates via `router.replace()` so navigation history does
 // not balloon with every keystroke.
+//
+// T7 (2026-04-26): the body is now wrapped in T7MarketplacePixelShell so
+// the search surface inherits the Apollo Village night-themed shop
+// interior aesthetic. URL state, debounce, abort, filter logic all
+// preserved verbatim.
 //
 // Layout:
 //
@@ -50,6 +55,7 @@ import {
   MarketplaceSearchResults,
   type SearchResultsResponse,
 } from '../../../src/components/marketplace/MarketplaceSearchResults';
+import { T7MarketplacePixelShell } from '../../../src/components/marketplace/T7MarketplacePixelShell';
 
 // ---------------------------------------------------------------------------
 // URL <-> state helpers
@@ -345,13 +351,15 @@ function MarketplaceSearchBody(): ReactElement {
 
   return (
     <div style={ROOT}>
-      <MarketplaceSearchBar
-        value={state.query}
-        onQueryChange={handleQueryChange}
-        onSubmit={handleSubmit}
-        isSearching={isLoading}
-        autoFocus
-      />
+      <div className="t7-marketplace-search-frame">
+        <MarketplaceSearchBar
+          value={state.query}
+          onQueryChange={handleQueryChange}
+          onSubmit={handleSubmit}
+          isSearching={isLoading}
+          autoFocus
+        />
+      </div>
       <div style={layout}>
         <MarketplaceFilters
           state={state.filters}
@@ -375,9 +383,15 @@ export default function MarketplaceSearchPage(): ReactElement {
       heading="Marketplace search"
       sub="Hybrid full-text + semantic search via the live /v1/marketplace/search endpoint. Bilingual ID + EN tokenization. Filters and sort are URL-shareable."
     >
-      <Suspense fallback={null}>
-        <MarketplaceSearchBody />
-      </Suspense>
+      <T7MarketplacePixelShell
+        eyebrow="Hybrid search, lantern-lit study"
+        heading="Find an agent"
+        tagline="Lexical full-text + semantic vector results merged via Reciprocal Rank Fusion. Filters, sort, and pagination state share via URL."
+      >
+        <Suspense fallback={null}>
+          <MarketplaceSearchBody />
+        </Suspense>
+      </T7MarketplacePixelShell>
     </HarnessShell>
   );
 }
