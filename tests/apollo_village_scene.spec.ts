@@ -27,7 +27,14 @@
 import { expect, test, type Page } from '@playwright/test';
 
 const PLAY_ROUTE = '/play';
-const READY_TIMEOUT_MS = 30_000;
+// Bumped 2026-04-26 by Nemea-RV-v2 Phase 1 Ferry 5a (W4 cleanup batch). The
+// scene preloads ~30 MB of AI assets from Vercel Blob; cold-cache hydration
+// regularly takes 60 s plus on slow CI runs. The previous 30 s ceiling tripped
+// 4 of 5 tests pre-Phase-0 fix and 4 of 5 post-Phase-0 fix despite the visual
+// regression being already resolved at commit 1a0c1e9. 240 s gives a 4x buffer
+// for cold-cache plus container-startup variance without slowing the warm path
+// (waitForFunction returns the moment ready=true is observed).
+const READY_TIMEOUT_MS = 240_000;
 
 // Window augmentation lives in tests/types/nerium-test-window.d.ts.
 
