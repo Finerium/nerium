@@ -268,6 +268,18 @@ export class ApolloVillageScene extends Phaser.Scene {
   // Helios-v2 W3 S7 hovering glyph + proximity prompt state.
   private landmarkVisuals: LandmarkVisualHandle[] = [];
 
+  // Helios-v2 W3 S8 quest indicator state. Each entry binds a target NPC
+  // sprite (Apollo / Treasurer / Caravan Vendor) to a `quest_exclamation`
+  // PNG image bobbing above the NPC's head. The list is iterated in
+  // update() to keep position synced with the moving NPC sprite (currently
+  // static, but tween-aware for future S8 wander motion).
+  private questIndicators: Array<{
+    target: Phaser.Physics.Arcade.Sprite;
+    image: Phaser.GameObjects.Image;
+    bobTween: Phaser.Tweens.Tween;
+    offsetY: number;
+  }> = [];
+
   // Helios-v2 W3 S5 dual-path landmark choice prompt state. While non-null,
   // E-key interaction polling is paused (player cannot open a second prompt).
   // ArrowUp/Down swap selection, Enter confirms, Esc dismisses.
@@ -346,6 +358,14 @@ export class ApolloVillageScene extends Phaser.Scene {
     // Layer 5: warm amber sand particle drift.
     this.ambientFx = buildAmbientFx(this, { kind: 'dust' });
 
+    // Helios-v2 W3 S8 quest indicators above Apollo + Treasurer NPCs.
+    // The exclamation PNG bobs alpha + y to draw player attention. Quest
+    // store consumption is intentionally read-only (S8 directive 5); the
+    // S8 ship demos the visual surface for future wiring agents who can
+    // subscribe to quest store + selectively show/hide via the indicator
+    // image's setVisible() handle.
+    this.spawnQuestIndicators();
+
     // E-key binding for landmark interaction (S7 wires UI overlays).
     // Helios-v2 W3 S5 dual-path: ArrowUp / ArrowDown swap selection in the
     // choice prompt; Enter confirms; Esc dismisses. The keys are bound here
@@ -416,6 +436,10 @@ export class ApolloVillageScene extends Phaser.Scene {
     // N <= 5 (4 pillar + 1 ambient), no spatial index needed.
     this.updateLandmarkVisualProximity();
 
+    // Helios-v2 W3 S8: keep quest indicator images positioned above their
+    // bound NPC sprites (cheap O(N <= 3) walk).
+    this.updateQuestIndicators();
+
     // Helios-v2 W3 S5: when a dual-path choice prompt is open, route the
     // landmark interaction polling to prompt input handling instead. The
     // prompt is modal: arrow keys swap selection, Enter confirms, Esc
@@ -473,6 +497,83 @@ export class ApolloVillageScene extends Phaser.Scene {
         v.glyphIdleTween.resume();
         v.promptText.setVisible(false);
       }
+    }
+  }
+
+  /**
+   * Helios-v2 W3 S8 spawn quest indicator images above Apollo + Treasurer
+   * NPCs. The indicator is the V6 quest_exclamation PNG; bob tween moves
+   * it 3 px up + alpha 0.6 to 1.0 over 800 ms loop. Future agents can
+   * subscribe to the quest store and call indicator.setVisible(active)
+   * to toggle per quest state.
+   */
+  private spawnQuestIndicators(): void {
+    if (this.apolloNpc) {
+      this.attachQuestIndicator(this.apolloNpc, 64);
+    }
+    if (this.treasurerNpc) {
+      this.attachQuestIndicator(this.treasurerNpc, 64);
+    }
+  }
+
+  /**
+   * Helios-v2 W3 S8 attach a single quest_exclamation indicator above a
+   * sprite. The image setOrigin(0.5, 1) so the bottom edge hangs at the
+   * sprite head; the offsetY constant lifts it further above the head.
+   * Bob tween + alpha pulse run as a yoyo loop ease Sine.easeInOut.
+   *
+   * The indicator depth is set to LANDMARK_GLYPH_DEPTH so it sits above
+   * world tiles + ambient FX overlay but below the dual-path landmark
+   * choice prompt overlay (depth 9500) and the UIScene chat (10000).
+   */
+  private attachQuestIndicator(
+    target: Phaser.Physics.Arcade.Sprite,
+    offsetY: number,
+  ): void {
+    const initialY = target.y - target.displayHeight - offsetY;
+    const image = this.add.image(
+      target.x,
+      initialY,
+      ASSET_KEYS.ui.quest.quest_exclamation,
+    );
+    image.setOrigin(0.5, 1);
+    image.setScale(0.06); // PNG source ~600x600 -> ~36x36 displayed
+    image.setDepth(LANDMARK_GLYPH_DEPTH);
+    image.setAlpha(0.6);
+
+    const bobTween = this.tweens.add({
+      targets: image,
+      y: { from: initialY, to: initialY - 3 },
+      alpha: { from: 0.6, to: 1.0 },
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+      duration: 800,
+      delay: Math.floor(Math.random() * 400),
+    });
+
+    this.questIndicators.push({
+      target,
+      image,
+      bobTween,
+      offsetY,
+    });
+  }
+
+  /**
+   * Helios-v2 W3 S8 per-frame quest indicator position update. Keeps each
+   * indicator image positioned above its bound NPC sprite. Bob tween
+   * mutates the y offset; we reset the base each frame relative to the
+   * sprite so the bob centers remain attached.
+   */
+  private updateQuestIndicators(): void {
+    for (const ind of this.questIndicators) {
+      // The bob tween animates y between baseY and baseY-3. We track the
+      // baseline via target.x + (target.y - displayHeight - offsetY); the
+      // tween's relative offset is preserved by Phaser.
+      const baseX = ind.target.x;
+      // We do not reset y here because the bob tween owns y; only x.
+      ind.image.setX(baseX);
     }
   }
 
@@ -1509,6 +1610,17 @@ export class ApolloVillageScene extends Phaser.Scene {
         }
       }
       this.landmarkVisuals = [];
+
+      // Helios-v2 W3 S8: tear down quest indicator images + bob tweens.
+      for (const ind of this.questIndicators) {
+        try {
+          ind.bobTween.stop();
+          ind.image.destroy();
+        } catch (err) {
+          console.error('[ApolloVillageScene] quest indicator destroy threw', err);
+        }
+      }
+      this.questIndicators = [];
 
       // Helios-v2 W3 S5: dismiss any open landmark prompt overlay.
       if (this.landmarkPrompt) {

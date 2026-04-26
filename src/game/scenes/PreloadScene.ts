@@ -71,9 +71,86 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   create() {
+    // Helios-v2 W3 S8: register Phaser AnimationManager animations for the 5
+    // character spritesheets (player + apollo + caravan_vendor + synth_vendor
+    // + treasurer). Each sheet is 4x4 grid 2048x2048, frame 512x512:
+    //   Row 0 (frames 0-3): down-facing walk cycle
+    //   Row 1 (frames 4-7): up-facing walk cycle
+    //   Row 2 (frames 8-11): left-facing walk cycle
+    //   Row 3 (frames 12-15): right-facing walk cycle
+    //
+    // Walk anims at 9 fps, idle anims (single first-frame loop) at 4 fps.
+    // The keys are namespaced by spritesheet (e.g. 'player_walk_down') so
+    // each sheet's anims do not collide. Anims live globally in
+    // AnimationManager so any scene that loads this spritesheet can call
+    // sprite.anims.play('<sheet>_walk_down') without re-registering.
+    //
+    // Per S8 directive item 1, this registration is shipped here in the
+    // PreloadScene create() lifecycle so the animations are guaranteed
+    // available before ApolloVillageScene + sub-area scenes start.
+    this.registerCharacterAnimations();
+
     // World-scoped scenes receive the active worldId via scene data. For the
     // vertical slice we hard-start ApolloVillageScene on medieval_desert.
     this.scene.start('ApolloVillage', { worldId: 'medieval_desert' });
+  }
+
+  /**
+   * Helios-v2 W3 S8 character animation registration. Per spritesheet, build
+   * 4 walk anims (down/up/left/right) at 9 fps + 4 idle anims (single-frame)
+   * at 4 fps. Idempotent: skips re-registration if anim key already exists.
+   */
+  private registerCharacterAnimations(): void {
+    const sheetKeys = [
+      'player_spritesheet',
+      'apollo_spritesheet',
+      'caravan_vendor_spritesheet',
+      'synth_vendor_spritesheet',
+      'treasurer_spritesheet',
+    ];
+    const dirRanges: Array<{ dir: string; start: number; end: number }> = [
+      { dir: 'down', start: 0, end: 3 },
+      { dir: 'up', start: 4, end: 7 },
+      { dir: 'left', start: 8, end: 11 },
+      { dir: 'right', start: 12, end: 15 },
+    ];
+
+    let walkRegistered = 0;
+    let idleRegistered = 0;
+    for (const sheetKey of sheetKeys) {
+      // Skip if the texture did not actually load (defensive).
+      if (!this.textures.exists(sheetKey)) {
+        console.warn(
+          `[PreloadScene] spritesheet ${sheetKey} did not load; skipping anim registration`,
+        );
+        continue;
+      }
+      for (const { dir, start, end } of dirRanges) {
+        const walkKey = `${sheetKey}_walk_${dir}`;
+        if (!this.anims.exists(walkKey)) {
+          this.anims.create({
+            key: walkKey,
+            frames: this.anims.generateFrameNumbers(sheetKey, { start, end }),
+            frameRate: 9,
+            repeat: -1,
+          });
+          walkRegistered += 1;
+        }
+        const idleKey = `${sheetKey}_idle_${dir}`;
+        if (!this.anims.exists(idleKey)) {
+          this.anims.create({
+            key: idleKey,
+            frames: this.anims.generateFrameNumbers(sheetKey, { start, end: start }),
+            frameRate: 4,
+            repeat: -1,
+          });
+          idleRegistered += 1;
+        }
+      }
+    }
+    console.info(
+      `[PreloadScene] registered ${walkRegistered} walk anims + ${idleRegistered} idle anims across ${sheetKeys.length} spritesheets`,
+    );
   }
 
   /**

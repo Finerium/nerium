@@ -60,6 +60,23 @@ export interface ChatInputHandle {
   focus(): void;
   blur(): void;
   isComposing(): boolean;
+  /**
+   * Helios-v2 W3 S8: swap the chat avatar portrait. Used by NPC dialogue
+   * triggers to display the active speaker's portrait (Treasurer prompt
+   * 64, Apollo priest prompt 65, Caravan/Synth vendor prompts 66) while
+   * the NPC is talking, then restored to the default player portrait
+   * (prompt 59) when the dialogue ends.
+   *
+   * Pass null or empty string to hide the portrait entirely (legacy
+   * pre-S8 behaviour). Pass a public asset URL like
+   * `/assets/ai/characters/treasurer_portrait.png` to swap.
+   *
+   * The implementation is a no-op-friendly DOM <img> that lives in the
+   * chat bar. It does NOT couple to the dialogue runtime; downstream
+   * consumers ferry the appropriate portrait path as part of their
+   * dialogue lifecycle.
+   */
+  setAvatarPng(path: string | null): void;
   destroy(): void;
 }
 
@@ -73,6 +90,22 @@ export function createChatInput(callbacks: ChatInputCallbacks): ChatInputHandle 
   const root = document.createElement('div');
   root.className = 'nerium-chat__bar';
   root.setAttribute('data-nerium-capture', 'true');
+
+  // Helios-v2 W3 S8: avatar portrait img. Hidden by default; setAvatarPng
+  // toggles visibility + src. Sits to the LEFT of the > prompt sigil so
+  // when an NPC is the active speaker the user sees the NPC face beside
+  // their dialogue line.
+  const avatar = document.createElement('img');
+  avatar.className = 'nerium-chat__avatar';
+  avatar.alt = '';
+  avatar.style.display = 'none';
+  avatar.style.width = '32px';
+  avatar.style.height = '32px';
+  avatar.style.borderRadius = '4px';
+  avatar.style.marginRight = '6px';
+  avatar.style.imageRendering = 'pixelated';
+  avatar.setAttribute('aria-hidden', 'true');
+  root.appendChild(avatar);
 
   const prompt = document.createElement('span');
   prompt.className = 'nerium-chat__prompt';
@@ -219,6 +252,20 @@ export function createChatInput(callbacks: ChatInputCallbacks): ChatInputHandle 
     },
     isComposing(): boolean {
       return inputEl.dataset.composing === '1';
+    },
+    setAvatarPng(path: string | null): void {
+      // Helios-v2 W3 S8: swap the chat avatar portrait. Empty / null hides
+      // the avatar (legacy pre-S8 behaviour). Path shows the avatar with
+      // the given URL.
+      if (!path) {
+        avatar.style.display = 'none';
+        avatar.removeAttribute('src');
+        avatar.alt = '';
+        return;
+      }
+      avatar.src = path;
+      avatar.alt = 'Speaker portrait';
+      avatar.style.display = 'inline-block';
     },
     destroy(): void {
       try {
