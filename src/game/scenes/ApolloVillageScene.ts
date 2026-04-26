@@ -1192,6 +1192,18 @@ export class ApolloVillageScene extends Phaser.Scene {
       interactRadius: opts.interactRadius,
       spriteScale: opts.scale,
       groundAnchor: true,
+      // T-REGR R2 wander spec: ambient NPCs idle 2-5 sec then random-walk
+      // within 100 px of their spawn anchor. Replaces the static-NPC parallax
+      // illusion (NPC appears to slide opposite when player + camera move
+      // because the painted backdrop sits at scrollFactor 0.3) with visible
+      // active life motion. Spawn anchor stays world-space; wander is purely
+      // animation, not camera-coupled.
+      wander: {
+        radiusPx: 100,
+        idleMsMin: 2000,
+        idleMsMax: 5000,
+        speedPxPerSec: 30,
+      },
     });
     npc.setTint(opts.tint);
     this.sorter?.register(npc);
@@ -1270,11 +1282,21 @@ export class ApolloVillageScene extends Phaser.Scene {
     sprite.on('preupdate', () => {
       shadow.setPosition(sprite.x, sprite.y);
     });
-    // Phaser's `preupdate` event on Arcade sprites only fires when the body
-    // is active; for static NPCs we instead update the position once at
-    // creation and rely on the sorter tick + sprite proximity update to
-    // reposition the shadow when the NPC moves. Static NPCs do not move,
-    // so the initial position above is sufficient.
+    // T-REGR R2: ambient NPCs now wander via Phaser tween (not body
+    // velocity), so the per-sprite preupdate listener may not reliably
+    // fire on every tick. Bind a scene-level update listener as the
+    // belt-and-suspenders sync so wandering NPC shadows always track.
+    // The listener auto-disposes when the scene shuts down (registered
+    // in SHUTDOWN cleanup).
+    const sceneUpdateListener = () => {
+      if (sprite && sprite.scene) {
+        shadow.setPosition(sprite.x, sprite.y);
+      }
+    };
+    this.events.on(Phaser.Scenes.Events.UPDATE, sceneUpdateListener);
+    this.unsubscribers.push(() => {
+      this.events.off(Phaser.Scenes.Events.UPDATE, sceneUpdateListener);
+    });
   }
 
   /**

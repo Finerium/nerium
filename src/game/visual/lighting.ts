@@ -81,6 +81,20 @@ export function enableSceneAmbient(scene: Phaser.Scene): boolean {
 // ============================================================================
 
 /**
+ * T-REGR R1 fix: global intensity scale applied to every PointLight + halo
+ * authored via this module. Helios-v2 S9 ship intensities (0.4..1.0 with
+ * tween peaks up to 1.0) over-saturated the warm dusk Apollo + neon Cyber +
+ * cool Caravan road scenes; the resulting glow swallowed midtone detail in
+ * a Ghaisan visual playthrough.
+ *
+ * 0.6 mid-range pick from the V6_TO_V7 default rec band 0.5..0.7. Applied
+ * once here so every existing call site (Apollo Village + Caravan Road +
+ * Cyberpunk Shanghai + landmark halos) inherits the reduction without
+ * touching scene authorship; T-WORLD territory stays unmodified.
+ */
+const INTENSITY_SCALE = 0.6;
+
+/**
  * Options for `addPointLight`. Coords are world-space; the helper uses
  * Phaser.GameObjects.PointLight which paints a radial gradient additively.
  */
@@ -136,12 +150,15 @@ export function addPointLight(
   // Phaser PointLight is a built-in GameObject taking color (hex), intensity,
   // and radius via `add.pointlight(x, y, color, radius, intensity)`. The
   // attenuation parameter (0..1) controls falloff; 0 = sharp ring, 1 = soft.
+  // T-REGR R1: scale baseline intensity + tween target by INTENSITY_SCALE so
+  // every existing call site is dampened without per-scene rewrites.
+  const scaledIntensity = options.intensity * INTENSITY_SCALE;
   const light = scene.add.pointlight(
     options.x,
     options.y,
     options.color,
     options.radius,
-    options.intensity,
+    scaledIntensity,
     0.05,
   );
   light.setDepth(options.depth ?? 600);
@@ -151,7 +168,7 @@ export function addPointLight(
   if (options.tween) {
     const tweenSpec: Phaser.Types.Tweens.TweenBuilderConfig = {
       targets: light,
-      intensity: options.tween.target,
+      intensity: options.tween.target * INTENSITY_SCALE,
       duration: options.tween.duration,
       ease: options.tween.ease ?? 'Sine.easeInOut',
       yoyo: true,

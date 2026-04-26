@@ -24,6 +24,26 @@ export interface NpcOptions {
   spriteScale?: number;
   /** Helios-v2 W3 correction: ground-anchor origin for y-sort. */
   groundAnchor?: boolean;
+  /**
+   * T-REGR R2 wander spec (Helios-v2 S8 wander intent). When set, the NPC
+   * idles 2-5 sec then walks to a random target within `radiusPx` of its
+   * spawn anchor; on arrival idles again, repeating indefinitely. Wander
+   * stays anchored to spawn world-space coords (NOT camera viewport) so
+   * the apparent "opposite-direction parallax" perception when the player
+   * moves is replaced by visible NPC life motion. Plot NPCs (Apollo,
+   * Treasurer, Caravan Vendor) leave wander undefined to remain static
+   * at their dialogue spots.
+   */
+  wander?: {
+    /** Random walk radius around spawn point (world px). Default 100. */
+    radiusPx?: number;
+    /** Idle ms minimum between walks. Default 2000. */
+    idleMsMin?: number;
+    /** Idle ms maximum between walks. Default 5000. */
+    idleMsMax?: number;
+    /** Walk speed (px/sec). Default 30 (slow ambient stroll). */
+    speedPxPerSec?: number;
+  };
 }
 
 export class NPC extends Phaser.Physics.Arcade.Sprite {
@@ -34,6 +54,20 @@ export class NPC extends Phaser.Physics.Arcade.Sprite {
   private playerNearby = false;
   private interactListener?: (evt: KeyboardEvent) => void;
   private labelOffsetY: number = 24;
+
+  // T-REGR R2 wander state. spawnX/spawnY are the world-space anchor used as
+  // the recentering coordinate for the random walk; never overwritten so the
+  // NPC always wanders inside a stable circle. wanderTween + wanderTimer are
+  // exclusive (one active at a time): tween while walking, timer while idle.
+  private spawnX = 0;
+  private spawnY = 0;
+  private wanderEnabled = false;
+  private wanderRadiusPx = 100;
+  private wanderIdleMsMin = 2000;
+  private wanderIdleMsMax = 5000;
+  private wanderSpeedPxPerSec = 30;
+  private wanderTween?: Phaser.Tweens.Tween;
+  private wanderTimer?: Phaser.Time.TimerEvent;
 
   constructor(scene: Phaser.Scene, x: number, y: number, options: NpcOptions) {
     super(scene, x, y, options.textureKey, options.frame ?? 'agent_active');
@@ -89,6 +123,65 @@ export class NPC extends Phaser.Physics.Arcade.Sprite {
       .setOrigin(0.5, 1)
       .setDepth(50);
     this.labelOffsetY = labelOffsetY;
+
+    // T-REGR R2 wander init. Latch the spawn coord as the wander anchor and
+    // schedule the first idle-then-walk cycle. Plot NPCs leave wander undef
+    // and skip this whole branch.
+    this.spawnX = x;
+    this.spawnY = y;
+    if (options.wander) {
+      this.wanderEnabled = true;
+      this.wanderRadiusPx = options.wander.radiusPx ?? 100;
+      this.wanderIdleMsMin = options.wander.idleMsMin ?? 2000;
+      this.wanderIdleMsMax = options.wander.idleMsMax ?? 5000;
+      this.wanderSpeedPxPerSec = options.wander.speedPxPerSec ?? 30;
+      this.scheduleNextWander();
+    }
+  }
+
+  /**
+   * T-REGR R2: schedule the next idle interval, after which the NPC will
+   * pick a random target within wanderRadiusPx of spawn anchor and walk
+   * there. Idempotent + no-op if wander disabled or NPC destroyed.
+   */
+  private scheduleNextWander(): void {
+    if (!this.wanderEnabled) return;
+    if (!this.scene) return;
+    const idleMs =
+      this.wanderIdleMsMin +
+      Math.random() * (this.wanderIdleMsMax - this.wanderIdleMsMin);
+    this.wanderTimer = this.scene.time.delayedCall(idleMs, () => {
+      this.startWander();
+    });
+  }
+
+  /**
+   * T-REGR R2: begin a single random walk to a target within wanderRadiusPx
+   * of spawn anchor. Walk duration scales with distance + speed so the NPC
+   * appears to amble at a consistent pace. On arrival, schedules next idle.
+   */
+  private startWander(): void {
+    if (!this.wanderEnabled) return;
+    if (!this.scene) return;
+    const angle = Math.random() * Math.PI * 2;
+    const dist = Math.random() * this.wanderRadiusPx;
+    const targetX = this.spawnX + Math.cos(angle) * dist;
+    const targetY = this.spawnY + Math.sin(angle) * dist;
+    const walkDist = Math.hypot(targetX - this.x, targetY - this.y);
+    const durationMs = Math.max(
+      400,
+      (walkDist / this.wanderSpeedPxPerSec) * 1000,
+    );
+    this.wanderTween = this.scene.tweens.add({
+      targets: this,
+      x: targetX,
+      y: targetY,
+      duration: durationMs,
+      ease: 'Sine.easeInOut',
+      onComplete: () => {
+        this.scheduleNextWander();
+      },
+    });
   }
 
   /**
@@ -139,6 +232,13 @@ export class NPC extends Phaser.Physics.Arcade.Sprite {
   }
 
   destroy(fromScene?: boolean): void {
+    // T-REGR R2: stop wander tween + timer before super so the active scene
+    // does not retain references to a destroyed sprite.
+    this.wanderTimer?.remove();
+    this.wanderTimer = undefined;
+    this.wanderTween?.stop();
+    this.wanderTween = undefined;
+    this.wanderEnabled = false;
     this.unbindInteractKey();
     this.nameLabel.destroy();
     super.destroy(fromScene);

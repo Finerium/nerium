@@ -153,6 +153,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.driveDirectionalAnimation(vx, vy);
     }
 
+    // T-REGR R3 Path b: visible left/right facing via horizontal flipX even
+    // when the underlying spritesheet anim system fails silently (frame
+    // index update never lands because the source PNG is monolithic / lacks
+    // per-direction frames). Cheap mirror hack acceptable per V6_TO_V7
+    // default rec; up/down keeps current flipX so vertical movement does
+    // not re-flip mid-stride.
+    if (vx < 0) {
+      this.setFlipX(true);
+    } else if (vx > 0) {
+      this.setFlipX(false);
+    }
+
     // Emit throttled player.moved events for bridge consumers.
     if (
       (vx !== 0 || vy !== 0) &&
