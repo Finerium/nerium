@@ -134,6 +134,22 @@ const BREATHING_AMPLITUDE = 1.02;
 const LANDMARK_INTERACT_RADIUS_PX = 128;
 const LANDMARK_INTERACT_COOLDOWN_MS = 500;
 
+// Helios-v2 W3 S7 landmark glyph + prompt depth. Above world tiles + ambient
+// FX overlay (depth 500), below the dual-path choice prompt (9500) and the
+// UIScene chat (10000) so the glyph stays visible during routine play but
+// is shaded by modal overlays.
+const LANDMARK_GLYPH_DEPTH = 9001;
+
+// Helios-v2 W3 S7 floating prompt labels per Apollo NERIUM-pillar landmark.
+// JRPG-tradition action verbs; clarity over flair. Ambient entry landmarks
+// (temple_arch) supply their own promptLabel directly via the helper.
+const APOLLO_LANDMARK_PROMPTS: Readonly<Record<string, string>> = Object.freeze({
+  marketplace_stall: 'Press E to browse marketplace',
+  builder_workshop: 'Press E to enter workshop',
+  registry_pillar: 'Press E to view registry',
+  trust_shrine: 'Press E to view trust scores',
+});
+
 interface LandmarkBinding {
   name: string;
   x: number;
@@ -151,6 +167,55 @@ interface LandmarkBinding {
     optionGameLabel: string; // e.g. "Enter bazaar (game)"
     title: string; // prompt title text
   };
+  /**
+   * Helios-v2 W3 S7. Floating action prompt label (e.g., "Press E to browse
+   * marketplace"). Rendered as a Phaser Text above the landmark when the
+   * player is within LANDMARK_INTERACT_RADIUS_PX. Auto-derived from name if
+   * unset; explicit label preferred for accessibility + JRPG-tradition
+   * clarity.
+   */
+  promptLabel?: string;
+  /**
+   * Helios-v2 W3 S7. Hovering glyph tween anchor coords (sprite-relative)
+   * for the proximity feedback. Glyph alpha-pulses idle, scale-pulses on
+   * proximity, flashes on E-key trigger. Auto-anchored above sprite top.
+   */
+  glyphAnchorOffset?: { x: number; y: number };
+  /**
+   * Helios-v2 W3 S7 ambient entry vs NERIUM-pillar discrimination. NERIUM-
+   * pillar landmarks (marketplace_stall + builder_workshop + registry_pillar
+   * + trust_shrine) emit landmark.{name}.interact + game.landmark.interact;
+   * ambient entry landmarks (temple_arch) only fade-transition without
+   * emission. Default true.
+   */
+  emitsInteract?: boolean;
+  /**
+   * Helios-v2 W3 S7 pure-fade ambient sub-area entry. When set on a non-
+   * NERIUM-pillar landmark (e.g. temple_arch -> ApolloTempleInterior),
+   * E-key proximity directly fade-transitions without choice prompt. The
+   * `subArea` field is for dual-path with prompt; this is for direct
+   * ambient entry.
+   */
+  ambientSubArea?: {
+    sceneKey: 'ApolloTempleInterior' | 'ApolloMarketplaceBazaar' | 'ApolloOasis';
+  };
+}
+
+/**
+ * Helios-v2 W3 S7 hovering glyph + proximity prompt visuals per landmark.
+ * The glyph is a small Phaser Container holding the glyph texture (or a
+ * simple drawn shape if no asset registered) plus an idle pulse tween. The
+ * promptText is a Phaser Text rendered above the glyph, only visible when
+ * the player is within LANDMARK_INTERACT_RADIUS_PX. Both share a setDepth
+ * above the foliage canopy ABOVE_TILES band to clear ambient FX overlays.
+ */
+interface LandmarkVisualHandle {
+  binding: LandmarkBinding;
+  glyph: Phaser.GameObjects.Container;
+  glyphIdleTween: Phaser.Tweens.Tween;
+  glyphProximityTween?: Phaser.Tweens.Tween;
+  promptText: Phaser.GameObjects.Text;
+  proximityActive: boolean;
 }
 
 /**
@@ -199,6 +264,9 @@ export class ApolloVillageScene extends Phaser.Scene {
   private landmarkBindings: LandmarkBinding[] = [];
   private eKey?: Phaser.Input.Keyboard.Key;
   private lastLandmarkEmitAt: Record<string, number> = {};
+
+  // Helios-v2 W3 S7 hovering glyph + proximity prompt state.
+  private landmarkVisuals: LandmarkVisualHandle[] = [];
 
   // Helios-v2 W3 S5 dual-path landmark choice prompt state. While non-null,
   // E-key interaction polling is paused (player cannot open a second prompt).
@@ -343,6 +411,11 @@ export class ApolloVillageScene extends Phaser.Scene {
     // Per-frame y-sort across all registered dynamic sprites + drop shadows.
     this.sorter?.tick();
 
+    // Helios-v2 W3 S7: per-frame proximity update for the hovering glyph +
+    // floating prompt visuals across all landmarks. Cheap O(N) walk where
+    // N <= 5 (4 pillar + 1 ambient), no spatial index needed.
+    this.updateLandmarkVisualProximity();
+
     // Helios-v2 W3 S5: when a dual-path choice prompt is open, route the
     // landmark interaction polling to prompt input handling instead. The
     // prompt is modal: arrow keys swap selection, Enter confirms, Esc
@@ -356,6 +429,70 @@ export class ApolloVillageScene extends Phaser.Scene {
     // pressed, emit `landmark.<name>.interact`. Cooldown gate prevents
     // double-fire on key auto-repeat.
     this.checkLandmarkInteraction(time);
+  }
+
+  /**
+   * Helios-v2 W3 S7 per-frame landmark visual proximity update. Compares
+   * each landmark's distance to player; when distance crosses the
+   * LANDMARK_INTERACT_RADIUS_PX threshold the glyph engages a scale tween
+   * + alpha boost and the floating prompt becomes visible. The prompt
+   * label respects the `promptLabel` binding (ambient entry landmarks
+   * provide their own bespoke label).
+   */
+  private updateLandmarkVisualProximity(): void {
+    if (!this.player) return;
+    for (const v of this.landmarkVisuals) {
+      const dx = this.player.x - v.binding.x;
+      const dy = this.player.y - v.binding.y;
+      const dist = Math.hypot(dx, dy);
+      const inProximity = dist <= LANDMARK_INTERACT_RADIUS_PX;
+      if (inProximity === v.proximityActive) continue;
+
+      v.proximityActive = inProximity;
+      if (inProximity) {
+        // Engage proximity tween: scale 1.0 to 1.15 over 300ms loop + alpha
+        // to 1.0. Stop the idle tween briefly while the proximity tween
+        // takes over (idle resumes on disengage).
+        v.glyphIdleTween.pause();
+        v.glyph.setAlpha(1.0);
+        v.glyphProximityTween?.stop();
+        v.glyphProximityTween = this.tweens.add({
+          targets: v.glyph,
+          scale: { from: 1.0, to: 1.15 },
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut',
+          duration: 300,
+        });
+        v.promptText.setVisible(true);
+      } else {
+        // Disengage: stop proximity tween, reset scale, resume idle.
+        v.glyphProximityTween?.stop();
+        v.glyphProximityTween = undefined;
+        v.glyph.setScale(1.0);
+        v.glyphIdleTween.resume();
+        v.promptText.setVisible(false);
+      }
+    }
+  }
+
+  /**
+   * Helios-v2 W3 S7 brief E-key trigger flash. Boosts glyph alpha + scale
+   * for 100 ms then reverts. Called from emitLandmarkInteract +
+   * triggerAmbientSubAreaEntry just before the actual action fires for
+   * tactile press feedback.
+   */
+  private flashLandmarkGlyph(name: string): void {
+    const v = this.landmarkVisuals.find((lv) => lv.binding.name === name);
+    if (!v) return;
+    v.glyph.setAlpha(1.0);
+    v.glyph.setScale(1.3);
+    this.tweens.add({
+      targets: v.glyph,
+      scale: 1.15,
+      duration: 100,
+      ease: 'Sine.easeOut',
+    });
   }
 
   // ---- Landmarks (Layer 3, 4 pillar anchors) ----
@@ -420,6 +557,22 @@ export class ApolloVillageScene extends Phaser.Scene {
         title: 'Trust Shrine',
       },
     );
+
+    // Helios-v2 W3 S7 ambient entry fold-in: temple_arch as 5th entry-trigger
+    // landmark. NOT a NERIUM-pillar landmark per anomaly resolution 2; E-key
+    // proximity within 128 px fades to ApolloTempleInteriorScene without
+    // emitting landmark.{name}.interact. Lighter glyph weight than the 4
+    // pillar landmarks (subtle ambient) per directive 3 hovering glyph
+    // styling: alpha pulse only, no y-bob.
+    this.placeAmbientEntryLandmark(
+      'temple_arch',
+      ASSET_KEYS.props.apollo_village.temple_arch,
+      910,
+      300,
+      0.40,
+      'ApolloTempleInterior',
+      'Press E to enter temple',
+    );
   }
 
   /**
@@ -463,12 +616,159 @@ export class ApolloVillageScene extends Phaser.Scene {
       setDepth: (v) => dropShadow.setDepth(v),
     });
 
-    this.landmarkBindings.push({
+    const promptLabel = APOLLO_LANDMARK_PROMPTS[name] ?? `Press E to interact`;
+    const binding: LandmarkBinding = {
       name,
       x,
       y,
       eventTopic: `landmark.${name}.interact`,
       subArea,
+      promptLabel,
+      emitsInteract: true,
+    };
+    this.landmarkBindings.push(binding);
+
+    // Helios-v2 W3 S7 hovering glyph + proximity prompt visuals.
+    // The glyph anchors above the sprite top (sprite.y - displayHeight - 20).
+    const spriteDisplayHeight = sprite.displayHeight;
+    this.spawnLandmarkGlyph(binding, spriteDisplayHeight, /* ambient */ false);
+  }
+
+  /**
+   * Helios-v2 W3 S7 ambient entry landmark helper. Used for temple_arch (and
+   * any future ambient entry props). Differs from placeLandmark in that:
+   *   - emitsInteract is false (NOT a NERIUM pillar)
+   *   - glyph is lighter weight (alpha pulse only, no y-bob)
+   *   - E-key proximity directly fade-transitions to bound sub-area scene
+   */
+  private placeAmbientEntryLandmark(
+    name: string,
+    textureKey: string,
+    x: number,
+    y: number,
+    scale: number,
+    sceneKey: 'ApolloTempleInterior' | 'ApolloMarketplaceBazaar' | 'ApolloOasis',
+    promptLabel: string,
+  ): void {
+    const sprite = this.add.image(x, y, textureKey);
+    sprite.setOrigin(0.5, 1);
+    sprite.setScale(scale);
+
+    // Lighter shadow for ambient props.
+    const dropShadow = this.add.ellipse(x, y, 90, 16, 0x000000, 0.28);
+    this.dropShadows.push(dropShadow);
+    this.sorter?.register(sprite);
+    this.sorter?.register({
+      y: y - 1,
+      setDepth: (v) => dropShadow.setDepth(v),
+    });
+
+    const binding: LandmarkBinding = {
+      name,
+      x,
+      y,
+      eventTopic: `landmark.${name}.interact`,
+      promptLabel,
+      emitsInteract: false,
+      ambientSubArea: { sceneKey },
+    };
+    this.landmarkBindings.push(binding);
+
+    const spriteDisplayHeight = sprite.displayHeight;
+    this.spawnLandmarkGlyph(binding, spriteDisplayHeight, /* ambient */ true);
+  }
+
+  /**
+   * Helios-v2 W3 S7 hovering glyph + proximity prompt creator. The glyph is
+   * a small Phaser-drawn diamond shape (no dedicated PNG asset registered
+   * for landmark glyphs in V6 96-asset bundle, so a primitive shape is the
+   * cleanest fit). Color: warm amber for Apollo (medieval_desert palette),
+   * cool cyan for Cyber landmarks. The prompt text floats above the glyph
+   * and is hidden until proximity-active.
+   *
+   * Idle tween:
+   *   - Pillar landmark: alpha 0.6 to 0.9 over 1.5s loop + y-bob 1-2 px
+   *   - Ambient (temple_arch): alpha 0.4 to 0.7 over 1.5s loop, no y-bob
+   *
+   * Proximity-active tween (engaged when player is within radius):
+   *   - Scale 1.0 to 1.15 over 300ms loop, alpha boost to 1.0
+   *
+   * E-key flash on trigger: brief alpha-1.0 + scale-1.3 over 100ms.
+   */
+  private spawnLandmarkGlyph(
+    binding: LandmarkBinding,
+    spriteDisplayHeight: number,
+    ambient: boolean,
+  ): void {
+    // Glyph anchor: top-center of landmark sprite, offset y = -displayHeight - 20.
+    const anchorX = binding.x;
+    const anchorY = binding.y - spriteDisplayHeight - 20;
+    binding.glyphAnchorOffset = { x: 0, y: -spriteDisplayHeight - 20 };
+
+    const glyphContainer = this.add.container(anchorX, anchorY);
+    glyphContainer.setDepth(LANDMARK_GLYPH_DEPTH);
+
+    // Phaser-drawn diamond glyph. Warm amber for pillar (Apollo desert
+    // palette), softer for ambient. No PNG asset; primitive shape keeps the
+    // S7 scope tight without adding a new asset dependency.
+    const glyphColor = ambient ? 0xc89a4a : 0xffd86b;
+    const glyphSize = ambient ? 9 : 12;
+    const glyph = this.add.graphics();
+    glyph.fillStyle(glyphColor, 1);
+    glyph.beginPath();
+    glyph.moveTo(0, -glyphSize);
+    glyph.lineTo(glyphSize, 0);
+    glyph.lineTo(0, glyphSize);
+    glyph.lineTo(-glyphSize, 0);
+    glyph.closePath();
+    glyph.fillPath();
+    // Outline for legibility against bright bg.
+    glyph.lineStyle(1.5, 0x3d2817, 0.85);
+    glyph.strokePath();
+    glyphContainer.add(glyph);
+
+    // Idle alpha pulse tween. Pillar adds y-bob, ambient skips y-bob per
+    // directive 3 lighter ambient styling.
+    const idleAlphaFrom = ambient ? 0.4 : 0.6;
+    const idleAlphaTo = ambient ? 0.7 : 0.9;
+    glyphContainer.setAlpha(idleAlphaFrom);
+    const tweenTargets: Record<string, unknown> = {
+      alpha: { from: idleAlphaFrom, to: idleAlphaTo },
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+      duration: 1500,
+      delay: Math.floor(Math.random() * 800),
+    };
+    if (!ambient) {
+      tweenTargets.y = { from: anchorY, to: anchorY - 2 };
+    }
+    const idleTween = this.tweens.add({
+      targets: glyphContainer,
+      ...tweenTargets,
+    });
+
+    // Floating prompt text. Hidden by default; revealed when player enters
+    // proximity. Renders above glyph with a slight backdrop for legibility.
+    const promptLabel = binding.promptLabel ?? `Press E to interact`;
+    const promptText = this.add.text(anchorX, anchorY - 22, promptLabel, {
+      fontFamily: 'monospace',
+      fontSize: '11px',
+      color: ambient ? '#cfb47a' : '#ffd86b',
+      align: 'center',
+      backgroundColor: 'rgba(20, 12, 5, 0.7)',
+      padding: { left: 6, right: 6, top: 3, bottom: 3 },
+    });
+    promptText.setOrigin(0.5, 1);
+    promptText.setDepth(LANDMARK_GLYPH_DEPTH);
+    promptText.setVisible(false);
+
+    this.landmarkVisuals.push({
+      binding,
+      glyph: glyphContainer,
+      glyphIdleTween: idleTween,
+      promptText,
+      proximityActive: false,
     });
   }
 
@@ -919,6 +1219,13 @@ export class ApolloVillageScene extends Phaser.Scene {
       if (time - last < LANDMARK_INTERACT_COOLDOWN_MS) continue;
       this.lastLandmarkEmitAt[lm.name] = time;
 
+      // Helios-v2 W3 S7 ambient entry direct fade (temple_arch precedent):
+      // pure-fade transition without choice prompt or event emission.
+      if (lm.ambientSubArea) {
+        this.triggerAmbientSubAreaEntry(lm);
+        break;
+      }
+
       // Helios-v2 W3 S5 dual-path: if the landmark binds a sub-area scene,
       // open the in-game choice prompt. Otherwise (single-path, S2 default)
       // emit the UI event topic directly.
@@ -935,11 +1242,30 @@ export class ApolloVillageScene extends Phaser.Scene {
   }
 
   /**
+   * Helios-v2 W3 S7 ambient entry direct fade. Used by temple_arch (and
+   * any future ambient-entry landmark). Mirrors the dual-path "Enter
+   * sub-area (game)" path: fadeOut + scene.start; differs in that no
+   * landmark interact event is emitted (NOT a NERIUM pillar).
+   */
+  private triggerAmbientSubAreaEntry(lm: LandmarkBinding): void {
+    if (!lm.ambientSubArea) return;
+    this.flashLandmarkGlyph(lm.name);
+    this.cameras.main.fadeOut(500, 0, 0, 0);
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      this.scene.start(lm.ambientSubArea!.sceneKey, {
+        worldId: 'medieval_desert',
+        from: 'ApolloVillage',
+      });
+    });
+  }
+
+  /**
    * Helios-v2 W3 S5: emit the landmark UI event + the bus event topic. Used
    * by single-path landmarks directly and by dual-path landmark choice 0
    * (UI option) selection.
    */
   private emitLandmarkInteract(lm: LandmarkBinding): void {
+    this.flashLandmarkGlyph(lm.name);
     this.events.emit(lm.eventTopic, {
       landmarkName: lm.name,
       x: lm.x,
@@ -1170,6 +1496,19 @@ export class ApolloVillageScene extends Phaser.Scene {
       this.ambientNpcs = [];
       this.landmarkBindings = [];
       this.lastLandmarkEmitAt = {};
+
+      // Helios-v2 W3 S7: tear down landmark glyph + prompt visuals + tweens.
+      for (const v of this.landmarkVisuals) {
+        try {
+          v.glyphIdleTween.stop();
+          v.glyphProximityTween?.stop();
+          v.glyph.destroy();
+          v.promptText.destroy();
+        } catch (err) {
+          console.error('[ApolloVillageScene] landmark visual destroy threw', err);
+        }
+      }
+      this.landmarkVisuals = [];
 
       // Helios-v2 W3 S5: dismiss any open landmark prompt overlay.
       if (this.landmarkPrompt) {

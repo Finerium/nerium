@@ -157,11 +157,39 @@ const FADE_IN_MS = 500;
 const LANDMARK_INTERACT_RADIUS_PX = 128;
 const LANDMARK_INTERACT_COOLDOWN_MS = 500;
 
+// Helios-v2 W3 S7 landmark glyph + prompt depth. Above world tiles + ambient
+// FX overlay (depth 500), below the UIScene chat (10000).
+const LANDMARK_GLYPH_DEPTH = 9001;
+
+// Helios-v2 W3 S7 floating prompt labels per Cyber NERIUM-pillar landmark.
+const CYBER_LANDMARK_PROMPTS: Readonly<Record<string, string>> = Object.freeze({
+  cyber_marketplace: 'Press E to browse cyber marketplace',
+  bank_treasury: 'Press E to manage billing',
+  admin_hall: 'Press E to open admin panel',
+  protocol_gateway: 'Press E to dispatch protocol',
+});
+
 interface LandmarkBinding {
   name: string;
   x: number;
   y: number;
   eventTopic: string;
+  /** Helios-v2 W3 S7 floating action prompt label. */
+  promptLabel?: string;
+}
+
+/**
+ * Helios-v2 W3 S7 hovering glyph + proximity prompt visuals per Cyber
+ * landmark. Mirrors the Apollo pattern but with cool-cyan glyph color
+ * to match the cyberpunk palette (instead of warm amber).
+ */
+interface LandmarkVisualHandle {
+  binding: LandmarkBinding;
+  glyph: Phaser.GameObjects.Container;
+  glyphIdleTween: Phaser.Tweens.Tween;
+  glyphProximityTween?: Phaser.Tweens.Tween;
+  promptText: Phaser.GameObjects.Text;
+  proximityActive: boolean;
 }
 
 export class CyberpunkShanghaiScene extends Phaser.Scene {
@@ -185,6 +213,9 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
   private landmarkBindings: LandmarkBinding[] = [];
   private eKey?: Phaser.Input.Keyboard.Key;
   private lastLandmarkEmitAt: Record<string, number> = {};
+
+  // Helios-v2 W3 S7 hovering glyph + proximity prompt state.
+  private landmarkVisuals: LandmarkVisualHandle[] = [];
 
   constructor() {
     super({ key: 'CyberpunkShanghai' } satisfies Phaser.Types.Scenes.SettingsConfig);
@@ -299,6 +330,10 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
     // Per-frame y-sort across all registered dynamic sprites + drop shadows.
     this.sorter?.tick();
 
+    // Helios-v2 W3 S7: per-frame proximity update for hovering glyph +
+    // floating prompt visuals across all 4 cyber pillar landmarks.
+    this.updateLandmarkVisualProximity();
+
     // Landmark E-key interaction polling.
     this.checkLandmarkInteraction(time);
   }
@@ -404,11 +439,136 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
       setDepth: (v) => dropShadow.setDepth(v),
     });
 
-    this.landmarkBindings.push({
+    const promptLabel = CYBER_LANDMARK_PROMPTS[name] ?? `Press E to interact`;
+    const binding: LandmarkBinding = {
       name,
       x,
       y,
       eventTopic: `landmark.${name}.interact`,
+      promptLabel,
+    };
+    this.landmarkBindings.push(binding);
+
+    // Helios-v2 W3 S7 hovering glyph + proximity prompt visuals (cyan glyph
+    // for Cyber palette).
+    const spriteDisplayHeight = sprite.displayHeight;
+    this.spawnLandmarkGlyph(binding, spriteDisplayHeight);
+  }
+
+  /**
+   * Helios-v2 W3 S7 hovering glyph + proximity prompt creator (Cyber
+   * variant). Mirrors the Apollo pattern; differs only in glyph color
+   * (cyan instead of warm amber) to match the cyberpunk palette.
+   */
+  private spawnLandmarkGlyph(
+    binding: LandmarkBinding,
+    spriteDisplayHeight: number,
+  ): void {
+    const anchorX = binding.x;
+    const anchorY = binding.y - spriteDisplayHeight - 20;
+
+    const glyphContainer = this.add.container(anchorX, anchorY);
+    glyphContainer.setDepth(LANDMARK_GLYPH_DEPTH);
+
+    const glyphColor = 0x00f0ff; // neonCyan
+    const glyphSize = 12;
+    const glyph = this.add.graphics();
+    glyph.fillStyle(glyphColor, 1);
+    glyph.beginPath();
+    glyph.moveTo(0, -glyphSize);
+    glyph.lineTo(glyphSize, 0);
+    glyph.lineTo(0, glyphSize);
+    glyph.lineTo(-glyphSize, 0);
+    glyph.closePath();
+    glyph.fillPath();
+    glyph.lineStyle(1.5, 0x06060c, 0.85);
+    glyph.strokePath();
+    glyphContainer.add(glyph);
+
+    glyphContainer.setAlpha(0.6);
+    const idleTween = this.tweens.add({
+      targets: glyphContainer,
+      alpha: { from: 0.6, to: 0.9 },
+      y: { from: anchorY, to: anchorY - 2 },
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+      duration: 1500,
+      delay: Math.floor(Math.random() * 800),
+    });
+
+    const promptLabel = binding.promptLabel ?? `Press E to interact`;
+    const promptText = this.add.text(anchorX, anchorY - 22, promptLabel, {
+      fontFamily: 'monospace',
+      fontSize: '11px',
+      color: '#00f0ff',
+      align: 'center',
+      backgroundColor: 'rgba(6, 6, 12, 0.8)',
+      padding: { left: 6, right: 6, top: 3, bottom: 3 },
+    });
+    promptText.setOrigin(0.5, 1);
+    promptText.setDepth(LANDMARK_GLYPH_DEPTH);
+    promptText.setVisible(false);
+
+    this.landmarkVisuals.push({
+      binding,
+      glyph: glyphContainer,
+      glyphIdleTween: idleTween,
+      promptText,
+      proximityActive: false,
+    });
+  }
+
+  /**
+   * Helios-v2 W3 S7 per-frame landmark visual proximity update (Cyber).
+   * Mirrors Apollo logic exactly.
+   */
+  private updateLandmarkVisualProximity(): void {
+    if (!this.player) return;
+    for (const v of this.landmarkVisuals) {
+      const dx = this.player.x - v.binding.x;
+      const dy = this.player.y - v.binding.y;
+      const dist = Math.hypot(dx, dy);
+      const inProximity = dist <= LANDMARK_INTERACT_RADIUS_PX;
+      if (inProximity === v.proximityActive) continue;
+
+      v.proximityActive = inProximity;
+      if (inProximity) {
+        v.glyphIdleTween.pause();
+        v.glyph.setAlpha(1.0);
+        v.glyphProximityTween?.stop();
+        v.glyphProximityTween = this.tweens.add({
+          targets: v.glyph,
+          scale: { from: 1.0, to: 1.15 },
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut',
+          duration: 300,
+        });
+        v.promptText.setVisible(true);
+      } else {
+        v.glyphProximityTween?.stop();
+        v.glyphProximityTween = undefined;
+        v.glyph.setScale(1.0);
+        v.glyphIdleTween.resume();
+        v.promptText.setVisible(false);
+      }
+    }
+  }
+
+  /**
+   * Helios-v2 W3 S7 brief E-key trigger flash (Cyber).
+   */
+  private flashLandmarkGlyph(name: string): void {
+    const v = this.landmarkVisuals.find((lv) => lv.binding.name === name);
+    if (!v) return;
+    v.glyph.setAlpha(1.0);
+    v.glyph.setScale(1.3);
+    this.tweens.add({
+      targets: v.glyph,
+      scale: 1.15,
+      duration: 100,
+      ease: 'Sine.easeOut',
     });
   }
 
@@ -825,6 +985,7 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
       const last = this.lastLandmarkEmitAt[lm.name] ?? 0;
       if (time - last < LANDMARK_INTERACT_COOLDOWN_MS) continue;
       this.lastLandmarkEmitAt[lm.name] = time;
+      this.flashLandmarkGlyph(lm.name);
       this.events.emit(lm.eventTopic, {
         landmarkName: lm.name,
         x: lm.x,
@@ -895,6 +1056,19 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
       this.sorter = undefined;
       this.landmarkBindings = [];
       this.lastLandmarkEmitAt = {};
+
+      // Helios-v2 W3 S7: tear down landmark glyph + prompt visuals + tweens.
+      for (const v of this.landmarkVisuals) {
+        try {
+          v.glyphIdleTween.stop();
+          v.glyphProximityTween?.stop();
+          v.glyph.destroy();
+          v.promptText.destroy();
+        } catch (err) {
+          console.error('[CyberpunkShanghaiScene] landmark visual destroy threw', err);
+        }
+      }
+      this.landmarkVisuals = [];
 
       for (const unsub of this.unsubscribers) {
         try {
