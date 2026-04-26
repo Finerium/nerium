@@ -387,6 +387,21 @@ export function wireBridge(game: Phaser.Game): GameBridge {
 
   game.registry.set('gameEventBus', bus);
 
+  // ---- Window handoff for React HUD bus consumers ----
+  //
+  // hudBus.ts and dialogueBridge.ts both reference `window.__NERIUM_GAME_BUS__`
+  // as the canonical handoff path for React HUD components that need to
+  // emit or subscribe to bus topics without holding a Phaser game ref. The
+  // pattern was documented in those modules' header comments but never
+  // implemented anywhere; only the fallback `__NERIUM_GAME_EVENT__` window
+  // CustomEvent path was active. The Sekuri Apollo Builder Workshop listener
+  // is the first React HUD subscriber that needs Phaser-originated bus
+  // events (game.landmark.interact), so we complete the documented pattern
+  // here. The expose + cleanup is a no-op in non-browser environments.
+  if (typeof window !== 'undefined') {
+    (window as unknown as { __NERIUM_GAME_BUS__?: GameEventBus }).__NERIUM_GAME_BUS__ = bus;
+  }
+
   return {
     game,
     bus,
@@ -400,6 +415,13 @@ export function wireBridge(game: Phaser.Game): GameBridge {
       }
       disposers.length = 0;
       game.registry.remove('gameEventBus');
+      if (typeof window !== 'undefined') {
+        try {
+          delete (window as unknown as Record<string, unknown>).__NERIUM_GAME_BUS__;
+        } catch {
+          // ignore: some sandboxed environments treat window props as non-deletable
+        }
+      }
       WIRED.delete(game);
     },
   };

@@ -30,11 +30,22 @@
 
 import BusBridge from '../BusBridge';
 import TierBadge from './TierBadge';
+import ApolloBuilderWorkshopListener from '../apollo/ApolloBuilderWorkshopListener';
+import ApolloBuilderWorkshopDialogue from '../apollo/ApolloBuilderWorkshopDialogue';
 
 export default function GameHUDLean() {
   return (
     <>
       <BusBridge />
+      {/* Sekuri Apollo Builder Workshop integration:
+          - Listener is non-visual, subscribes to game.landmark.interact bus
+            event with landmarkName === 'builder_workshop' and opens the
+            theatrical dialogue store phase.
+          - Dialogue overlay self-controls via the dialogue store; renders
+            nothing when phase === 'closed' so the React HUD lean rule
+            (Gate 5 REVISED) is preserved on idle /play. */}
+      <ApolloBuilderWorkshopListener />
+      <ApolloBuilderWorkshopDialogue />
       {/* TierBadge anchored top-right via its own positioning; pointer-events
           flow through to canvas because TierBadge sets fixed-pos itself. */}
       <div
