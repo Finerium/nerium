@@ -1,6 +1,28 @@
 //
 // tests/e2e/inventory_award.spec.ts
 //
+// RETIRED 2026-04-26 by Nemea-RV-v2 W4 Ferry 4+5b (Option c retire + smoke + ADR).
+//
+// S11 architectural shift: Helios-v2 commit 8fadf4b titled "React HUD cleanup
+// on /play (Gate 5 REVISED)" removed the entire React HUD layer from /play.
+// InventoryToast React component no longer mounts on /play.
+//
+// This spec asserts against React HUD DOM nodes that no longer exist on /play:
+//   - [data-hud-role="inventory-toast"] (lines 123, 133, 142, 153, 188):
+//     InventoryToast React component root, unmounted
+//
+// Retirement is NOT a bug; the test surface itself was deprecated by the
+// architectural shift. Post-submit roadmap per
+// ADR-S11-react-hud-removal-test-obsolescence: implement
+// window.__NERIUM_TEST__ Phaser observability seams (inventory[],
+// lastAwarded, etc.) + rewrite this spec against those seams.
+//
+// See: docs/adr/ADR-S11-react-hud-removal-test-obsolescence.md
+//      docs/qa/e2e_obsolescence_inventory.md
+//
+// Original header retained below for archive context.
+//
+// ----------------------------------------------------------------------
 // Nemea-RV-A W4 regression spec 3 of 4. Inventory award flow:
 // quest step completion -> award_item effect -> inventoryStore.award ->
 // InventoryToast surfaces in HUD.
@@ -112,7 +134,7 @@ async function driveToAwardStep(page: Page): Promise<void> {
   await page.waitForTimeout(260);
 }
 
-test.describe('Nemea-RV-A | inventory award flow on quest completion', () => {
+test.describe.skip('Nemea-RV-A | inventory award flow on quest completion (RETIRED post-S11)', () => {
   test.beforeEach(async ({ page }) => {
     await installBusCollector(page);
   });

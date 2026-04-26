@@ -41,6 +41,10 @@ venv/
 next-env.d.ts
 tsconfig.tsbuildinfo
 
+# T7 build backup (created during Helios-v2 / T7 transition cleanup)
+.next.t7bak/
+.next.*bak/
+
 # Playwright MCP session artifacts
 .playwright-mcp/
 

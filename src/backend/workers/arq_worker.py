@@ -212,11 +212,13 @@ def _bootstrap_cron_modules() -> None:
     import WorkerSettings; print(len(WorkerSettings.cron_jobs))"`` printed
     ``0``.
 
-    The brief listed the canonical modules to wire here. Two additional
-    cron modules ship in the repo but were left out of the V6 brief
-    intentionally (``src.backend.registry.identity.cron.key_rotation``
-    and ``src.backend.trust.cron.refresh_scores``). They have the same
-    symptom and can be added as a follow-up.
+    The brief listed the canonical modules to wire here. Phase 1 Ferry 2
+    shipped five core cron modules. Phase 1 Ferry 4+5b appends the two
+    follow-up modules flagged in the V6 brief
+    (``src.backend.registry.identity.cron.key_rotation`` and
+    ``src.backend.trust.cron.refresh_scores``) which have the same
+    orphaned-import symptom and were verified to exist at canonical
+    paths with ``register_cron_job(...)`` calls intact.
     """
 
     # Imported for side effects only. The lint / unused-import noise is
@@ -227,6 +229,9 @@ def _bootstrap_cron_modules() -> None:
     from src.backend.realtime import audit_jobs  # noqa: F401
     from src.backend.budget import daily_reset  # noqa: F401
     from src.backend.budget import usage_api_poller  # noqa: F401
+    # Ferry 4+5b follow-up additions (2026-04-26).
+    from src.backend.registry.identity.cron import key_rotation  # noqa: F401
+    from src.backend.trust.cron import refresh_scores  # noqa: F401
 
 
 _bootstrap_cron_modules()

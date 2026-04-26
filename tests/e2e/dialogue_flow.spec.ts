@@ -1,6 +1,33 @@
 //
 // tests/e2e/dialogue_flow.spec.ts
 //
+// RETIRED 2026-04-26 by Nemea-RV-v2 W4 Ferry 4+5b (Option c retire + smoke + ADR).
+//
+// S11 architectural shift: Helios-v2 commit 8fadf4b titled "React HUD cleanup
+// on /play (Gate 5 REVISED)" removed the entire React HUD layer from /play.
+// DialogueOverlay and PromptInputChallenge React components no longer mount
+// on /play; in-Phaser dialogue rendering is the shipped surface.
+//
+// This spec asserts against React HUD DOM nodes that no longer exist on /play:
+//   - .dialogue-overlay (line 96): DialogueOverlay React root, unmounted
+//   - .dialogue-overlay-speaker (line 108): DialogueOverlay inner span, unmounted
+//   - .dialogue-overlay-choice-item (line 109): DialogueOverlay choice list, unmounted
+//   - [data-slot-id] (line 110, 118): PromptChallengeNode form attr, unmounted
+//   - .dialogue-overlay-choice (line 163): DialogueOverlay choice button, unmounted
+//   - [data-hud-role="prompt-input-challenge"] (lines 189, 212, 219): PromptInputChallenge form, unmounted
+//
+// Retirement is NOT a bug; the test surface itself was deprecated by the
+// architectural shift. Post-submit roadmap per
+// ADR-S11-react-hud-removal-test-obsolescence: implement
+// window.__NERIUM_TEST__ Phaser observability seams (dialogueActive,
+// dialogueCurrentNode, etc.) + rewrite this spec against those seams.
+//
+// See: docs/adr/ADR-S11-react-hud-removal-test-obsolescence.md
+//      docs/qa/e2e_obsolescence_inventory.md
+//
+// Original header retained below for archive context.
+//
+// ----------------------------------------------------------------------
 // Nemea-RV-A W4 regression spec 2 of 4. Dialogue flow end-to-end:
 // NPC interact -> dialogue open -> choice -> prompt challenge -> trigger fire.
 //
@@ -120,7 +147,7 @@ async function readDialogueDom(page: Page): Promise<{
   });
 }
 
-test.describe('Nemea-RV-A | Linus dialogue runtime end to end', () => {
+test.describe.skip('Nemea-RV-A | Linus dialogue runtime end to end (RETIRED post-S11)', () => {
   test.beforeEach(async ({ page }) => {
     await installBusCollector(page);
   });

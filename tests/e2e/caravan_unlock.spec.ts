@@ -1,6 +1,33 @@
 //
 // tests/e2e/caravan_unlock.spec.ts
 //
+// RETIRED 2026-04-26 by Nemea-RV-v2 W4 Ferry 4+5b (Option c retire + smoke + ADR).
+//
+// S11 architectural shift: Helios-v2 commit 8fadf4b titled "React HUD cleanup
+// on /play (Gate 5 REVISED)" removed the entire React HUD layer from /play.
+// QuestTracker React component no longer mounts on /play; quest progress is
+// rendered in-Phaser via UIScene.
+//
+// This spec asserts against React HUD DOM nodes that no longer exist on /play:
+//   - [aria-label="Quest tracker"] (line 91): QuestTracker React component, unmounted
+//   - .quest-tracker-progress (line 96): QuestTracker inner span, unmounted
+//
+// Retirement is NOT a bug; the test surface itself was deprecated by the
+// architectural shift. Post-submit roadmap per
+// ADR-S11-react-hud-removal-test-obsolescence: implement
+// window.__NERIUM_TEST__ Phaser observability seams (questState,
+// activeQuestId, currentStepIndex) + rewrite this spec against those
+// seams. The final test in this file ("canvas survives the full 8-trigger
+// drive without detach") asserts only against canvas + __NERIUM_TEST__.ready
+// and remains conceptually valid; full-spec describe.skip retains it under
+// the same retirement umbrella to keep the audit trail simple.
+//
+// See: docs/adr/ADR-S11-react-hud-removal-test-obsolescence.md
+//      docs/qa/e2e_obsolescence_inventory.md
+//
+// Original header retained below for archive context.
+//
+// ----------------------------------------------------------------------
 // Nemea-RV-A W4 regression spec 4 of 4. Caravan unlock flow:
 // quest step 5 effect `unlock_world` -> questStore.unlockedWorlds add
 // -> gameBridge storeSubscribe emits game.world.unlocked
@@ -111,7 +138,7 @@ function extractStepIndex(progressLabel: string | null): number | null {
   return null;
 }
 
-test.describe('Nemea-RV-A | caravan unlock and world transition flow', () => {
+test.describe.skip('Nemea-RV-A | caravan unlock and world transition flow (RETIRED post-S11)', () => {
   test.beforeEach(async ({ page }) => {
     await installBusCollector(page);
   });

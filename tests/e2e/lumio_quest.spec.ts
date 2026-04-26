@@ -1,6 +1,31 @@
 //
 // tests/e2e/lumio_quest.spec.ts
 //
+// RETIRED 2026-04-26 by Nemea-RV-v2 W4 Ferry 4+5b (Option c retire + smoke + ADR).
+//
+// S11 architectural shift: Helios-v2 commit 8fadf4b titled "React HUD cleanup
+// on /play (Gate 5 REVISED)" removed the entire React HUD layer from /play.
+// The shipped /play surface is now pure Phaser canvas. GameShell.tsx now
+// mounts GameHUDLean (BusBridge + TierBadge only); QuestTracker, DialogueOverlay,
+// InventoryToast, and PromptInputChallenge are no longer mounted on /play.
+//
+// This spec asserts against React HUD DOM nodes that no longer exist on /play:
+//   - [aria-label="Quest tracker"] (line 95): QuestTracker React component, unmounted
+//   - .quest-tracker-progress (line 100): QuestTracker inner span, unmounted
+//   - .quest-tracker-step-title (line 101): QuestTracker inner span, unmounted
+//
+// Retirement is NOT a bug; the test surface itself was deprecated by the
+// architectural shift. Post-submit roadmap per
+// ADR-S11-react-hud-removal-test-obsolescence: implement
+// window.__NERIUM_TEST__ Phaser observability seams + rewrite this spec
+// against those seams.
+//
+// See: docs/adr/ADR-S11-react-hud-removal-test-obsolescence.md
+//      docs/qa/e2e_obsolescence_inventory.md
+//
+// Original header retained below for archive context.
+//
+// ----------------------------------------------------------------------
 // Nemea-RV-A W4 regression spec 1 of 4. Quest-flow end-to-end.
 //
 // Boots /play, waits for ApolloVillageScene ready via `window.__NERIUM_TEST__`
@@ -118,7 +143,7 @@ async function extractStepIndex(progressLabel: string | null): Promise<number | 
   return null;
 }
 
-test.describe('Nemea-RV-A | lumio_onboarding quest flow end to end', () => {
+test.describe.skip('Nemea-RV-A | lumio_onboarding quest flow end to end (RETIRED post-S11)', () => {
   test.beforeEach(async ({ page }) => {
     await installBusCollector(page);
   });
