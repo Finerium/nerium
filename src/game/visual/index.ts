@@ -56,3 +56,38 @@ export {
   type AmbientFxKind,
   type AmbientFxOptions,
 } from './ambientFx';
+
+export {
+  enableSceneAmbient,
+  addPointLight,
+  addLandmarkHalo,
+  SCENE_AMBIENT_COLOR,
+  type PointLightOptions,
+  type PointLightHandle,
+  type LandmarkHaloOptions,
+} from './lighting';
+
+export {
+  buildDayNightOverlay,
+  nextTimeOfDay,
+  TIME_OF_DAY_PHASES,
+  type TimeOfDay,
+  type TimeOfDayPhase,
+  type DayNightHandle,
+} from './dayNightOverlay';
+
+export {
+  addSmogWispsOverlay,
+  addAutumnLeavesOverlay,
+  type AtmosphericOverlayHandle,
+  type SmogWispsOptions,
+  type AutumnLeavesOptions,
+} from './atmosphericOverlay';
+
+export {
+  applyScenePolish,
+  SCENE_POLISH_RECIPES,
+  type ScenePolishHandle,
+  type DayNightScope,
+  type AtmosphericKind,
+} from './scenePolish';

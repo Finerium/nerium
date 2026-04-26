@@ -50,6 +50,8 @@ import {
   SceneSorter,
   buildAmbientFx,
   DEPTH,
+  applyScenePolish,
+  type ScenePolishHandle,
 } from '../visual';
 import { ASSET_KEYS } from '../visual/asset_keys';
 
@@ -90,6 +92,9 @@ export class ApolloTempleInteriorScene extends Phaser.Scene {
   private ambientFx?: Phaser.GameObjects.Particles.ParticleEmitter | null;
   private dropShadows: Phaser.GameObjects.Ellipse[] = [];
   private exited = false;
+  // Helios-v2 W3 S9 polish bundle handle (Lights2D ambient + altar orb point
+  // light divine pulse via SCENE_POLISH_RECIPES table; SHUTDOWN destroys it).
+  private scenePolish?: ScenePolishHandle;
 
   constructor() {
     super({ key: 'ApolloTempleInterior' } satisfies Phaser.Types.Scenes.SettingsConfig);
@@ -134,6 +139,10 @@ export class ApolloTempleInteriorScene extends Phaser.Scene {
     // this density because the bg's painted sun shaft already concentrates
     // visual attention at the altar.
     this.ambientFx = buildAmbientFx(this, { kind: 'dust' });
+
+    // Helios-v2 W3 S9 polish: altar sun-orb divine breathing point light
+    // (warm amber 0xffb14a intensity 0.9..1.0 over 2s) per S9 9.2.
+    this.scenePolish = applyScenePolish(this);
 
     this.configureCamera(width, height);
     this.registerSceneCleanup();
@@ -310,6 +319,14 @@ export class ApolloTempleInteriorScene extends Phaser.Scene {
 
       this.sorter?.unregisterAll();
       this.sorter = undefined;
+
+      // Helios-v2 W3 S9: dispose Lights2D + day-night + atmospheric overlay.
+      try {
+        this.scenePolish?.destroy();
+      } catch (err) {
+        console.error('[ApolloTempleInteriorScene] scenePolish destroy threw', err);
+      }
+      this.scenePolish = undefined;
 
       const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
       bus?.emit('game.scene.shutdown', { sceneKey: this.scene.key });

@@ -58,6 +58,8 @@ import {
   buildSkyGradient,
   buildAmbientFx,
   DEPTH,
+  applyScenePolish,
+  type ScenePolishHandle,
 } from '../visual';
 import { ASSET_KEYS } from '../visual/asset_keys';
 
@@ -87,6 +89,8 @@ export class ApolloOasisScene extends Phaser.Scene {
   private ambientFx?: Phaser.GameObjects.Particles.ParticleEmitter | null;
   private dropShadows: Phaser.GameObjects.Ellipse[] = [];
   private exited = false;
+  // Helios-v2 W3 S9 polish bundle handle.
+  private scenePolish?: ScenePolishHandle;
 
   constructor() {
     super({ key: 'ApolloOasis' } satisfies Phaser.Types.Scenes.SettingsConfig);
@@ -132,6 +136,10 @@ export class ApolloOasisScene extends Phaser.Scene {
 
     // Layer 5: lighter warm amber dust drift (oasis cooler tone).
     this.ambientFx = buildAmbientFx(this, { kind: 'dust' });
+
+    // Helios-v2 W3 S9 polish: shrine cool moss-cyan-warm point light + day-
+    // night dusk overlay per recipe.
+    this.scenePolish = applyScenePolish(this);
 
     this.configureCamera(width, height);
     this.registerSceneCleanup();
@@ -301,6 +309,14 @@ export class ApolloOasisScene extends Phaser.Scene {
 
       this.sorter?.unregisterAll();
       this.sorter = undefined;
+
+      // Helios-v2 W3 S9: dispose Lights2D + day-night overlay + atmospheric.
+      try {
+        this.scenePolish?.destroy();
+      } catch (err) {
+        console.error('[ApolloOasisScene] scenePolish destroy threw', err);
+      }
+      this.scenePolish = undefined;
 
       const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
       bus?.emit('game.scene.shutdown', { sceneKey: this.scene.key });

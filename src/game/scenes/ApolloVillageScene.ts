@@ -77,6 +77,12 @@ import {
   MEDIEVAL_DESERT,
   DEPTH,
   dynamicDepthFor,
+  enableSceneAmbient,
+  addPointLight,
+  addLandmarkHalo,
+  buildDayNightOverlay,
+  type PointLightHandle,
+  type DayNightHandle,
 } from '../visual';
 import { ASSET_KEYS } from '../visual/asset_keys';
 
@@ -260,6 +266,12 @@ export class ApolloVillageScene extends Phaser.Scene {
   private idleBreathingTweens: Phaser.Tweens.Tween[] = [];
   private dropShadows: Phaser.GameObjects.Ellipse[] = [];
 
+  // Helios-v2 W3 S9 Lights2D + day-night state. Each handle tracks the
+  // PointLight + tween so SHUTDOWN can dispose without leaking.
+  private pointLights: PointLightHandle[] = [];
+  private landmarkHalos: PointLightHandle[] = [];
+  private dayNight?: DayNightHandle;
+
   // Landmark E-key interaction state.
   private landmarkBindings: LandmarkBinding[] = [];
   private eKey?: Phaser.Input.Keyboard.Key;
@@ -357,6 +369,67 @@ export class ApolloVillageScene extends Phaser.Scene {
 
     // Layer 5: warm amber sand particle drift.
     this.ambientFx = buildAmbientFx(this, { kind: 'dust' });
+
+    // Helios-v2 W3 S9: enable Lights2D plugin + ambient color preset.
+    enableSceneAmbient(this);
+
+    // Helios-v2 W3 S9: hero point lights at key Apollo Village landmarks.
+    // Coords align to placement map Lights2D coord MARKS. Each light renders
+    // additively via Phaser PointLight so existing sprites need no pipeline
+    // migration. Budget 4 lights/scene per S9 perf guidance.
+    this.pointLights.push(
+      addPointLight(this, {
+        x: 384,
+        y: 280,
+        radius: 180,
+        color: 0xff8844,
+        intensity: 0.7,
+        tween: { target: 1.0, duration: 350, ease: 'Sine.easeInOut' },
+      }),
+    );
+    this.pointLights.push(
+      addPointLight(this, {
+        x: 1024,
+        y: 280,
+        radius: 180,
+        color: 0xff8844,
+        intensity: 0.7,
+        tween: { target: 1.0, duration: 280, ease: 'Sine.easeInOut' },
+      }),
+    );
+    // Soft warm halo on the well center for visual interest.
+    this.pointLights.push(
+      addPointLight(this, {
+        x: 700,
+        y: 460,
+        radius: 220,
+        color: 0xf0b45a,
+        intensity: 0.4,
+        tween: { target: 0.6, duration: 2200, ease: 'Sine.easeInOut' },
+      }),
+    );
+
+    // Helios-v2 W3 S9 9.6: warm amber halos on the four NERIUM-pillar
+    // landmarks for proximity glow polish. The halos pulse out-of-sync with
+    // the existing glyph alpha tween for organic feel.
+    for (const binding of this.landmarkBindings) {
+      // Skip ambient entry landmarks (temple_arch); halos for pillar only.
+      if (binding.emitsInteract === false) continue;
+      this.landmarkHalos.push(
+        addLandmarkHalo(this, {
+          x: binding.x,
+          y: binding.y - 60,
+          radius: 140,
+          color: 0xffb14a,
+          peakIntensity: 0.6,
+          pulseMs: 1700,
+        }),
+      );
+    }
+
+    // Helios-v2 W3 S9 9.3: day-night MULTIPLY overlay; ApolloVillage is a
+    // main outdoor scene so initial phase 'dusk' for warm evening feel.
+    this.dayNight = buildDayNightOverlay(this, 'dusk');
 
     // Helios-v2 W3 S8 quest indicators above Apollo + Treasurer NPCs.
     // The exclamation PNG bobs alpha + y to draw player attention. Quest
@@ -1631,6 +1704,32 @@ export class ApolloVillageScene extends Phaser.Scene {
         }
         this.landmarkPrompt = null;
       }
+
+      // Helios-v2 W3 S9: tear down Lights2D point lights + landmark halos +
+      // day-night overlay. Each handle owns its tween so destroy() stops
+      // tween before destroying the GameObject.
+      for (const h of this.pointLights) {
+        try {
+          h.destroy();
+        } catch (err) {
+          console.error('[ApolloVillageScene] point light destroy threw', err);
+        }
+      }
+      this.pointLights = [];
+      for (const h of this.landmarkHalos) {
+        try {
+          h.destroy();
+        } catch (err) {
+          console.error('[ApolloVillageScene] landmark halo destroy threw', err);
+        }
+      }
+      this.landmarkHalos = [];
+      try {
+        this.dayNight?.destroy();
+      } catch (err) {
+        console.error('[ApolloVillageScene] day-night destroy threw', err);
+      }
+      this.dayNight = undefined;
 
       for (const unsub of this.unsubscribers) {
         try {

@@ -48,6 +48,8 @@ import {
   SceneSorter,
   buildAmbientFx,
   DEPTH,
+  applyScenePolish,
+  type ScenePolishHandle,
 } from '../visual';
 import { ASSET_KEYS } from '../visual/asset_keys';
 
@@ -80,6 +82,9 @@ export class CyberUndergroundAlleyScene extends Phaser.Scene {
   private dropShadows: Phaser.GameObjects.Ellipse[] = [];
   private smogWispsOverlay?: Phaser.GameObjects.Image;
   private exited = false;
+  // Helios-v2 W3 S9 polish bundle handle (sodium pipe leak amber + flickering
+  // broken neon magenta points; smog already placed statically).
+  private scenePolish?: ScenePolishHandle;
 
   constructor() {
     super({ key: 'CyberUndergroundAlley' } satisfies Phaser.Types.Scenes.SettingsConfig);
@@ -123,6 +128,10 @@ export class CyberUndergroundAlleyScene extends Phaser.Scene {
 
     // Layer 6: smog_wisps PNG static overlay covering full scene.
     this.spawnSmogWispsOverlay(width, height);
+
+    // Helios-v2 W3 S9 polish: sodium pipe leak + broken neon flicker points;
+    // day-night SKIP per recipe (alley fixed lighting).
+    this.scenePolish = applyScenePolish(this);
 
     this.configureCamera(width, height);
     this.registerSceneCleanup();
@@ -299,6 +308,14 @@ export class CyberUndergroundAlleyScene extends Phaser.Scene {
 
       this.sorter?.unregisterAll();
       this.sorter = undefined;
+
+      // Helios-v2 W3 S9: dispose Lights2D + day-night + atmospheric overlay.
+      try {
+        this.scenePolish?.destroy();
+      } catch (err) {
+        console.error('[CyberUndergroundAlleyScene] scenePolish destroy threw', err);
+      }
+      this.scenePolish = undefined;
 
       const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
       bus?.emit('game.scene.shutdown', { sceneKey: this.scene.key });

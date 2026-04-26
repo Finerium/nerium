@@ -91,6 +91,12 @@ import {
   buildSkyGradient,
   buildAmbientFx,
   DEPTH,
+  enableSceneAmbient,
+  addPointLight,
+  addLandmarkHalo,
+  buildDayNightOverlay,
+  type PointLightHandle,
+  type DayNightHandle,
 } from '../visual';
 import { ASSET_KEYS } from '../visual/asset_keys';
 
@@ -209,6 +215,11 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
   private dropShadows: Phaser.GameObjects.Ellipse[] = [];
   private smogWispsOverlay?: Phaser.GameObjects.Image;
 
+  // Helios-v2 W3 S9 Lights2D + day-night state.
+  private pointLights: PointLightHandle[] = [];
+  private landmarkHalos: PointLightHandle[] = [];
+  private dayNight?: DayNightHandle;
+
   // Landmark E-key interaction state.
   private landmarkBindings: LandmarkBinding[] = [];
   private eKey?: Phaser.Input.Keyboard.Key;
@@ -277,6 +288,73 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
     // Layer 7: smog_wisps PNG static overlay covering full scene.
     // Per directive 6: S4 ships baseline overlay; S9 polishes drift tween.
     this.spawnSmogWispsOverlay(width, height);
+
+    // Helios-v2 W3 S9: enable Lights2D ambient (cyberpunk violet 0x1a0f2a).
+    enableSceneAmbient(this);
+
+    // Helios-v2 W3 S9: hero point lights for cyber neon clash. Magenta +
+    // cyan alternating per S9 9.2 Cyberpunk preset. 4 light budget for 60
+    // fps headroom.
+    this.pointLights.push(
+      addPointLight(this, {
+        x: 250,
+        y: 200,
+        radius: 200,
+        color: 0xff2db5,
+        intensity: 0.6,
+        tween: { target: 0.9, duration: 1700, ease: 'Sine.easeInOut' },
+      }),
+    );
+    this.pointLights.push(
+      addPointLight(this, {
+        x: 1150,
+        y: 200,
+        radius: 200,
+        color: 0x5ad6ff,
+        intensity: 0.6,
+        tween: { target: 0.9, duration: 1900, ease: 'Sine.easeInOut' },
+      }),
+    );
+    this.pointLights.push(
+      addPointLight(this, {
+        x: 700,
+        y: 240,
+        radius: 240,
+        color: 0x8b5cf6,
+        intensity: 0.4,
+        tween: { target: 0.7, duration: 2400, ease: 'Sine.easeInOut' },
+      }),
+    );
+    // Hologram glitch flicker at center.
+    this.pointLights.push(
+      addPointLight(this, {
+        x: 700,
+        y: 480,
+        radius: 180,
+        color: 0x00f0ff,
+        intensity: 0.5,
+        tween: { target: 0.8, duration: 1000, ease: 'Sine.easeInOut', holdJitterMs: 80 },
+      }),
+    );
+
+    // Helios-v2 W3 S9 9.6: cyan-magenta halos on the four NERIUM-pillar
+    // landmarks for proximity glow polish.
+    for (const binding of this.landmarkBindings) {
+      this.landmarkHalos.push(
+        addLandmarkHalo(this, {
+          x: binding.x,
+          y: binding.y - 60,
+          radius: 140,
+          color: 0x00f0ff,
+          peakIntensity: 0.6,
+          pulseMs: 1700,
+        }),
+      );
+    }
+
+    // Helios-v2 W3 S9 9.3: day-night MULTIPLY overlay; cyberpunk reads as
+    // perpetual night dystopia so initial phase 'night'.
+    this.dayNight = buildDayNightOverlay(this, 'night');
 
     // E-key binding for landmark interaction (S7 wires UI overlays).
     const keyboard = this.input.keyboard;
@@ -1069,6 +1147,31 @@ export class CyberpunkShanghaiScene extends Phaser.Scene {
         }
       }
       this.landmarkVisuals = [];
+
+      // Helios-v2 W3 S9: tear down Lights2D point lights + landmark halos +
+      // day-night overlay.
+      for (const h of this.pointLights) {
+        try {
+          h.destroy();
+        } catch (err) {
+          console.error('[CyberpunkShanghaiScene] point light destroy threw', err);
+        }
+      }
+      this.pointLights = [];
+      for (const h of this.landmarkHalos) {
+        try {
+          h.destroy();
+        } catch (err) {
+          console.error('[CyberpunkShanghaiScene] landmark halo destroy threw', err);
+        }
+      }
+      this.landmarkHalos = [];
+      try {
+        this.dayNight?.destroy();
+      } catch (err) {
+        console.error('[CyberpunkShanghaiScene] day-night destroy threw', err);
+      }
+      this.dayNight = undefined;
 
       for (const unsub of this.unsubscribers) {
         try {

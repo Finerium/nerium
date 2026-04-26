@@ -51,6 +51,8 @@ import {
   buildSkyGradient,
   buildAmbientFx,
   DEPTH,
+  applyScenePolish,
+  type ScenePolishHandle,
 } from '../visual';
 import { ASSET_KEYS } from '../visual/asset_keys';
 
@@ -83,6 +85,9 @@ export class CaravanMountainPassScene extends Phaser.Scene {
   private ambientFx?: Phaser.GameObjects.Particles.ParticleEmitter | null;
   private dropShadows: Phaser.GameObjects.Ellipse[] = [];
   private exited = false;
+  // Helios-v2 W3 S9 polish bundle handle (cool windswept beacon + night
+  // overlay per recipe table for atmospheric mountain feel).
+  private scenePolish?: ScenePolishHandle;
 
   constructor() {
     super({ key: 'CaravanMountainPass' } satisfies Phaser.Types.Scenes.SettingsConfig);
@@ -128,6 +133,9 @@ export class CaravanMountainPassScene extends Phaser.Scene {
 
     // Layer 5: lighter warm amber dust drift (mountain wind dust).
     this.ambientFx = buildAmbientFx(this, { kind: 'dust' });
+
+    // Helios-v2 W3 S9 polish: distant cool beacon + night overlay.
+    this.scenePolish = applyScenePolish(this);
 
     this.configureCamera(width, height);
     this.registerSceneCleanup();
@@ -290,6 +298,14 @@ export class CaravanMountainPassScene extends Phaser.Scene {
 
       this.sorter?.unregisterAll();
       this.sorter = undefined;
+
+      // Helios-v2 W3 S9: dispose Lights2D + day-night + atmospheric overlay.
+      try {
+        this.scenePolish?.destroy();
+      } catch (err) {
+        console.error('[CaravanMountainPassScene] scenePolish destroy threw', err);
+      }
+      this.scenePolish = undefined;
 
       const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
       bus?.emit('game.scene.shutdown', { sceneKey: this.scene.key });

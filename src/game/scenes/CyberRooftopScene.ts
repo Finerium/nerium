@@ -49,6 +49,8 @@ import {
   buildSkyGradient,
   buildAmbientFx,
   DEPTH,
+  applyScenePolish,
+  type ScenePolishHandle,
 } from '../visual';
 import { ASSET_KEYS } from '../visual/asset_keys';
 
@@ -81,6 +83,9 @@ export class CyberRooftopScene extends Phaser.Scene {
   private dropShadows: Phaser.GameObjects.Ellipse[] = [];
   private smogWispsOverlay?: Phaser.GameObjects.Image;
   private exited = false;
+  // Helios-v2 W3 S9 polish bundle handle (billboard magenta + cyan points +
+  // night overlay; smog_wisps already placed statically in S6).
+  private scenePolish?: ScenePolishHandle;
 
   constructor() {
     super({ key: 'CyberRooftop' } satisfies Phaser.Types.Scenes.SettingsConfig);
@@ -129,6 +134,10 @@ export class CyberRooftopScene extends Phaser.Scene {
 
     // Layer 6: smog_wisps PNG static overlay covering full scene.
     this.spawnSmogWispsOverlay(width, height);
+
+    // Helios-v2 W3 S9 polish: billboard magenta + cyan alternating points +
+    // night overlay; atmospheric smog already placed via spawnSmogWipsOverlay.
+    this.scenePolish = applyScenePolish(this);
 
     this.configureCamera(width, height);
     this.registerSceneCleanup();
@@ -305,6 +314,14 @@ export class CyberRooftopScene extends Phaser.Scene {
 
       this.sorter?.unregisterAll();
       this.sorter = undefined;
+
+      // Helios-v2 W3 S9: dispose Lights2D + day-night + atmospheric overlay.
+      try {
+        this.scenePolish?.destroy();
+      } catch (err) {
+        console.error('[CyberRooftopScene] scenePolish destroy threw', err);
+      }
+      this.scenePolish = undefined;
 
       const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
       bus?.emit('game.scene.shutdown', { sceneKey: this.scene.key });

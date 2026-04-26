@@ -52,6 +52,8 @@ import {
   SceneSorter,
   buildAmbientFx,
   DEPTH,
+  applyScenePolish,
+  type ScenePolishHandle,
 } from '../visual';
 import { ASSET_KEYS } from '../visual/asset_keys';
 
@@ -85,6 +87,8 @@ export class CaravanWayhouseInteriorScene extends Phaser.Scene {
   private ambientFx?: Phaser.GameObjects.Particles.ParticleEmitter | null;
   private dropShadows: Phaser.GameObjects.Ellipse[] = [];
   private exited = false;
+  // Helios-v2 W3 S9 polish bundle handle.
+  private scenePolish?: ScenePolishHandle;
 
   constructor() {
     super({ key: 'CaravanWayhouseInterior' } satisfies Phaser.Types.Scenes.SettingsConfig);
@@ -126,6 +130,10 @@ export class CaravanWayhouseInteriorScene extends Phaser.Scene {
 
     // Layer 5: lighter warm amber dust drift (interior cozy mote feel).
     this.ambientFx = buildAmbientFx(this, { kind: 'dust' });
+
+    // Helios-v2 W3 S9 polish: hearth fire warm flicker + tavern candle warm
+    // small. Day-night SKIP per recipe (interior fixed).
+    this.scenePolish = applyScenePolish(this);
 
     this.configureCamera(width, height);
     this.registerSceneCleanup();
@@ -322,6 +330,14 @@ export class CaravanWayhouseInteriorScene extends Phaser.Scene {
 
       this.sorter?.unregisterAll();
       this.sorter = undefined;
+
+      // Helios-v2 W3 S9: dispose Lights2D + day-night + atmospheric overlay.
+      try {
+        this.scenePolish?.destroy();
+      } catch (err) {
+        console.error('[CaravanWayhouseInteriorScene] scenePolish destroy threw', err);
+      }
+      this.scenePolish = undefined;
 
       const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
       bus?.emit('game.scene.shutdown', { sceneKey: this.scene.key });

@@ -53,6 +53,8 @@ import {
   buildSkyGradient,
   buildAmbientFx,
   DEPTH,
+  applyScenePolish,
+  type ScenePolishHandle,
 } from '../visual';
 import { ASSET_KEYS } from '../visual/asset_keys';
 
@@ -79,6 +81,8 @@ export class ApolloMarketplaceBazaarScene extends Phaser.Scene {
   private ambientFx?: Phaser.GameObjects.Particles.ParticleEmitter | null;
   private dropShadows: Phaser.GameObjects.Ellipse[] = [];
   private exited = false;
+  // Helios-v2 W3 S9 polish bundle handle.
+  private scenePolish?: ScenePolishHandle;
 
   constructor() {
     super({ key: 'ApolloMarketplaceBazaar' } satisfies Phaser.Types.Scenes.SettingsConfig);
@@ -124,6 +128,10 @@ export class ApolloMarketplaceBazaarScene extends Phaser.Scene {
 
     // Layer 5: densest warm amber dust drift (warm market dust per S9 9.4).
     this.ambientFx = buildAmbientFx(this, { kind: 'dust' });
+
+    // Helios-v2 W3 S9 polish: warm hanging string-light point pair + day-night
+    // overlay (initial 'day' for bright bazaar feel) per recipe table.
+    this.scenePolish = applyScenePolish(this);
 
     this.configureCamera(width, height);
     this.registerSceneCleanup();
@@ -265,6 +273,14 @@ export class ApolloMarketplaceBazaarScene extends Phaser.Scene {
 
       this.sorter?.unregisterAll();
       this.sorter = undefined;
+
+      // Helios-v2 W3 S9: dispose Lights2D + day-night + atmospheric overlay.
+      try {
+        this.scenePolish?.destroy();
+      } catch (err) {
+        console.error('[ApolloMarketplaceBazaarScene] scenePolish destroy threw', err);
+      }
+      this.scenePolish = undefined;
 
       const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
       bus?.emit('game.scene.shutdown', { sceneKey: this.scene.key });

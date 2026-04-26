@@ -53,6 +53,8 @@ import {
   buildSkyGradient,
   buildAmbientFx,
   DEPTH,
+  applyScenePolish,
+  type ScenePolishHandle,
 } from '../visual';
 import { ASSET_KEYS } from '../visual/asset_keys';
 
@@ -85,6 +87,9 @@ export class CaravanForestCrossroadScene extends Phaser.Scene {
   private dropShadows: Phaser.GameObjects.Ellipse[] = [];
   private autumnLeavesOverlay?: Phaser.GameObjects.Image;
   private exited = false;
+  // Helios-v2 W3 S9 polish bundle handle (Lights2D ambient + autumn-leaves
+  // drift; recipe table omits point lights for forest organic feel).
+  private scenePolish?: ScenePolishHandle;
 
   constructor() {
     super({ key: 'CaravanForestCrossroad' } satisfies Phaser.Types.Scenes.SettingsConfig);
@@ -131,6 +136,10 @@ export class CaravanForestCrossroadScene extends Phaser.Scene {
     // Layer 5: autumn leaf flutter (densest canopy occlusion feel per
     // inventory 1.6).
     this.ambientFx = buildAmbientFx(this, { kind: 'leaves' });
+
+    // Helios-v2 W3 S9 polish: outdoor sub-area dusk overlay + leaves drift.
+    // Recipe table omits point lights; canopy organic feel preserved.
+    this.scenePolish = applyScenePolish(this);
 
     // Layer 6: autumn_leaves PNG static scattered overlay covering full
     // scene (S3 CaravanRoad pattern).
@@ -295,6 +304,14 @@ export class CaravanForestCrossroadScene extends Phaser.Scene {
 
       this.sorter?.unregisterAll();
       this.sorter = undefined;
+
+      // Helios-v2 W3 S9: dispose Lights2D + day-night + atmospheric overlay.
+      try {
+        this.scenePolish?.destroy();
+      } catch (err) {
+        console.error('[CaravanForestCrossroadScene] scenePolish destroy threw', err);
+      }
+      this.scenePolish = undefined;
 
       const bus = this.game.registry.get('gameEventBus') as GameEventBus | undefined;
       bus?.emit('game.scene.shutdown', { sceneKey: this.scene.key });

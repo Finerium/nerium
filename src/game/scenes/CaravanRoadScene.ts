@@ -76,6 +76,11 @@ import {
   buildSkyGradient,
   buildAmbientFx,
   DEPTH,
+  enableSceneAmbient,
+  addPointLight,
+  buildDayNightOverlay,
+  type PointLightHandle,
+  type DayNightHandle,
 } from '../visual';
 import { ASSET_KEYS } from '../visual/asset_keys';
 
@@ -161,6 +166,10 @@ export class CaravanRoadScene extends Phaser.Scene {
   private dropShadows: Phaser.GameObjects.Ellipse[] = [];
   private autumnLeavesOverlay?: Phaser.GameObjects.Image;
 
+  // Helios-v2 W3 S9 Lights2D + day-night state.
+  private pointLights: PointLightHandle[] = [];
+  private dayNight?: DayNightHandle;
+
   // Helios-v2 W3 S6 sub-area entry state.
   private subAreaBindings: SubAreaEntryBinding[] = [];
   private eKey?: Phaser.Input.Keyboard.Key;
@@ -229,6 +238,47 @@ export class CaravanRoadScene extends Phaser.Scene {
     // Layer 6: autumn_leaves PNG static overlay covering full scene.
     // Per directive 4: S3 ships baseline overlay; S9 polishes drift tween.
     this.spawnAutumnLeavesOverlay(width, height);
+
+    // Helios-v2 W3 S9: enable Lights2D ambient (caravan cool 0x2a3045) +
+    // place 3 hero point lights per placement map Lights2D coord MARKS:
+    //   - lantern_post_lamp (920, 480) flameAmber 0xff8844 r=80 i=0.4
+    //   - campfire_ring_flame (660, 560) flameOrange 0xff5020 r=100 i=0.6
+    //   - wayhouse_lit_window (520, 380) flameAmber 0xff8844 r=60 i=0.4
+    enableSceneAmbient(this);
+    this.pointLights.push(
+      addPointLight(this, {
+        x: 920,
+        y: 480,
+        radius: 100,
+        color: 0xff8844,
+        intensity: 0.4,
+        tween: { target: 0.7, duration: 200, ease: 'Sine.easeInOut', holdJitterMs: 80 },
+      }),
+    );
+    this.pointLights.push(
+      addPointLight(this, {
+        x: 660,
+        y: 560,
+        radius: 140,
+        color: 0xff5020,
+        intensity: 0.6,
+        tween: { target: 0.95, duration: 240, ease: 'Sine.easeInOut', holdJitterMs: 80 },
+      }),
+    );
+    this.pointLights.push(
+      addPointLight(this, {
+        x: 520,
+        y: 380,
+        radius: 80,
+        color: 0xff8844,
+        intensity: 0.4,
+        tween: { target: 0.6, duration: 1800, ease: 'Sine.easeInOut' },
+      }),
+    );
+
+    // Helios-v2 W3 S9 9.3: day-night overlay; caravan road transition reads
+    // best at dusk autumn warm.
+    this.dayNight = buildDayNightOverlay(this, 'dusk');
 
     // Helios-v2 W3 S6: register the 3 sub-area entry bindings + bind E-key.
     this.registerSubAreaBindings();
@@ -683,6 +733,22 @@ export class CaravanRoadScene extends Phaser.Scene {
 
       this.sorter?.unregisterAll();
       this.sorter = undefined;
+
+      // Helios-v2 W3 S9: tear down Lights2D point lights + day-night overlay.
+      for (const h of this.pointLights) {
+        try {
+          h.destroy();
+        } catch (err) {
+          console.error('[CaravanRoadScene] point light destroy threw', err);
+        }
+      }
+      this.pointLights = [];
+      try {
+        this.dayNight?.destroy();
+      } catch (err) {
+        console.error('[CaravanRoadScene] day-night destroy threw', err);
+      }
+      this.dayNight = undefined;
 
       // Helios-v2 W3 S6: clear sub-area binding state so a fresh scene
       // start (e.g. via fade transition return) starts with no leaked
