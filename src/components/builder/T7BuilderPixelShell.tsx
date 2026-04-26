@@ -21,13 +21,15 @@ export interface T7BuilderPixelShellProps {
   readonly eyebrow?: string;
   readonly heading?: string;
   readonly tagline?: string;
+  readonly bannerExtra?: ReactNode;
   readonly children: ReactNode;
 }
 
 export function T7BuilderPixelShell({
-  eyebrow = 'Builder',
+  eyebrow,
   heading,
   tagline,
+  bannerExtra,
   children,
 }: T7BuilderPixelShellProps) {
   return (
@@ -38,6 +40,9 @@ export function T7BuilderPixelShell({
           <Link href="/play" prefetch={false}>
             /play
           </Link>
+          {bannerExtra ? (
+            <span className="t7-honest-banner-extra"> {bannerExtra}</span>
+          ) : null}
         </p>
         {(heading ?? tagline ?? eyebrow) ? (
           <header className="t7-builder-header">

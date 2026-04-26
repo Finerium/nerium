@@ -470,6 +470,358 @@
   }
 }
 
+/* ================= FU-A: HERO PARCHMENT + CTA ================= */
+
+.t7-builder-hero-parchment {
+  position: relative;
+  background-image: url('/marketplace-assets/builder_agent_structure_graph_bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-color: oklch(0.18 0.02 250);
+  border: 2px solid var(--t7b-amber);
+  padding: 56px 44px 52px;
+  margin-bottom: 28px;
+  text-align: center;
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.t7-builder-hero-parchment::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    oklch(0.04 0.01 250 / 0.55) 0%,
+    oklch(0.04 0.01 250 / 0.7) 100%
+  );
+  pointer-events: none;
+}
+
+.t7-builder-hero-parchment > * {
+  position: relative;
+  z-index: 1;
+}
+
+.t7-builder-hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: var(--t7b-amber);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.t7-builder-hero-eyebrow::before,
+.t7-builder-hero-eyebrow::after {
+  content: '';
+  display: inline-block;
+  width: 28px;
+  height: 1px;
+  background: var(--t7b-amber);
+}
+
+.t7-builder-hero-title {
+  font-family: 'VT323', 'Courier New', monospace;
+  font-size: clamp(40px, 6vw, 72px);
+  color: var(--t7b-bone);
+  text-shadow: 0 0 16px oklch(0.04 0.01 250),
+    0 2px 0 oklch(0.04 0.01 250);
+  letter-spacing: 0.06em;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.t7-builder-hero-tagline {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: clamp(16px, 2vw, 22px);
+  color: var(--t7b-bone);
+  max-width: 640px;
+  margin: 0 auto 18px;
+  line-height: 1.45;
+}
+
+.t7-builder-hero-blurb {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 12.5px;
+  color: oklch(0.85 0.04 85);
+  max-width: 720px;
+  margin: 0 auto 28px;
+  line-height: 1.65;
+  letter-spacing: 0.02em;
+}
+
+.t7-builder-hero-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  align-items: center;
+}
+
+.t7-builder-hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--t7b-phos);
+  color: var(--t7b-ink);
+  padding: 18px 34px;
+  font-family: 'VT323', 'Courier New', monospace;
+  font-size: 22px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 2px solid var(--t7b-bone);
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 4px 4px 0 oklch(0.04 0.01 250),
+    4px 4px 0 1px var(--t7b-amber);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+  min-height: 60px;
+}
+
+.t7-builder-hero-cta:hover,
+.t7-builder-hero-cta:focus-visible {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 oklch(0.04 0.01 250),
+    6px 6px 0 1px var(--t7b-amber),
+    0 0 24px oklch(0.88 0.15 140 / 0.4);
+  outline: none;
+}
+
+.t7-builder-hero-cta-arrow {
+  font-family: 'VT323', monospace;
+  font-size: 24px;
+  line-height: 1;
+}
+
+/* ================= FU-A: 4x2 VENDOR GRID ================= */
+
+.t7-builder-vendor-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin: 0 0 24px;
+  padding: 22px;
+  background: oklch(0.10 0.02 250 / 0.78);
+  border: 1px solid oklch(0.55 0.10 50 / 0.45);
+}
+
+.t7-builder-vendor-grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 10px;
+  background: oklch(0.18 0.02 250 / 0.55);
+  border: 1px solid oklch(0.55 0.10 50 / 0.32);
+  transition: transform 120ms ease, border-color 120ms ease,
+    background 120ms ease;
+  cursor: default;
+  text-align: center;
+}
+
+.t7-builder-vendor-grid-item:hover,
+.t7-builder-vendor-grid-item:focus-within {
+  transform: translateY(-2px);
+  border-color: var(--t7b-amber);
+  background: oklch(0.22 0.04 250 / 0.7);
+}
+
+.t7-builder-vendor-grid-item .t7-vendor-grid-label {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--t7b-fog);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+}
+
+/* ================= FU-A: SHOW CACHED BAKE BUTTON ================= */
+
+.t7-show-cached-bake-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background-image: url('/marketplace-assets/builder_spawn_terminal_frame.jpg');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-color: oklch(0.10 0.02 250);
+  border: 1px solid var(--t7b-warm);
+  color: var(--t7b-bone);
+  padding: 18px 28px;
+  font-family: 'VT323', 'Courier New', monospace;
+  font-size: 20px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-shadow: 0 1px 0 oklch(0.04 0.01 250),
+    0 0 8px oklch(0.04 0.01 250 / 0.85);
+  transition: filter 120ms ease, transform 120ms ease;
+  min-height: 60px;
+  width: 100%;
+  max-width: 520px;
+  justify-content: center;
+}
+
+.t7-show-cached-bake-btn:hover,
+.t7-show-cached-bake-btn:focus-visible {
+  filter: brightness(1.12);
+  transform: translateY(-2px);
+  outline: 2px solid var(--t7b-amber);
+  outline-offset: 3px;
+}
+
+.t7-show-cached-bake-btn-meta {
+  font-size: 12px;
+  color: var(--t7b-amber);
+  letter-spacing: 0.1em;
+}
+
+/* ================= FU-A: CACHED BAKE MODAL ================= */
+
+.t7-cached-bake-backdrop {
+  position: fixed;
+  inset: 0;
+  background: oklch(0.04 0.01 250 / 0.88);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 60px 24px 24px;
+  overflow-y: auto;
+  animation: t7-modal-fade 180ms ease-out;
+}
+
+@keyframes t7-modal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.t7-cached-bake-modal {
+  position: relative;
+  max-width: 1200px;
+  width: 100%;
+  background: oklch(0.10 0.02 250 / 0.96);
+  border: 2px solid var(--t7b-amber);
+  padding: 56px 28px 28px;
+  margin-bottom: 40px;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  color: var(--t7b-bone);
+  box-shadow: 0 0 60px oklch(0.78 0.17 55 / 0.25);
+}
+
+.t7-cached-bake-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: oklch(0.04 0.01 250 / 0.85);
+  color: var(--t7b-bone);
+  border: 1px solid var(--t7b-amber);
+  padding: 8px 16px;
+  font-family: 'VT323', 'Courier New', monospace;
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 120ms ease;
+}
+
+.t7-cached-bake-modal-close:hover,
+.t7-cached-bake-modal-close:focus-visible {
+  background: var(--t7b-amber);
+  color: var(--t7b-ink);
+  outline: none;
+}
+
+.t7-cached-bake-modal-title {
+  font-family: 'VT323', monospace;
+  font-size: 28px;
+  color: var(--t7b-amber);
+  text-shadow: 0 0 8px oklch(0.04 0.01 250);
+  margin: 0 0 4px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.t7-cached-bake-modal-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--t7b-fog);
+  margin: 0 0 20px;
+  line-height: 1.55;
+}
+
+.t7-cached-bake-modal-section {
+  margin-bottom: 28px;
+}
+
+/* ================= FU-A: HONEST BANNER EXTRA ================= */
+
+.t7-honest-banner-extra {
+  display: block;
+  margin-top: 6px;
+  color: var(--t7b-amber);
+  text-transform: none;
+  letter-spacing: 0.04em;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 12px;
+}
+
+/* ================= FU-A: COMPACT SECTION VARIANT ================= */
+
+.t7-builder-section[data-compact='true'] {
+  padding: 14px 18px;
+  margin-bottom: 14px;
+}
+
+.t7-builder-section[data-compact='true'] .t7-section-title {
+  font-size: 18px;
+  margin: 0 0 8px;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.t7-builder-section[data-compact='true'] .t7-section-meta {
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+  .t7-builder-vendor-grid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 16px;
+    gap: 10px;
+  }
+  .t7-builder-hero-parchment {
+    padding: 32px 18px;
+    min-height: 280px;
+  }
+  .t7-cached-bake-backdrop {
+    padding: 24px 12px;
+  }
+  .t7-cached-bake-modal {
+    padding: 44px 14px 18px;
+  }
+  .t7-builder-hero-cta {
+    font-size: 18px;
+    padding: 14px 24px;
+  }
+  .t7-show-cached-bake-btn {
+    font-size: 17px;
+    padding: 14px 20px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .t7-builder-pixel * {
     transition: none !important;
