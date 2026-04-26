@@ -352,6 +352,27 @@ export function BrowseCanvas(props: BrowseCanvasProps) {
         }
       `}</style>
 
+      {/* Helios-v2 W3 S10: marketplace hero banner using AI-generated PNG. */}
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          minHeight: '180px',
+          maxHeight: '260px',
+          overflow: 'hidden',
+          borderRadius: 'var(--radius-lg, 0.75rem)',
+          backgroundImage: 'url(/assets/ai/ui/marketplace/marketplace_hero_banner.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          aspectRatio: '4 / 1',
+          // Inset gradient overlay to keep header text readable.
+          boxShadow: 'inset 0 0 0 9999px rgba(10, 10, 15, 0.45)',
+        }}
+        aria-hidden="true"
+        data-helios-s10="marketplace-hero-banner"
+      />
+
       <header
         style={{
           display: 'flex',
@@ -637,6 +658,13 @@ function EmptyState({ onClearAll }: { onClearAll: () => void }) {
         textAlign: 'center',
         borderRadius: 'var(--radius-lg, 0.75rem)',
         border: '1px dashed var(--color-border, #1e293b)',
+        // Helios-v2 W3 S10: marketplace empty-state hero illustration.
+        backgroundImage:
+          'linear-gradient(0deg, rgba(10, 10, 15, 0.78), rgba(10, 10, 15, 0.78)), url(/assets/ai/ui/marketplace/marketplace_empty_state.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '320px',
         backgroundColor:
           'color-mix(in oklch, var(--color-background, #0a0a0f) 95%, var(--color-foreground, #e8e8ea) 5%)',
       }}

@@ -23,6 +23,8 @@ import { useCallback, useEffect, useRef } from 'react';
 import * as Phaser from 'phaser';
 import { BootScene } from '../../game/scenes/BootScene';
 import { PreloadScene } from '../../game/scenes/PreloadScene';
+import { TitleScene } from '../../game/scenes/TitleScene';
+import { LoadingScene } from '../../game/scenes/LoadingScene';
 import { ApolloVillageScene } from '../../game/scenes/ApolloVillageScene';
 import { ApolloTempleInteriorScene } from '../../game/scenes/ApolloTempleInteriorScene';
 import { ApolloMarketplaceBazaarScene } from '../../game/scenes/ApolloMarketplaceBazaarScene';
@@ -119,6 +121,14 @@ export default function PhaserCanvas() {
       scene: [
         BootScene,
         PreloadScene,
+        // Helios-v2 W3 S10: TitleScene + LoadingScene registered here for
+        // demo entry + inter-world transitions. Neither auto-starts; the
+        // default boot chain remains BootScene -> PreloadScene -> ApolloVillage.
+        // TitleScene is reached via /play?title=1 OR scene.start('Title').
+        // LoadingScene is invoked via scene.start('Loading', { nextSceneKey,
+        // transitionImageKey?, ... }) for cinematic inter-world fade.
+        TitleScene,
+        LoadingScene,
         ApolloVillageScene,
         ApolloTempleInteriorScene,
         ApolloMarketplaceBazaarScene,
@@ -140,6 +150,38 @@ export default function PhaserCanvas() {
     gameRef.current = game;
     const bridge = wireBridge(game);
     bridgeRef.current = bridge;
+
+    // Helios-v2 W3 S10: optional TitleScene entry via /play?title=1 query
+    // string OR window flag __NERIUM_TITLE_SCREEN__ === true. When set, the
+    // game starts with TitleScene; on Press Start, it transitions to Preload
+    // -> ApolloVillage as usual. Default boot chain unchanged.
+    if (typeof window !== 'undefined') {
+      const search =
+        typeof window.location?.search === 'string'
+          ? window.location.search
+          : '';
+      const wantsTitle =
+        search.includes('title=1') ||
+        (window as unknown as { __NERIUM_TITLE_SCREEN__?: boolean }).__NERIUM_TITLE_SCREEN__ === true;
+      if (wantsTitle) {
+        // Defer to next tick so the Phaser internal scene queue is ready;
+        // BootScene preload may emit COMPLETE before this hook runs.
+        setTimeout(() => {
+          if (game.scene.isActive('Boot')) {
+            // BootScene still in preload; it will start Preload itself.
+            // Override its handoff target by stopping Preload and starting
+            // Title. The simplest robust path is to wait until Preload is
+            // active, stop it, and start Title.
+          }
+          // Force-start Title (Phaser's scene.start replaces the active set).
+          try {
+            game.scene.start('Title');
+          } catch (err) {
+            console.warn('[PhaserCanvas] TitleScene start failed', err);
+          }
+        }, 0);
+      }
+    }
 
     // Expose for Playwright smoke test per gotcha 5 (__NERIUM_TEST_* hook).
     // Also expose the Phaser game itself under __nerium_game__ so the
