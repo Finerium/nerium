@@ -19,6 +19,7 @@ import {
   SPRITESHEET_FRAMES,
   isSpritesheetKey,
 } from '../visual/asset_keys';
+import { exposeTextureMemoryHook, inspectTextureMemory } from '../visual';
 
 export class PreloadScene extends Phaser.Scene {
   private progressBar?: Phaser.GameObjects.Graphics;
@@ -89,6 +90,18 @@ export class PreloadScene extends Phaser.Scene {
     // PreloadScene create() lifecycle so the animations are guaranteed
     // available before ApolloVillageScene + sub-area scenes start.
     this.registerCharacterAnimations();
+
+    // Helios-v2 W3 S11: expose texture memory diagnostic on window for
+    // Playwright + dev console + log peak measurement once.
+    exposeTextureMemoryHook(this);
+    const report = inspectTextureMemory(this);
+    console.info(
+      `[PreloadScene] texture memory peak ${report.estimatedMB} MB across ${report.textureCount} textures ` +
+        `(target < 200 MB). Top: ${report.topConsumers
+          .slice(0, 3)
+          .map((t) => `${t.key} ${t.mb}MB`)
+          .join(', ')}`,
+    );
 
     // World-scoped scenes receive the active worldId via scene data. For the
     // vertical slice we hard-start ApolloVillageScene on medieval_desert.

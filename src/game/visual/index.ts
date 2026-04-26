@@ -91,3 +91,9 @@ export {
   type DayNightScope,
   type AtmosphericKind,
 } from './scenePolish';
+
+export {
+  inspectTextureMemory,
+  exposeTextureMemoryHook,
+  type TextureMemoryReport,
+} from './textureMemory';
