@@ -10,17 +10,17 @@
 
 ## SECTION 0: MANDATORY READING ENFORCEMENT
 
-**V2, BACA SECTION 0 INI DULU SEBELUM APAPUN.**
+**V2, READ SECTION 0 BEFORE ANYTHING ELSE.**
 
-Ghaisan akan upload kepada lu **2 hal**:
-1. **HACKATHON_HANDOFF_V1_TO_V2.md** (this file, uploaded separately untuk immediate access)
+Ghaisan will upload to you **2 things**:
+1. **HACKATHON_HANDOFF_V1_TO_V2.md** (this file, uploaded separately for immediate access)
 2. **NERIUM.zip** (the original asset zip containing all NERIUM concept artifacts that V1 deep-read during discovery phase)
 
-NERIUM.zip extract jadi 8 file utama plus 3 file di subfolder. Total mandatory reading: 1 handoff + 11 zip files = 12 files. Lu **WAJIB** baca SEMUA file tersebut sebelum respond ke task apapun.
+NERIUM.zip extracts into 8 main files plus 3 files in a subfolder. Total mandatory reading: 1 handoff + 11 zip files = 12 files. You **MUST** read EVERY file before responding to any task.
 
 ### Confirmation Protocol
 
-Response pertama lu HARUS per-file confirmation:
+Your first response MUST be a per-file confirmation:
 
 ```
 Reading confirmation per-file:
@@ -41,25 +41,25 @@ Reading confirmation per-file:
 Bug check: confirm zero file detected as title-only
 
 Reading complete. Hackathon project status confirmed: [brief 3-line state recap].
-Standby untuk task selanjutnya.
+Standby for the next task.
 ```
 
-**JANGAN skip per-file confirmation dengan blanket "gw udah baca semua".** JANGAN skip file yang "udah familiar". Setiap file punya material context untuk execution phase.
+**DO NOT skip per-file confirmation with a blanket "I read everything".** DO NOT skip a file labeled "already familiar". Each file carries material context for the execution phase.
 
 ### Penalty for Skipping Reading
 
-Respond ke task apapun sebelum Section 0 complete = pelanggaran protocol berat. Reset dan baca ulang. Ghaisan boleh challenge per-file verify reading depth.
+Responding to any task before Section 0 is complete is a serious protocol violation. Reset and re-read. Ghaisan may challenge with per-file reading-depth verification.
 
 ### CRITICAL: Claude.ai File Reading Bug Workaround
 
-Inherited dari V5 MedWatch handoff. Claude Opus di Claude.ai PUNYA BUG sporadic: file upload kadang cuma kebaca judul, bukan content. V1 hit bug occasionally selama discovery phase mitigated via filesystem extraction pattern.
+Inherited from the V5 MedWatch handoff. Claude Opus on Claude.ai HAS A SPORADIC BUG: file uploads sometimes only register the title, not the content. V1 hit the bug occasionally during the discovery phase and mitigated via the filesystem extraction pattern.
 
 **Workaround (validated):**
 
-1. Summary harus include detail spesifik yang HANYA bisa lu tau kalau actually read content (bukan generic guess dari nama file).
-2. Kalau content kaga ke-load, STOP dan report eksplisit. JANGAN bluff.
-3. Cross-check via filesystem: `unzip -l NERIUM.zip`, `mkdir + unzip`, `cat` individual files (text/markdown), `pdftotext -layout` (PDF).
-4. Filesystem extraction pattern (mkdir + unzip + view) worked reliably di V1 discovery phase. Default to same pattern.
+1. Summary must include specific detail that ONLY proves actual reading (not a generic guess from the filename).
+2. If content does not load, STOP and report explicitly. DO NOT bluff.
+3. Cross-check via filesystem: `unzip -l NERIUM.zip`, `mkdir + unzip`, `cat` for individual text or markdown files, `pdftotext -layout` for PDFs.
+4. The filesystem extraction pattern (mkdir + unzip + view) worked reliably during the V1 discovery phase. Default to the same pattern.
 
 ---
 
@@ -70,9 +70,9 @@ Inherited dari V5 MedWatch handoff. Claude Opus di Claude.ai PUNYA BUG sporadic:
 
 ### Group B: NERIUM Source Material (11 files in NERIUM.zip)
 
-Note: `NERIUM.zip` adalah original zip yang Ghaisan upload ke V1 di discovery phase. Re-upload as-is ke V2.
+Note: `NERIUM.zip` is the original zip Ghaisan uploaded to V1 during discovery phase. Re-upload as-is to V2.
 
-2. **NERIUM_PRD.pdf** — 32-page PRD, 17 chapters, source of truth untuk 5-pillar vision (Builder, Marketplace, Banking, Registry, Protocol), 3-tier agent architecture, gamified construction metaphor
+2. **NERIUM_PRD.pdf** -- 32-page PRD, 17 chapters, source of truth for 5-pillar vision (Builder, Marketplace, Banking, Registry, Protocol), 3-tier agent architecture, gamified construction metaphor
 3. **NERIUM_CRITIQUE.md** — investor-perspective critique scorecard 7.65/10, source of weakness awareness (single-person, no working product, gap manual-to-automated, cold start, complexity); USED as anti-claim filter when composing application proposal (concerns scrubbed per Ghaisan directive)
 4. **NERIUM_HANDOFF_PROMPT.md** — original Ghaisan-composed handoff prompt for fresh Claude session, contains brainstorming transcript with reasoning behind 5-pillar decisions
 5. **nerium_valuation_prompt_v2.md** — meta-prompt for valuation analysis generation
@@ -116,9 +116,9 @@ V2 must operate from this premise: NERIUM full vision IS achievable in window. N
 - Discovery phase: full deep-read of all 11 NERIUM zip files
 - Critique reviewed and integrated as anti-claim filter (concerns scrubbed in proposal)
 - Hackathon winner intel from Opus 4.6 round researched (winners: lawyer/CrossBeam, developer/Elisa, cardiologist/postvisit.ai, musician/Conductr; gamified-agent-build pattern validated by Elisa 2nd place)
-- Workflow research: lu workflow Claude Code methodology pulled from 10+ prior roomchat (orchestrator-executor split, Greek mythology naming, custom .claude/agents/*.md subagent definitions, three-tier constraint taxonomy, strategic_decision_hard_stop, 19-item self_check, Loop A/B/C, surgical reading list, stream hygiene, compacting awareness 60-70%, dangerously-skip-permissions for executor)
+- Workflow research: your Claude Code methodology pulled from 10+ prior roomchats (orchestrator-executor split, Greek mythology naming, custom .claude/agents/*.md subagent definitions, three-tier constraint taxonomy, strategic_decision_hard_stop, 19-item self_check, Loop A/B/C, surgical reading list, stream hygiene, compacting awareness 60-70%, dangerously-skip-permissions for executor)
 - Application proposal composed: 18 paragraphs, ~2100 words, gamification as spine, meta-narrative as closer, 5 pillars all explained substantively, 9 improvements integrated, model routing tier explanation included
-- "Project most proud of" composed: honest claim surface (XAU/USD local, MedWatch ongoing, 30-day Quant in-progress, Investment AI IDX blueprint stage, methodology as the real flex). Claims that lu CANNOT defend are scrubbed (ThermoVision, SoilSense, Omniear, QRIS SCORE, PERISAI all dropped per Ghaisan signal)
+- "Project most proud of" composed: honest claim surface (XAU/USD local, MedWatch ongoing, 30-day Quant in-progress, Investment AI IDX blueprint stage, methodology as the real flex). Claims that you CANNOT defend are scrubbed (ThermoVision, SoilSense, Omniear, QRIS SCORE, PERISAI all dropped per Ghaisan signal)
 - Anthropic API account created at platform.claude.com (Perorangan/Individual type, $50 credit purchase skipped per advice, organization UUID `a3feb2eb-d893-43f5-b4cf-0aab808c85c7`)
 - Discord handle confirmed: `nerium0leander`
 - Application submitted April 18 evening WIB
@@ -150,7 +150,7 @@ NERIUM as submission name. Ghaisan checked: "Nerium ajadeh, emang nama seberpeng
 Quality reference target: per Ghaisan "yang bikin landing page setara awwards dan aplikasi production grade" tier (referencing his MedWatch project standard). Hackathon output realistically 1 tier below that (constrained by 5.8-day window) but still production-looking, NOT toy demo.
 
 ### 3.5 Differentiator Surface
-**Prediction Layer as secret sauce featured in Builder demo.** Monte Carlo-inspired pre-execution simulation, continuous re-simulation per agent completion, confidence map visualization, automatic pause on risk spike. Most novel piece in entire NERIUM concept per V1 assessment, directly addresses lu lived pain of error propagation across 47-agent pipelines.
+**Prediction Layer as secret sauce featured in Builder demo.** Monte Carlo-inspired pre-execution simulation, continuous re-simulation per agent completion, confidence map visualization, automatic pause on risk spike. Most novel piece in entire NERIUM concept per V1 assessment, directly addresses Ghaisan's lived pain of error propagation across 47-agent pipelines.
 
 ### 3.6 Visualization Modes (Locked New Per Ghaisan Late-Stage Add)
 **Two user-selectable visual modes for Builder gameplay:**
@@ -225,7 +225,7 @@ Per Ghaisan signal during application composition: claims that cannot be defende
 - **Stream hygiene directive:** status markers between workflow phases prevent Opus idle timeout on thinking-heavy phases.
 
 ### Execution Optimization
-- **Option D batch execution:** sequential subagent spawn dalam single Claude Code session dengan auto-greenlight per file + batch review at end. Validated in MedWatch V5 for Files 10-13 (215 min wall-clock, 86 tool_uses, 76/76 self_check PASS, zero surface events). Apply where file count 3+ and tier pattern pre-established.
+- **Option D batch execution:** sequential subagent spawn within a single Claude Code session with auto-greenlight per file + batch review at end. Validated in MedWatch V5 for Files 10-13 (215 min wall-clock, 86 tool_uses, 76/76 self_check PASS, zero surface events). Apply where file count 3+ and tier pattern pre-established.
 - **Pattern convergence observation:** lean template efficiency confirmed in MedWatch V5 across 9 files; halt expansion ratio decreased over time. V2 carry forward awareness.
 
 ### Quality Gate Patterns
@@ -236,7 +236,7 @@ Per Ghaisan signal during application composition: claims that cannot be defende
 
 ### Handoff Chain Protocol
 - V2 hand off to V3 (if needed) using THIS file as structural template. Adapt content. Preserve mandatory reading enforcement, locked decisions format, working style preservation, sign-off pattern.
-- Per-file confirmation with detail spesifik (line number, exact phrase, specific value) untuk prove actual reading.
+- Per-file confirmation with specific detail (line number, exact phrase, specific value) to prove actual reading.
 - Filesystem extraction workaround for Claude.ai attached-file reading bug.
 
 ---
@@ -310,7 +310,7 @@ MedWatch V5 lesson 10.6 surfaced: subagent duration on Opus 4.7 stable at 15-60 
 ## SECTION 8: OUTSTANDING ITEMS
 
 ### 8.1 Decisions Pending Ghaisan
-- **Demo app domain choice:** What specific application will Builder generate during demo? Discussed at Strategic Question level but not locked. Options surfaced: booking platform for salon (referenced in PRD), landing page + signup flow, todo app, CRUD dashboard, chat interface, weather app, trading backtest engine. Ghaisan deferred this decision pending later discussion. **V2: surface this decision early in execution kickoff.** Recommendation gw V1: pick something visually impressive (landing page + form, or simple SaaS dashboard) that judges can grok in <30 seconds during demo video.
+- **Demo app domain choice:** What specific application will Builder generate during demo? Discussed at Strategic Question level but not locked. Options surfaced: booking platform for salon (referenced in PRD), landing page + signup flow, todo app, CRUD dashboard, chat interface, weather app, trading backtest engine. Ghaisan deferred this decision pending later discussion. **V2: surface this decision early in execution kickoff.** V1 recommendation: pick something visually impressive (landing page + form, or simple SaaS dashboard) that judges can grok in <30 seconds during demo video.
 - **Tech stack final lock:** defaults set in Section 3.9 but Ghaisan answered "hah, gatau" when asked about stack preference. V2 may need to definitively lock at Day 0 of execution.
 - **Discord engagement strategy:** acceptance email triggered Discord invite (likely incoming). Ghaisan needs to claim handle, monitor channel for official kickoff communication, possibly engage with other participants. V2 should remind Ghaisan to do this Day 0 or Day 1 of execution.
 - **API credits verification:** $500 credits should land in organization UUID `a3feb2eb-d893-43f5-b4cf-0aab808c85c7` within 1-2 days of acceptance. V2 should remind Ghaisan to verify before execution kickoff.
@@ -431,7 +431,7 @@ V1 work was: discovery, critique, application composition, application submissio
 
 The meta-narrative spine threads everything: "NERIUM built itself by running the manual workflow it automates, in 6 days, solo, by one person who lived the pain of 47-agent pipelines manually." V2 protect this spine in every surface communication.
 
-V2, lu take over.
+V2, you take over.
 
 ---
 

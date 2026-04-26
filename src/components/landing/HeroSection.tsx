@@ -15,8 +15,10 @@
 // 8. Hero video slot fades in at the bottom (demo-preview.mp4 placeholder)
 //
 // Link target /play per RV.5 and M2 Section 4.8 hard stop (no Phaser embed
-// on landing). Video source stays at /video/demo-preview.mp4 per prior
-// Kalypso decision D3, replaced with final recording in W4 finalize.
+// on landing). Video surface is YouTube unlisted iframe at video ID
+// DJQXitRa1VE (Kalypso W4 final, replaces W3 placeholder
+// /video/demo-preview.mp4 mp4 file). YouTube serves the canonical 3-min
+// submission demo. iframe uses lazy load and strict-origin referrer policy.
 //
 // prefers-reduced-motion short-circuits all animations; elements appear at
 // final opacity/position immediately. Walker animation is skipped.
@@ -277,17 +279,16 @@ export function HeroSection() {
 
       <div className="nl-hero-video">
         <div className="nl-video-frame">
-          <video
-            aria-label="NERIUM vertical slice preview"
-            autoPlay
-            loop
-            muted
-            playsInline
-            poster="/video/demo-preview-poster.svg"
-          >
-            <source src="/video/demo-preview.mp4" type="video/mp4" />
-          </video>
-          <span className="nl-video-note">vertical slice preview // W4 finalize pending</span>
+          <iframe
+            src="https://www.youtube.com/embed/DJQXitRa1VE"
+            title="NERIUM 3-minute hackathon submission demo video"
+            aria-label="NERIUM 3-minute hackathon submission demo video, hosted on YouTube"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
+            loading="lazy"
+          />
+          <span className="nl-video-note">3 min demo // youtube unlisted</span>
         </div>
       </div>
     </header>

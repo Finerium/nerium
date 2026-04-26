@@ -10,7 +10,7 @@
 
 ## SECTION 0: MANDATORY READING ENFORCEMENT
 
-**V4, BACA SECTION 0 INI DULU SEBELUM APAPUN.**
+**V4, READ SECTION 0 BEFORE ANYTHING ELSE.**
 
 V4 inherits mid-execution. Reading discipline surgical, not exhaustive. Two-tier approach:
 
@@ -44,7 +44,7 @@ Do not pre-read. Query only when agent coordination requires.
 
 ### Confirmation Protocol
 
-Response pertama V4 HARUS per-file confirmation untuk 9 Tier 1 files. Format:
+V4's first response MUST be a per-file confirmation for the 9 Tier 1 files. Format:
 
 ```
 Reading confirmation Tier 1 (9 files):
@@ -62,10 +62,10 @@ Reading confirmation Tier 1 (9 files):
 Bug check: zero title-only detected.
 
 3-line status recap.
-Standby untuk task selanjutnya.
+Standby for the next task.
 ```
 
-**JANGAN skip per-file confirmation untuk Tier 1.** Pelanggaran Section 0 = reset dan baca ulang, per V1+V2+V3 protocol inheritance.
+**DO NOT skip per-file confirmation for Tier 1.** Violation of Section 0 means reset and re-read, per the V1 + V2 + V3 protocol inheritance.
 
 ### Claude.ai File Reading Bug Workaround (Inherited)
 

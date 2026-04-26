@@ -12,19 +12,19 @@
 
 **V3, BACA SECTION 0 INI DULU SEBELUM APAPUN.**
 
-Ghaisan akan upload kepada lu **5 hal**:
+Ghaisan will upload to you **5 things**:
 
-1. **HACKATHON_HANDOFF_V2_TO_V3.md** (this file, uploaded separately untuk immediate access)
+1. **HACKATHON_HANDOFF_V2_TO_V3.md** (this file, uploaded separately for immediate access)
 2. **HACKATHON_HANDOFF_V1_TO_V2.md** (V1 work product, original locked decisions reference)
 3. **V2ReadyHandoff.zip** (original NERIUM source material, 11 files)
 4. **CerebrallNewestInfo.zip** (hackathon rules + 4 Discord screenshots clarifications)
 5. **V2 Day 0 artifact bundle** (4 files: NarasiGhaisan.md v1.1, METIS_KICKOFF.md, day_0.md, V3_FILE_INVENTORY.md)
 
-Total mandatory reading: **2 handoffs + 11 zip + 5 newest info + 4 V2 artifacts = 22 files**. Lu **WAJIB** baca SEMUA file tersebut sebelum respond ke task apapun.
+Total mandatory reading: **2 handoffs + 11 zip + 5 newest info + 4 V2 artifacts = 22 files**. You **MUST** read EVERY file before responding to any task.
 
 ### Confirmation Protocol
 
-Response pertama lu HARUS per-file confirmation. Format:
+Your first response MUST be a per-file confirmation. Format:
 
 ```
 Reading confirmation per-file:
@@ -62,25 +62,25 @@ GROUP D: V2 Day 0 artifacts
 Bug check: confirm zero file detected as title-only.
 
 Reading complete. Hackathon project status confirmed: [3-line state recap].
-Standby untuk task selanjutnya.
+Standby for the next task.
 ```
 
-**JANGAN skip per-file confirmation dengan blanket "gw udah baca semua".** JANGAN skip file yang "udah familiar". Setiap file punya material context untuk execution phase.
+**DO NOT skip per-file confirmation with a blanket "I read everything".** DO NOT skip a file labeled "already familiar". Each file carries material context for the execution phase.
 
 ### Penalty for Skipping Reading
 
-Respond ke task apapun sebelum Section 0 complete = pelanggaran protocol berat. Reset dan baca ulang. Ghaisan boleh challenge per-file verify reading depth.
+Responding to any task before Section 0 is complete is a serious protocol violation. Reset and re-read. Ghaisan may challenge with per-file reading-depth verification.
 
 ### CRITICAL: Claude.ai File Reading Bug Workaround
 
-Inherited dari V1-to-V2 handoff. Claude Opus di Claude.ai PUNYA BUG sporadic: file upload kadang cuma kebaca judul, bukan content.
+Inherited from the V1 to V2 handoff. Claude Opus on Claude.ai HAS A SPORADIC BUG: file uploads sometimes only register the title, not the content.
 
 **Workaround (validated):**
 
-1. Summary harus include detail spesifik yang HANYA bisa lu tau kalau actually read content (bukan generic guess dari nama file).
-2. Kalau content kaga ke-load, STOP dan report eksplisit. JANGAN bluff.
-3. Cross-check via filesystem: `unzip -l V2ReadyHandoff.zip`, `mkdir + unzip`, `cat` individual files (text/markdown), `pdftotext -layout` (PDF).
-4. Filesystem extraction pattern (mkdir + unzip + view) worked reliably di V1+V2 phases. Default to same pattern.
+1. Summary must include specific detail that ONLY proves actual reading (not a generic guess from the filename).
+2. If content does not load, STOP and report explicitly. DO NOT bluff.
+3. Cross-check via filesystem: `unzip -l V2ReadyHandoff.zip`, `mkdir + unzip`, `cat` for individual text or markdown files, `pdftotext -layout` for PDFs.
+4. The filesystem extraction pattern (mkdir + unzip + view) worked reliably during V1 and V2 phases. Default to the same pattern.
 
 ---
 
@@ -188,7 +188,7 @@ V2 closed Day 0 design phase ~00:30 WIB Rabu 22 April. V3 inherits at Day 1 morn
 ### What's Next (V3 Inherits)
 
 - Day 1 morning Rabu 22 April: V3 receive handoff, complete Section 0, verify credits, surface Steampunk confirm
-- Day 1 morning: V3 spawn Claude Code session 1 untuk init working dir + repo + LICENSE + CLAUDE.md + README + .gitignore + first commit + push to GitHub
+- Day 1 morning: V3 spawn Claude Code session 1 to init working dir + repo + LICENSE + CLAUDE.md + README + .gitignore + first commit + push to GitHub
 - Day 1 morning: V3 spawn Ananke session establish orchestration log continuation
 - Day 1 morning-afternoon: V3 spawn Metis Claude Chat, paste METIS_KICKOFF.md, ferry M1 halt
 - Day 1 afternoon: V3 ferry M1 result Ghaisan, get approval, ferry M2 directive
@@ -296,7 +296,7 @@ V2 Methodology Add 4: **Mandatory reading discipline.** Every agent prompt file 
 
 V2 Methodology Add 5: **Token budget cap per specialist.** Metis 300K total, Hephaestus 200-300K, Pythia 150K, Nemea 100K, Ananke ongoing minimal. Workers per-task budget defined in Metis M2.
 
-V2 Methodology Add 6: **NarasiGhaisan.md as ambiguity arbiter.** Cross-cutting decision yang ambiguous in formal docs, agent harus consult NarasiGhaisan.md voice anchor first. If still ambiguous, halt + ferry to V3.
+V2 Methodology Add 6: **NarasiGhaisan.md as ambiguity arbiter.** For a cross-cutting decision that is ambiguous in formal docs, the agent must consult NarasiGhaisan.md voice anchor first. If still ambiguous, halt + ferry to V3.
 
 ---
 

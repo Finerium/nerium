@@ -10,18 +10,18 @@ Working dir: `~/Documents/CerebralvalleyHackathon/`.
 
 ## CRITICAL READING DISCIPLINE (Section 0 inheritance V1-V5)
 
-Lu WAJIB baca **SELURUH** file di `~/Documents/V5READYHANDOFFCEREBRALL/` **TANPA SATU PUN TERLEWAT**. Bukti content-specific detail per file, bukan title-only. Zero skim. Per-file confirmation mandatory di first response.
+You MUST read **EVERY** file in `~/Documents/V5READYHANDOFFCEREBRALL/` **WITHOUT A SINGLE OMISSION**. Prove content-specific detail per file, not title-only. Zero skim. Per-file confirmation mandatory in your first response.
 
-Total file di handoff folder ~12-15 file (handoff message + 6 agent opening prompt + 3-5 historical reference + asset prompt spec + Cowork instruction reference). Cek `ls` folder untuk count actual.
+Total file count in the handoff folder is approximately 12-15 (handoff message + 6 agent opening prompt + 3-5 historical reference + asset prompt spec + Cowork instruction reference). Check `ls` folder for the actual count.
 
 ## Output first response
 
-1. Per-file confirmation SEMUA file di `~/Documents/V5READYHANDOFFCEREBRALL/` (content-specific detail proof per file)
+1. Per-file confirmation for EVERY file in `~/Documents/V5READYHANDOFFCEREBRALL/` (content-specific detail proof per file)
 2. Bug check zero title-only detected
 3. 3-line status recap (current state pre-Helios fire, asset processing pipeline status, next agent fire order)
-4. Standby untuk Ghaisan trigger diskusi 22 flagged asset solution + greenlight fire Helios post-fix
+4. Standby for Ghaisan trigger discussion of 22 flagged asset solution + greenlight fire Helios post-fix
 
-JANGAN respond ke task apapun sebelum Section 0 reading complete.
+DO NOT respond to any task before Section 0 reading is complete.
 
 ## Current state (Sabtu 25 April malam WIB)
 
@@ -187,34 +187,34 @@ Plus surfaced post-V5: ANY ferry yang Helios-v2 surface saat S0 audit + S1-S12 e
 
 ## Strategi V5 → V6
 
-### Status urutan agent fire (post-asset-processing complete)
+### Status agent fire order (post-asset-processing complete)
 
-1. **Helios-v2** (`helios_v2_full_restart_opening.md`) — 11-13 sessions S0+S1-S12, MAX EFFORT, di terminal Claude Code Max subscription
-2. **Nemea-RV-v2 W4** (`nemea_w4_opening.md`) — 1 session xhigh, ferry cleanup + narrow Lighthouse
-3. **Kalypso W4** (`kalypso_w4_opening.md`) — 1 session xhigh, FINAL agent. SCOPE EXPAND: lu (V6) HARUS edit prompt Kalypso via str_replace SEBELUM Ghaisan fire untuk add tugas baru:
-   - **Kalypso = Bug Hunter ALSO** (di samping landing/README/checklist scope existing)
-   - Scan codebase untuk bug, inconsistency, performance bottleneck, cybersecurity vulnerability
-   - README harus menarik + komprehensif, jelas explain "NERIUM tuh apa"
-   - Bake ini sebelum fire kalo Ghaisan kasih sinyal "lanjut Kalypso"
+1. **Helios-v2** (`helios_v2_full_restart_opening.md`) -- 11-13 sessions S0+S1-S12, MAX EFFORT, in a Claude Code Max subscription terminal
+2. **Nemea-RV-v2 W4** (`nemea_w4_opening.md`) -- 1 session xhigh, ferry cleanup + narrow Lighthouse
+3. **Kalypso W4** (`kalypso_w4_opening.md`) -- 1 session xhigh, FINAL agent. SCOPE EXPAND: V6 MUST edit the Kalypso prompt via str_replace BEFORE Ghaisan fires it, to add new tasks:
+   - **Kalypso = Bug Hunter ALSO** (alongside the existing landing/README/checklist scope)
+   - Scan codebase for bugs, inconsistency, performance bottlenecks, cybersecurity vulnerabilities
+   - README must be compelling + comprehensive, clearly explaining "what NERIUM is"
+   - Bake this in before fire when Ghaisan signals "fire Kalypso"
 
 ### Ghaisan manual sequence post-agent (for V6 awareness)
 
-1. Helios ship → Nemea fire → Kalypso fire (V5 era udah edit Kalypso prompt full, V6 cuma greenlight)
-2. Ghaisan record demo video 3-min showing landing + /play + marketplace + builder + pricing
-3. Ghaisan upload YouTube unlisted
-4. **Ghaisan share YouTube URL ke V6** — V6 compose prompt Claude Code 1-shot untuk inject URL ke `app/page.tsx` placeholder + commit + push
-5. Ghaisan paste Termly template ke 3 legal page (`app/legal/{terms,privacy,credits}/page.tsx`) — 10 min manual
-6. Ghaisan submit Cerebral Valley form Senin 06:00 WIB
+1. Helios ship -> Nemea fire -> Kalypso fire (V5 era already edited the Kalypso prompt fully, V6 just greenlights)
+2. Ghaisan records 3-min demo video showing landing + /play + marketplace + builder + pricing
+3. Ghaisan uploads YouTube unlisted
+4. **Ghaisan shares the YouTube URL with V6.** V6 composes a Claude Code 1-shot prompt to inject the URL into the `app/page.tsx` placeholder + commit + push
+5. Ghaisan pastes Termly template into 3 legal pages (`app/legal/{terms,privacy,credits}/page.tsx`) -- 10 min manual
+6. Ghaisan submits the Cerebral Valley form Senin 06:00 WIB
 
 ### V6 critical actions
 
-**Action 1 (immediate post-handoff reading):** Standby untuk Ghaisan trigger Canva-complete signal. Saat Ghaisan emit "Canva 22 PNG ready di `~/Documents/CanvaRemover/`":
+**Action 1 (immediate post-handoff reading):** Standby for Ghaisan to trigger the Canva-complete signal. When Ghaisan emits "Canva 22 PNG ready in `~/Documents/CanvaRemover/`":
 
-1. Compose Cowork prompt buat move 22 .png dari `~/Documents/CanvaRemover/` ke proper subfolders di `~/Documents/CerebralvalleyHackathon/_Reference/ai_generated_assets/`, dengan **replace pattern** (delete matching .jpg di destination, replace dengan .png dari Canva)
-2. Reference Cowork prompt template: pattern sama dengan `cowork_56_clean_move.md` yang V5 era udah compose untuk 56 clean PNG move (lookup di `~/Documents/V5READYHANDOFFCEREBRALL/` kalo lu mau pattern reference)
-3. After Ghaisan ship 22 .png ke repo via Cowork move: greenlight Ghaisan commit asset bundle + fire Helios-v2
+1. Compose a Cowork prompt to move the 22 .png files from `~/Documents/CanvaRemover/` into the proper subfolders in `~/Documents/CerebralvalleyHackathon/_Reference/ai_generated_assets/`, using a **replace pattern** (delete the matching .jpg at destination, replace with the .png from Canva)
+2. Reference Cowork prompt template: same pattern as `cowork_56_clean_move.md` that V5 era already composed for the 56 clean PNG move (lookup in `~/Documents/V5READYHANDOFFCEREBRALL/` for pattern reference)
+3. After Ghaisan ships 22 .png to the repo via Cowork move: greenlight Ghaisan to commit the asset bundle + fire Helios-v2
 
-Ga ada actionable code work sebelum Ghaisan trigger Canva-complete signal.
+There is no actionable code work before Ghaisan triggers the Canva-complete signal.
 
 ### Helios-v2 prompt V5 era updates (V6 should NOT duplicate)
 

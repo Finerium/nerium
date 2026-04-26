@@ -37,9 +37,9 @@ Tier 2 (extract on-demand ONLY, jangan pre-read): `.claude/agents/*.md` 22 file 
 1. Per-file confirmation Tier 1 (15 file, content-specific detail proof each)
 2. Bug check zero title-only detected
 3. 3-line status recap (current W1 complete state, next W2 12-agent fire, budget constraint)
-4. Standby untuk W2 Batch 1 fire signal dari Ghaisan
+4. Standby for W2 Batch 1 fire signal from Ghaisan
 
-JANGAN respond ke task apapun sebelum Section 0 Tier 1 complete.
+DO NOT respond to any task before Section 0 Tier 1 is complete.
 
 ## Current state (Kamis 24 April evening WIB)
 
@@ -135,6 +135,6 @@ V5 bebas modify kalau state drift atau Ghaisan decision baru.
 
 ## V5 first action
 
-Section 0 Tier 1 per-file confirmation 15 file. JANGAN skip, JANGAN title-only. Proof content-specific detail per file. Post-confirmation, 3-line status recap + standby.
+Section 0 Tier 1 per-file confirmation for 15 files. DO NOT skip, DO NOT title-only. Prove content-specific detail per file. Post-confirmation, 3-line status recap + standby.
 
 Go.

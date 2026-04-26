@@ -54,6 +54,13 @@ playwright-report/
 blob-report/
 playwright/.cache/
 
+# Local smoke screenshots dropped at repo root by ad-hoc Playwright runs
+# Real test baselines live under tests/__screenshots__/ and ARE tracked there.
+/apollo_village_local_smoke*.png
+/nemea_*.png
+/cyberpunk_local_*.png
+/caravan_local_*.png
+
 # Skill transplant staging area (RV-1 Talos)
 # External repos cloned here for SKILL.md extraction. Gitignored to keep upstream licenses
 # and commit histories out of this repo. Committed skills live at .claude/skills/ with
