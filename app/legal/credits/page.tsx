@@ -1,136 +1,34 @@
-//
-// app/legal/credits/page.tsx
-//
-// Credits and Acknowledgments page for NERIUM, Cerebral Valley plus
-// Anthropic hackathon submission, April 2026.
-//
-// Authored by Eunomia W2 T4 S2 (Admin ops, deferred legal scope) on
-// 2026-04-26. Unlike the Terms and Privacy placeholders, this page IS
-// substantive and ships in research-preview form. It enumerates: the
-// model the product was built with (Anthropic Claude Opus 4.7), the
-// hackathon submission target (Cerebral Valley plus Anthropic, April
-// 2026), generative AI assets (Nano Banana Pro / Gemini 3 Pro Image
-// Preview), open source dependencies, and CC0 / CC-BY asset licenses.
-//
-// Architecture. Server Component. Mounts the same `.nerium-landing`
-// wrapper as `app/page.tsx` so the OKLCH phosphor-green palette tokens
-// declared in `app/landing.css` cascade naturally. Three Google fonts
-// (VT323, Space Grotesk, JetBrains Mono) are loaded via next/font/google
-// and projected as CSS variables on the wrapper, identical to the
-// landing page font wiring. Page-specific layout rules live in the
-// scoped `app/legal/legal.css` stylesheet.
-//
-
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { VT323, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
-import '../../landing.css';
-import '../legal.css';
-
-const vt323 = VT323({
-  subsets: ['latin'],
-  weight: '400',
-  display: 'swap',
-  variable: '--font-vt323',
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  display: 'swap',
-  variable: '--font-space-grotesk',
-});
-
-const jetBrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
-  display: 'swap',
-  variable: '--font-jetbrains-mono',
-});
-
-export const metadata: Metadata = {
-  title: 'Credits | NERIUM',
-  description:
-    'Credits and acknowledgments for NERIUM. Built with Anthropic Claude Opus 4.7 for the Cerebral Valley plus Anthropic hackathon, April 2026.',
-};
-
 export default function CreditsPage() {
   return (
-    <div
-      className={`nerium-landing ${vt323.variable} ${spaceGrotesk.variable} ${jetBrainsMono.variable}`}
-    >
-      <main className="nl-legal">
-        <article className="nl-legal-article">
-          <Link
-            href="/"
-            prefetch={false}
-            className="nl-legal-back"
-            aria-label="Return to NERIUM landing page"
-          >
-            &lt; back to landing
-          </Link>
+    <main className="min-h-screen bg-[#04060C] text-[#F1ECE0] px-6 py-16 md:px-12 lg:px-24">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="font-mono text-3xl mb-2 text-[#B0F5A0]">Credits</h1>
+        <p className="text-sm opacity-60 mb-8">Acknowledgments for tools, services, and resources used to construct NERIUM.</p>
 
-          <p className="nl-legal-pretitle">&gt; legal</p>
-          <h1>Credits and Acknowledgments</h1>
-          <p className="nl-legal-updated">
-            Last updated: 2026-04-26
-          </p>
+        <section className="space-y-6 leading-relaxed">
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">AI Models and Orchestration</h2>
+          <p>Anthropic Claude Opus 4.7 served as orchestrator and runtime engine across 54 specialist Claude Code agents. Claude Code itself enabled the multi-agent parallel execution pattern that constructed this submission. Gemini 2.5 generated the demo voiceover with bundled cyberpunk synthwave background music.</p>
 
-          <section className="nl-legal-section" aria-labelledby="credits-built">
-            <h2 id="credits-built">Built With</h2>
-            <p>Anthropic Claude Opus 4.7.</p>
-          </section>
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">AI-Generated Visual Assets</h2>
+          <p>Pixel-art assets for Apollo Village, Caravan Road, Cyberpunk Shanghai, and 9 sub-areas were generated using Nano Banana Pro (Gemini 3 Pro Image Preview). Background removal and asset processing performed via Canva Pro and rembg birefnet-general model. Demo video intro and outro animations generated via Claude Design.</p>
 
-          <section className="nl-legal-section" aria-labelledby="credits-submitted">
-            <h2 id="credits-submitted">Submitted To</h2>
-            <p>Cerebral Valley plus Anthropic Hackathon, April 2026.</p>
-          </section>
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">Open-Source Dependencies</h2>
+          <p>NERIUM stands on the work of open-source maintainers. Key libraries include: Next.js, React, Tailwind CSS, shadcn/ui, Framer Motion, Phaser 3, Howler, GSAP, Lenis, FastAPI, Mangum, asyncpg, SQLAlchemy, Alembic, Pydantic, Stripe SDK, Anthropic SDK, Resend SDK, structlog, Playwright, pytest, Remotion. Full dependency tree at package.json and pyproject.toml.</p>
 
-          <section className="nl-legal-section" aria-labelledby="credits-assets">
-            <h2 id="credits-assets">Generative Assets</h2>
-            <p>
-              AI image assets generated via Nano Banana Pro (Gemini 3 Pro
-              Image Preview).
-            </p>
-          </section>
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">Infrastructure</h2>
+          <p>Vercel for hosting and CDN. Vercel Postgres via Neon for primary database. Upstash Redis for cache and rate limit. Stripe for payment processing test mode. Resend for transactional email.</p>
 
-          <section
-            className="nl-legal-section"
-            aria-labelledby="credits-dependencies"
-          >
-            <h2 id="credits-dependencies">Open Source Dependencies</h2>
-            <ul>
-              <li>Phaser 3</li>
-              <li>Next.js 15</li>
-              <li>Tailwind CSS v4</li>
-              <li>Recharts</li>
-              <li>FastAPI</li>
-              <li>Pydantic v2</li>
-              <li>Postgres 16</li>
-              <li>Redis 7</li>
-              <li>Arq</li>
-              <li>Howler.js</li>
-              <li>Zustand</li>
-              <li>Framer Motion</li>
-              <li>GSAP</li>
-              <li>Three.js r128</li>
-            </ul>
-          </section>
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">Hackathon</h2>
+          <p>NERIUM was built for the Cerebral Valley plus Anthropic Built with Opus 4.7 hackathon, April 2026. Thanks to the Cerebral Valley team and Anthropic for organizing the event and selecting Opus 4.7 as the showcase model.</p>
 
-          <section
-            className="nl-legal-section"
-            aria-labelledby="credits-licenses"
-          >
-            <h2 id="credits-licenses">Asset Licenses</h2>
-            <ul>
-              <li>Brullov Oak Woods (CC-BY attribution)</li>
-              <li>Kenney.nl (CC0)</li>
-              <li>OpenGameArt (mixed CC0 plus CC-BY where attributed)</li>
-              <li>Warped City (CC0)</li>
-            </ul>
-          </section>
-        </article>
-      </main>
-    </div>
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">Author</h2>
+          <p>Built solo by Ghaisan Khoirul Badruzaman, first-year Teknik Informatika student at Politeknik Negeri Bandung, Indonesia.</p>
+        </section>
+
+        <div className="mt-12 pt-8 border-t border-[#F1ECE0]/10 text-sm opacity-60">
+          <a href="/" className="hover:text-[#B0F5A0]">Back to home</a>
+        </div>
+      </div>
+    </main>
   );
 }

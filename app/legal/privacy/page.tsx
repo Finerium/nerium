@@ -1,119 +1,42 @@
-//
-// app/legal/privacy/page.tsx
-//
-// Privacy Policy placeholder for the NERIUM research preview.
-//
-// Authored by Eunomia W2 T4 S2 (Admin ops, deferred legal scope) on
-// 2026-04-26. This is a research-preview placeholder, NOT final privacy
-// text. The full Privacy Policy will be populated via a Termly template
-// before public launch. The page carries an honest "draft, pending Termly
-// template paste" banner per NarasiGhaisan honest-claim discipline
-// (Section 16) and CLAUDE.md anti-pattern 1.
-//
-// Architecture. Server Component. Mounts the same `.nerium-landing`
-// wrapper as `app/page.tsx` so the OKLCH phosphor-green palette tokens
-// declared in `app/landing.css` cascade naturally. Three Google fonts
-// (VT323, Space Grotesk, JetBrains Mono) are loaded via next/font/google
-// and projected as CSS variables on the wrapper, identical to the
-// landing page font wiring. Page-specific layout rules live in the
-// scoped `app/legal/legal.css` stylesheet.
-//
-// Honest-claim. Body copy explicitly says "placeholder" and references
-// the pending Termly template paste. The amber banner repeats this above
-// the fold so judges and research-preview users cannot mistake this for
-// a finalised legal document.
-//
-
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { VT323, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
-import '../../landing.css';
-import '../legal.css';
-
-const vt323 = VT323({
-  subsets: ['latin'],
-  weight: '400',
-  display: 'swap',
-  variable: '--font-vt323',
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  display: 'swap',
-  variable: '--font-space-grotesk',
-});
-
-const jetBrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
-  display: 'swap',
-  variable: '--font-jetbrains-mono',
-});
-
-export const metadata: Metadata = {
-  title: 'Privacy Policy | NERIUM',
-  description:
-    'Research-preview placeholder for NERIUM Privacy Policy. Final policy will be populated via Termly template before public launch.',
-};
-
 export default function PrivacyPage() {
   return (
-    <div
-      className={`nerium-landing ${vt323.variable} ${spaceGrotesk.variable} ${jetBrainsMono.variable}`}
-    >
-      <main className="nl-legal">
-        <article className="nl-legal-article">
-          <Link
-            href="/"
-            prefetch={false}
-            className="nl-legal-back"
-            aria-label="Return to NERIUM landing page"
-          >
-            &lt; back to landing
-          </Link>
+    <main className="min-h-screen bg-[#04060C] text-[#F1ECE0] px-6 py-16 md:px-12 lg:px-24">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="font-mono text-3xl mb-2 text-[#B0F5A0]">Privacy Policy</h1>
+        <p className="text-sm opacity-60 mb-8">Last updated: April 27, 2026</p>
 
-          <p className="nl-legal-pretitle">&gt; legal</p>
-          <h1>Privacy Policy</h1>
-          <p className="nl-legal-updated">
-            Last updated: 2026-04-26 (placeholder, pending Termly template paste)
-          </p>
+        <section className="space-y-6 leading-relaxed">
+          <p>This privacy policy describes how NERIUM handles user data during the Cerebral Valley plus Anthropic Built with Opus 4.7 hackathon, April 2026. NERIUM is a hackathon submission in test mode at evaluation time.</p>
 
-          <div className="nl-legal-banner" role="note">
-            <strong>Draft, pending legal review</strong>
-            This page is a research-preview placeholder. The final Privacy
-            Policy will be populated via a Termly template before public
-            launch. Do not treat this surface as a binding privacy
-            disclosure.
-          </div>
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">1. Data We Collect</h2>
+          <p>NERIUM at submission state collects minimal data. If you provide an Anthropic API key under the bring-your-own-key pattern, the key is stored only in browser sessionStorage and never transmitted to NERIUM servers. Account-related data (if you create an account) includes email, hashed password, and Ed25519 public keypair for identity registry. Usage telemetry (page views, feature interactions) is collected via structlog server-side for debugging only.</p>
 
-          <section className="nl-legal-section" aria-labelledby="privacy-overview">
-            <h2 id="privacy-overview">Overview</h2>
-            <p>
-              This page will be populated with the full Privacy Policy via
-              Termly template before launch. For data privacy inquiries
-              during research preview, contact{' '}
-              <a href="mailto:privacy@nerium.com">privacy@nerium.com</a>.
-            </p>
-            <p>
-              During the research preview, NERIUM minimises personal data
-              collection. Account telemetry and usage logs are retained only
-              as long as needed to operate the preview and improve the
-              product. Final retention windows, data export, and deletion
-              workflows will be specified in the Termly template.
-            </p>
-          </section>
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">2. Third-Party Services</h2>
+          <p>NERIUM uses the following third-party services that may collect their own data per their respective policies: Vercel (hosting and CDN), Vercel Postgres via Neon (database), Upstash Redis (cache), Stripe (test mode payment processing, no real money), Resend (transactional email), and Anthropic (Claude API when bring-your-own-key is active). Refer to each provider for their individual privacy policies.</p>
 
-          <section className="nl-legal-section" aria-labelledby="privacy-contact">
-            <h2 id="privacy-contact">Contact</h2>
-            <p className="nl-legal-contact">
-              For data privacy inquiries during the research preview, reach
-              the team at{' '}
-              <a href="mailto:privacy@nerium.com">privacy@nerium.com</a>.
-            </p>
-          </section>
-        </article>
-      </main>
-    </div>
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">3. Cookies and Local Storage</h2>
+          <p>NERIUM uses sessionStorage to persist a user-provided Anthropic API key during the active session only. No tracking cookies. No advertising cookies. No cross-site tracking.</p>
+
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">4. Data Retention</h2>
+          <p>Account data is retained while the account exists. Usage telemetry is retained for 30 days then purged. API keys provided via bring-your-own-key are never persisted server-side.</p>
+
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">5. Your Rights</h2>
+          <p>You may request data deletion by opening an issue at the GitHub repository. NERIUM commits to a 30-day response window during the hackathon evaluation period and shorter response times post-launch.</p>
+
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">6. Children</h2>
+          <p>NERIUM is not directed at children under 13. We do not knowingly collect data from children.</p>
+
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">7. Changes</h2>
+          <p>This privacy policy may be updated post-hackathon. The latest version will always be at this URL.</p>
+
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">8. Contact</h2>
+          <p>Built by Ghaisan Khoirul Badruzaman, Politeknik Negeri Bandung, Indonesia. For privacy inquiries, open an issue at the GitHub repository.</p>
+        </section>
+
+        <div className="mt-12 pt-8 border-t border-[#F1ECE0]/10 text-sm opacity-60">
+          <a href="/" className="hover:text-[#B0F5A0]">Back to home</a>
+        </div>
+      </div>
+    </main>
   );
 }

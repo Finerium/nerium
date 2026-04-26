@@ -1,117 +1,39 @@
-//
-// app/legal/terms/page.tsx
-//
-// Terms of Service placeholder for the NERIUM research preview.
-//
-// Authored by Eunomia W2 T4 S2 (Admin ops, deferred legal scope) on
-// 2026-04-26. This is a research-preview placeholder, NOT final legal
-// text. The full Terms of Service will be populated via a Termly template
-// before public launch. The page carries an honest "draft, pending Termly
-// template paste" banner per NarasiGhaisan honest-claim discipline
-// (Section 16) and CLAUDE.md anti-pattern 1.
-//
-// Architecture. Server Component. Mounts the same `.nerium-landing`
-// wrapper as `app/page.tsx` so the OKLCH phosphor-green palette tokens
-// declared in `app/landing.css` cascade naturally. Three Google fonts
-// (VT323, Space Grotesk, JetBrains Mono) are loaded via next/font/google
-// and projected as CSS variables on the wrapper, identical to the
-// landing page font wiring. Page-specific layout rules live in the
-// scoped `app/legal/legal.css` stylesheet.
-//
-// Honest-claim. Body copy explicitly says "placeholder" and references
-// the pending Termly template paste. The amber banner repeats this above
-// the fold so judges and research-preview users cannot mistake this for
-// a finalised legal document.
-//
-
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { VT323, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
-import '../../landing.css';
-import '../legal.css';
-
-const vt323 = VT323({
-  subsets: ['latin'],
-  weight: '400',
-  display: 'swap',
-  variable: '--font-vt323',
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  display: 'swap',
-  variable: '--font-space-grotesk',
-});
-
-const jetBrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
-  display: 'swap',
-  variable: '--font-jetbrains-mono',
-});
-
-export const metadata: Metadata = {
-  title: 'Terms of Service | NERIUM',
-  description:
-    'Research-preview placeholder for NERIUM Terms of Service. Final terms will be populated via Termly template before public launch.',
-};
-
 export default function TermsPage() {
   return (
-    <div
-      className={`nerium-landing ${vt323.variable} ${spaceGrotesk.variable} ${jetBrainsMono.variable}`}
-    >
-      <main className="nl-legal">
-        <article className="nl-legal-article">
-          <Link
-            href="/"
-            prefetch={false}
-            className="nl-legal-back"
-            aria-label="Return to NERIUM landing page"
-          >
-            &lt; back to landing
-          </Link>
+    <main className="min-h-screen bg-[#04060C] text-[#F1ECE0] px-6 py-16 md:px-12 lg:px-24">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="font-mono text-3xl mb-2 text-[#B0F5A0]">Terms of Service</h1>
+        <p className="text-sm opacity-60 mb-8">Last updated: April 27, 2026</p>
 
-          <p className="nl-legal-pretitle">&gt; legal</p>
-          <h1>Terms of Service</h1>
-          <p className="nl-legal-updated">
-            Last updated: 2026-04-26 (placeholder, pending Termly template paste)
-          </p>
+        <section className="space-y-6 leading-relaxed">
+          <p>NERIUM is a hackathon submission to the Cerebral Valley plus Anthropic Built with Opus 4.7 hackathon, April 2026. The platform is provided as-is for demonstration and evaluation purposes. By accessing https://nerium-one.vercel.app or the source repository at https://github.com/Finerium/nerium, you agree to the terms below.</p>
 
-          <div className="nl-legal-banner" role="note">
-            <strong>Draft, pending legal review</strong>
-            This page is a research-preview placeholder. The final Terms of
-            Service will be populated via a Termly template before public
-            launch. Do not treat this surface as a binding legal document.
-          </div>
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">1. Use of Service</h2>
+          <p>NERIUM at submission state is in test mode. The Builder runtime requires a user-provided Anthropic API key under the bring-your-own-key pattern. Stripe payment integration is in test mode and does not process real money. Multi-vendor model selection UI showcases planned vendors; live runtime invocation at submission is Anthropic-only.</p>
 
-          <section className="nl-legal-section" aria-labelledby="terms-overview">
-            <h2 id="terms-overview">Overview</h2>
-            <p>
-              This page will be populated with the full Terms of Service via
-              Termly template before launch. For inquiries during research
-              preview, contact{' '}
-              <a href="mailto:privacy@nerium.com">privacy@nerium.com</a>.
-            </p>
-            <p>
-              NERIUM is research-preview infrastructure for the AI agent
-              economy. Use of the preview implies acceptance of reasonable
-              caveats: services may change, data may be reset, features may
-              be added or removed without notice during the preview window.
-            </p>
-          </section>
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">2. User Responsibility</h2>
+          <p>Users who provide their own Anthropic API key are responsible for their own usage costs and rate limits. Users who upload listings, agents, skills, or prompts to the Marketplace warrant that the content does not infringe third-party intellectual property and complies with applicable laws.</p>
 
-          <section className="nl-legal-section" aria-labelledby="terms-contact">
-            <h2 id="terms-contact">Contact</h2>
-            <p className="nl-legal-contact">
-              For terms-related inquiries during the research preview, reach
-              the team at{' '}
-              <a href="mailto:privacy@nerium.com">privacy@nerium.com</a>.
-            </p>
-          </section>
-        </article>
-      </main>
-    </div>
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">3. Intellectual Property</h2>
+          <p>NERIUM source code is licensed under the MIT License (see repository LICENSE file). User-uploaded content remains owned by the uploading user. NERIUM retains a non-exclusive license to display, distribute, and metadata-index uploaded content for marketplace functionality.</p>
+
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">4. No Warranty</h2>
+          <p>NERIUM is provided as-is without warranty of any kind, express or implied. The submission is constructed for hackathon evaluation. Production-grade reliability, security audit, and uptime guarantees activate post-launch following standard infrastructure hardening.</p>
+
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">5. Limitation of Liability</h2>
+          <p>NERIUM and its solo author are not liable for any indirect, incidental, or consequential damages arising from use of the platform during the hackathon evaluation period.</p>
+
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">6. Changes</h2>
+          <p>These terms may be updated post-hackathon as NERIUM transitions from submission state to production. The latest version will always be at this URL.</p>
+
+          <h2 className="font-mono text-xl text-[#B0F5A0] pt-4">7. Contact</h2>
+          <p>Built by Ghaisan Khoirul Badruzaman, Politeknik Negeri Bandung, Indonesia. For inquiries, open an issue at the GitHub repository.</p>
+        </section>
+
+        <div className="mt-12 pt-8 border-t border-[#F1ECE0]/10 text-sm opacity-60">
+          <a href="/" className="hover:text-[#B0F5A0]">Back to home</a>
+        </div>
+      </div>
+    </main>
   );
 }
