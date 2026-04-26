@@ -198,6 +198,40 @@ async def _on_job_end(ctx: dict[str, Any]) -> None:
         )
 
 
+def _bootstrap_cron_modules() -> None:
+    """Import cron + job modules so their decorators run before Arq boots.
+
+    Phase 1 Ferry 2 (Nemea-RV-v2 W4, 2026-04-26). The Arq CLI imports
+    :class:`WorkerSettings` directly (``arq src.backend.workers.arq_worker.WorkerSettings``)
+    and reads ``functions`` / ``cron_jobs`` once at process start. Per-agent
+    modules register via :func:`register_job` / :func:`register_cron_job`
+    at module import time, but unless something else imports them first,
+    the registrations never run and the registries stay empty.
+
+    Pre-fix evidence: ``python -c "from src.backend.workers.arq_worker
+    import WorkerSettings; print(len(WorkerSettings.cron_jobs))"`` printed
+    ``0``.
+
+    The brief listed the canonical modules to wire here. Two additional
+    cron modules ship in the repo but were left out of the V6 brief
+    intentionally (``src.backend.registry.identity.cron.key_rotation``
+    and ``src.backend.trust.cron.refresh_scores``). They have the same
+    symptom and can be added as a follow-up.
+    """
+
+    # Imported for side effects only. The lint / unused-import noise is
+    # silenced via ``# noqa: F401`` because each module's top-level call
+    # to ``register_cron_job`` / ``register_job`` is the operative effect.
+    from src.backend.flags import ttl_sweep  # noqa: F401
+    from src.backend.workers import email_sender  # noqa: F401
+    from src.backend.realtime import audit_jobs  # noqa: F401
+    from src.backend.budget import daily_reset  # noqa: F401
+    from src.backend.budget import usage_api_poller  # noqa: F401
+
+
+_bootstrap_cron_modules()
+
+
 class WorkerSettings:
     """Arq worker settings consumed by ``arq`` CLI.
 
