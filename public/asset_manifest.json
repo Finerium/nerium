@@ -1,578 +1,578 @@
 {
   "backgrounds/caravan_road_bg": {
     "stem": "backgrounds/caravan_road_bg",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/backgrounds/caravan_road_bg.jpg",
-    "size": 1951687,
+    "url": "/assets/ai/backgrounds/caravan_road_bg.jpg",
+    "size": 251888,
     "contentType": "image/jpeg"
   },
   "backgrounds/apollo_village_bg": {
     "stem": "backgrounds/apollo_village_bg",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/backgrounds/apollo_village_bg.jpg",
-    "size": 2616190,
+    "url": "/assets/ai/backgrounds/apollo_village_bg.jpg",
+    "size": 388813,
     "contentType": "image/jpeg"
   },
   "backgrounds/caravan_wayhouse_interior": {
     "stem": "backgrounds/caravan_wayhouse_interior",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/backgrounds/caravan_wayhouse_interior.jpg",
-    "size": 7153614,
+    "url": "/assets/ai/backgrounds/caravan_wayhouse_interior.jpg",
+    "size": 407614,
     "contentType": "image/jpeg"
   },
   "backgrounds/caravan_mountain_pass": {
     "stem": "backgrounds/caravan_mountain_pass",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/backgrounds/caravan_mountain_pass.jpg",
-    "size": 8118259,
+    "url": "/assets/ai/backgrounds/caravan_mountain_pass.jpg",
+    "size": 353191,
     "contentType": "image/jpeg"
   },
   "backgrounds/caravan_forest_crossroad": {
     "stem": "backgrounds/caravan_forest_crossroad",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/backgrounds/caravan_forest_crossroad.jpg",
-    "size": 7421611,
+    "url": "/assets/ai/backgrounds/caravan_forest_crossroad.jpg",
+    "size": 372900,
     "contentType": "image/jpeg"
   },
   "backgrounds/apollo_oasis": {
     "stem": "backgrounds/apollo_oasis",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/backgrounds/apollo_oasis.jpg",
-    "size": 6645732,
+    "url": "/assets/ai/backgrounds/apollo_oasis.jpg",
+    "size": 359547,
     "contentType": "image/jpeg"
   },
   "backgrounds/apollo_temple_interior": {
     "stem": "backgrounds/apollo_temple_interior",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/backgrounds/apollo_temple_interior.jpg",
-    "size": 7167923,
+    "url": "/assets/ai/backgrounds/apollo_temple_interior.jpg",
+    "size": 309137,
     "contentType": "image/jpeg"
   },
   "backgrounds/apollo_marketplace_bazaar": {
     "stem": "backgrounds/apollo_marketplace_bazaar",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/backgrounds/apollo_marketplace_bazaar.jpg",
-    "size": 7086196,
+    "url": "/assets/ai/backgrounds/apollo_marketplace_bazaar.jpg",
+    "size": 448926,
     "contentType": "image/jpeg"
   },
   "characters/apollo_spritesheet": {
     "stem": "characters/apollo_spritesheet",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/characters/apollo_spritesheet.png",
+    "url": "/assets/ai/characters/apollo_spritesheet.png",
     "size": 2634649,
     "contentType": "image/png"
   },
   "backgrounds/cyberpunk_shanghai_bg": {
     "stem": "backgrounds/cyberpunk_shanghai_bg",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/backgrounds/cyberpunk_shanghai_bg.jpg",
-    "size": 2482199,
+    "url": "/assets/ai/backgrounds/cyberpunk_shanghai_bg.jpg",
+    "size": 395675,
     "contentType": "image/jpeg"
   },
   "characters/apollo_portrait": {
     "stem": "characters/apollo_portrait",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/characters/apollo_portrait.png",
-    "size": 2212882,
+    "url": "/assets/ai/characters/apollo_portrait.png",
+    "size": 242715,
     "contentType": "image/png"
   },
   "backgrounds/cyber_skyscraper_lobby": {
     "stem": "backgrounds/cyber_skyscraper_lobby",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/backgrounds/cyber_skyscraper_lobby.jpg",
-    "size": 6928553,
+    "url": "/assets/ai/backgrounds/cyber_skyscraper_lobby.jpg",
+    "size": 390378,
     "contentType": "image/jpeg"
   },
   "characters/apollo": {
     "stem": "characters/apollo",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/characters/apollo.png",
-    "size": 1227468,
+    "url": "/assets/ai/characters/apollo.png",
+    "size": 141227,
     "contentType": "image/png"
   },
   "backgrounds/cyber_rooftop": {
     "stem": "backgrounds/cyber_rooftop",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/backgrounds/cyber_rooftop.jpg",
-    "size": 8227888,
+    "url": "/assets/ai/backgrounds/cyber_rooftop.jpg",
+    "size": 389347,
     "contentType": "image/jpeg"
   },
   "backgrounds/cyber_server_room": {
     "stem": "backgrounds/cyber_server_room",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/backgrounds/cyber_server_room.jpg",
-    "size": 7446675,
+    "url": "/assets/ai/backgrounds/cyber_server_room.jpg",
+    "size": 497951,
     "contentType": "image/jpeg"
   },
   "backgrounds/cyber_underground_alley": {
     "stem": "backgrounds/cyber_underground_alley",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/backgrounds/cyber_underground_alley.jpg",
-    "size": 6956100,
+    "url": "/assets/ai/backgrounds/cyber_underground_alley.jpg",
+    "size": 352531,
     "contentType": "image/jpeg"
   },
   "characters/player_spritesheet": {
     "stem": "characters/player_spritesheet",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/characters/player_spritesheet.png",
+    "url": "/assets/ai/characters/player_spritesheet.png",
     "size": 2049891,
     "contentType": "image/png"
   },
   "characters/caravan_vendor": {
     "stem": "characters/caravan_vendor",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/characters/caravan_vendor.png",
-    "size": 1478524,
+    "url": "/assets/ai/characters/caravan_vendor.png",
+    "size": 163952,
     "contentType": "image/png"
   },
   "characters/synth_vendor_spritesheet": {
     "stem": "characters/synth_vendor_spritesheet",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/characters/synth_vendor_spritesheet.png",
+    "url": "/assets/ai/characters/synth_vendor_spritesheet.png",
     "size": 1992619,
     "contentType": "image/png"
   },
   "characters/synth_vendor_portrait": {
     "stem": "characters/synth_vendor_portrait",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/characters/synth_vendor_portrait.png",
-    "size": 2808049,
+    "url": "/assets/ai/characters/synth_vendor_portrait.png",
+    "size": 315961,
     "contentType": "image/png"
   },
   "characters/treasurer": {
     "stem": "characters/treasurer",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/characters/treasurer.png",
-    "size": 1279804,
+    "url": "/assets/ai/characters/treasurer.png",
+    "size": 142964,
     "contentType": "image/png"
   },
   "characters/player_portrait": {
     "stem": "characters/player_portrait",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/characters/player_portrait.png",
-    "size": 1902287,
+    "url": "/assets/ai/characters/player_portrait.png",
+    "size": 196917,
     "contentType": "image/png"
   },
   "characters/synth_vendor": {
     "stem": "characters/synth_vendor",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/characters/synth_vendor.png",
-    "size": 1033478,
+    "url": "/assets/ai/characters/synth_vendor.png",
+    "size": 118024,
     "contentType": "image/png"
   },
   "characters/caravan_vendor_spritesheet": {
     "stem": "characters/caravan_vendor_spritesheet",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/characters/caravan_vendor_spritesheet.png",
+    "url": "/assets/ai/characters/caravan_vendor_spritesheet.png",
     "size": 2148802,
     "contentType": "image/png"
   },
   "props/apollo_village/apollo_temple_altar": {
     "stem": "props/apollo_village/apollo_temple_altar",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/apollo_village/apollo_temple_altar.png",
-    "size": 1819117,
+    "url": "/assets/ai/props/apollo_village/apollo_temple_altar.png",
+    "size": 143468,
     "contentType": "image/png"
   },
   "characters/treasurer_spritesheet": {
     "stem": "characters/treasurer_spritesheet",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/characters/treasurer_spritesheet.png",
+    "url": "/assets/ai/characters/treasurer_spritesheet.png",
     "size": 2073296,
     "contentType": "image/png"
   },
   "overlays/autumn_leaves": {
     "stem": "overlays/autumn_leaves",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/overlays/autumn_leaves.png",
-    "size": 368084,
+    "url": "/assets/ai/overlays/autumn_leaves.png",
+    "size": 27654,
     "contentType": "image/png"
   },
   "props/apollo_village/apollo_ruined_shrine": {
     "stem": "props/apollo_village/apollo_ruined_shrine",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/apollo_village/apollo_ruined_shrine.png",
-    "size": 2234918,
+    "url": "/assets/ai/props/apollo_village/apollo_ruined_shrine.png",
+    "size": 217698,
     "contentType": "image/png"
   },
   "overlays/smog_wisps": {
     "stem": "overlays/smog_wisps",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/overlays/smog_wisps.png",
-    "size": 2641269,
+    "url": "/assets/ai/overlays/smog_wisps.png",
+    "size": 149768,
     "contentType": "image/png"
   },
   "props/apollo_village/apollo_house_filler": {
     "stem": "props/apollo_village/apollo_house_filler",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/apollo_village/apollo_house_filler.png",
-    "size": 2045717,
+    "url": "/assets/ai/props/apollo_village/apollo_house_filler.png",
+    "size": 191259,
     "contentType": "image/png"
   },
   "characters/treasurer_portrait": {
     "stem": "characters/treasurer_portrait",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/characters/treasurer_portrait.png",
-    "size": 2631921,
+    "url": "/assets/ai/characters/treasurer_portrait.png",
+    "size": 276705,
     "contentType": "image/png"
   },
   "props/apollo_village/builder_workshop_landmark": {
     "stem": "props/apollo_village/builder_workshop_landmark",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/apollo_village/builder_workshop_landmark.png",
-    "size": 3060529,
+    "url": "/assets/ai/props/apollo_village/builder_workshop_landmark.png",
+    "size": 249035,
     "contentType": "image/png"
   },
   "props/apollo_village/date_palm_cluster": {
     "stem": "props/apollo_village/date_palm_cluster",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/apollo_village/date_palm_cluster.png",
-    "size": 1713315,
+    "url": "/assets/ai/props/apollo_village/date_palm_cluster.png",
+    "size": 146938,
     "contentType": "image/png"
   },
   "props/apollo_village/registry_pillar_landmark": {
     "stem": "props/apollo_village/registry_pillar_landmark",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/apollo_village/registry_pillar_landmark.png",
-    "size": 2430845,
+    "url": "/assets/ai/props/apollo_village/registry_pillar_landmark.png",
+    "size": 110283,
     "contentType": "image/png"
   },
   "props/apollo_village/stone_signpost": {
     "stem": "props/apollo_village/stone_signpost",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/apollo_village/stone_signpost.png",
-    "size": 1364192,
+    "url": "/assets/ai/props/apollo_village/stone_signpost.png",
+    "size": 77175,
     "contentType": "image/png"
   },
   "props/apollo_village/market_stall": {
     "stem": "props/apollo_village/market_stall",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/apollo_village/market_stall.png",
-    "size": 1446965,
+    "url": "/assets/ai/props/apollo_village/market_stall.png",
+    "size": 158646,
     "contentType": "image/png"
   },
   "props/apollo_village/hanging_lantern": {
     "stem": "props/apollo_village/hanging_lantern",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/apollo_village/hanging_lantern.png",
-    "size": 944456,
+    "url": "/assets/ai/props/apollo_village/hanging_lantern.png",
+    "size": 56893,
     "contentType": "image/png"
   },
   "props/apollo_village/stone_column": {
     "stem": "props/apollo_village/stone_column",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/apollo_village/stone_column.png",
-    "size": 4856473,
+    "url": "/assets/ai/props/apollo_village/stone_column.png",
+    "size": 91084,
     "contentType": "image/png"
   },
   "props/apollo_village/cypress_tree": {
     "stem": "props/apollo_village/cypress_tree",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/apollo_village/cypress_tree.png",
-    "size": 1007756,
+    "url": "/assets/ai/props/apollo_village/cypress_tree.png",
+    "size": 53690,
     "contentType": "image/png"
   },
   "props/apollo_village/marketplace_stall_landmark": {
     "stem": "props/apollo_village/marketplace_stall_landmark",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/apollo_village/marketplace_stall_landmark.png",
-    "size": 2892829,
+    "url": "/assets/ai/props/apollo_village/marketplace_stall_landmark.png",
+    "size": 218449,
     "contentType": "image/png"
   },
   "props/caravan_road/caravan_fireplace": {
     "stem": "props/caravan_road/caravan_fireplace",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/caravan_road/caravan_fireplace.png",
-    "size": 1897193,
+    "url": "/assets/ai/props/caravan_road/caravan_fireplace.png",
+    "size": 180957,
     "contentType": "image/png"
   },
   "props/apollo_village/wooden_cart": {
     "stem": "props/apollo_village/wooden_cart",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/apollo_village/wooden_cart.png",
-    "size": 1808434,
+    "url": "/assets/ai/props/apollo_village/wooden_cart.png",
+    "size": 163661,
     "contentType": "image/png"
   },
   "props/apollo_village/stone_well": {
     "stem": "props/apollo_village/stone_well",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/apollo_village/stone_well.png",
-    "size": 1387897,
+    "url": "/assets/ai/props/apollo_village/stone_well.png",
+    "size": 115836,
     "contentType": "image/png"
   },
   "props/apollo_village/temple_arch": {
     "stem": "props/apollo_village/temple_arch",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/apollo_village/temple_arch.png",
-    "size": 2916525,
+    "url": "/assets/ai/props/apollo_village/temple_arch.png",
+    "size": 188687,
     "contentType": "image/png"
   },
   "props/caravan_road/caravan_tavern_table": {
     "stem": "props/caravan_road/caravan_tavern_table",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/caravan_road/caravan_tavern_table.png",
-    "size": 2665378,
+    "url": "/assets/ai/props/caravan_road/caravan_tavern_table.png",
+    "size": 162938,
     "contentType": "image/png"
   },
   "props/apollo_village/trust_shrine_landmark": {
     "stem": "props/apollo_village/trust_shrine_landmark",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/apollo_village/trust_shrine_landmark.png",
-    "size": 3102285,
+    "url": "/assets/ai/props/apollo_village/trust_shrine_landmark.png",
+    "size": 217760,
     "contentType": "image/png"
   },
   "props/caravan_road/campfire_ring": {
     "stem": "props/caravan_road/campfire_ring",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/caravan_road/campfire_ring.png",
-    "size": 1591520,
+    "url": "/assets/ai/props/caravan_road/campfire_ring.png",
+    "size": 179664,
     "contentType": "image/png"
   },
   "props/caravan_road/caravan_rope_bridge": {
     "stem": "props/caravan_road/caravan_rope_bridge",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/caravan_road/caravan_rope_bridge.png",
-    "size": 3357455,
+    "url": "/assets/ai/props/caravan_road/caravan_rope_bridge.png",
+    "size": 142773,
     "contentType": "image/png"
   },
   "props/caravan_road/lantern_post": {
     "stem": "props/caravan_road/lantern_post",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/caravan_road/lantern_post.png",
-    "size": 727027,
+    "url": "/assets/ai/props/caravan_road/lantern_post.png",
+    "size": 32841,
     "contentType": "image/png"
   },
   "props/caravan_road/roadside_signpost": {
     "stem": "props/caravan_road/roadside_signpost",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/caravan_road/roadside_signpost.png",
-    "size": 1016921,
+    "url": "/assets/ai/props/caravan_road/roadside_signpost.png",
+    "size": 70531,
     "contentType": "image/png"
   },
   "props/caravan_road/wooden_wagon": {
     "stem": "props/caravan_road/wooden_wagon",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/caravan_road/wooden_wagon.png",
-    "size": 1458911,
+    "url": "/assets/ai/props/caravan_road/wooden_wagon.png",
+    "size": 123881,
     "contentType": "image/png"
   },
   "props/caravan_road/wooden_barrel": {
     "stem": "props/caravan_road/wooden_barrel",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/caravan_road/wooden_barrel.png",
-    "size": 1931457,
+    "url": "/assets/ai/props/caravan_road/wooden_barrel.png",
+    "size": 140244,
     "contentType": "image/png"
   },
   "props/caravan_road/cobblestone_tile": {
     "stem": "props/caravan_road/cobblestone_tile",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/caravan_road/cobblestone_tile.jpg",
-    "size": 1799521,
+    "url": "/assets/ai/props/caravan_road/cobblestone_tile.jpg",
+    "size": 427877,
     "contentType": "image/jpeg"
   },
   "props/caravan_road/fallen_log": {
     "stem": "props/caravan_road/fallen_log",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/caravan_road/fallen_log.png",
-    "size": 1487611,
+    "url": "/assets/ai/props/caravan_road/fallen_log.png",
+    "size": 117961,
     "contentType": "image/png"
   },
   "props/caravan_road/caravan_wayhouse_filler": {
     "stem": "props/caravan_road/caravan_wayhouse_filler",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/caravan_road/caravan_wayhouse_filler.png",
-    "size": 4461292,
+    "url": "/assets/ai/props/caravan_road/caravan_wayhouse_filler.png",
+    "size": 262665,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/admin_hall_landmark": {
     "stem": "props/cyberpunk_shanghai/admin_hall_landmark",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/admin_hall_landmark.png",
-    "size": 8284255,
+    "url": "/assets/ai/props/cyberpunk_shanghai/admin_hall_landmark.png",
+    "size": 215110,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/cyber_elevator_door": {
     "stem": "props/cyberpunk_shanghai/cyber_elevator_door",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/cyber_elevator_door.png",
-    "size": 2615551,
+    "url": "/assets/ai/props/cyberpunk_shanghai/cyber_elevator_door.png",
+    "size": 160276,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/cyber_chrome_sculpture": {
     "stem": "props/cyberpunk_shanghai/cyber_chrome_sculpture",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/cyber_chrome_sculpture.png",
-    "size": 1797795,
+    "url": "/assets/ai/props/cyberpunk_shanghai/cyber_chrome_sculpture.png",
+    "size": 138385,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/cyber_billboard_closeup": {
     "stem": "props/cyberpunk_shanghai/cyber_billboard_closeup",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/cyber_billboard_closeup.png",
-    "size": 3961209,
+    "url": "/assets/ai/props/cyberpunk_shanghai/cyber_billboard_closeup.png",
+    "size": 276149,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/cyber_industrial_pipe": {
     "stem": "props/cyberpunk_shanghai/cyber_industrial_pipe",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/cyber_industrial_pipe.png",
-    "size": 2541138,
+    "url": "/assets/ai/props/cyberpunk_shanghai/cyber_industrial_pipe.png",
+    "size": 209088,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/cyber_data_terminal": {
     "stem": "props/cyberpunk_shanghai/cyber_data_terminal",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/cyber_data_terminal.png",
-    "size": 3169868,
+    "url": "/assets/ai/props/cyberpunk_shanghai/cyber_data_terminal.png",
+    "size": 211204,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/bank_treasury_landmark": {
     "stem": "props/cyberpunk_shanghai/bank_treasury_landmark",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/bank_treasury_landmark.png",
-    "size": 6768177,
+    "url": "/assets/ai/props/cyberpunk_shanghai/bank_treasury_landmark.png",
+    "size": 181194,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/crate_stack": {
     "stem": "props/cyberpunk_shanghai/crate_stack",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/crate_stack.png",
-    "size": 6392320,
+    "url": "/assets/ai/props/cyberpunk_shanghai/crate_stack.png",
+    "size": 177589,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/cyber_apartment_filler": {
     "stem": "props/cyberpunk_shanghai/cyber_apartment_filler",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/cyber_apartment_filler.png",
-    "size": 20096575,
+    "url": "/assets/ai/props/cyberpunk_shanghai/cyber_apartment_filler.png",
+    "size": 355861,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/holo_ad_panel": {
     "stem": "props/cyberpunk_shanghai/holo_ad_panel",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/holo_ad_panel.png",
-    "size": 3143530,
+    "url": "/assets/ai/props/cyberpunk_shanghai/holo_ad_panel.png",
+    "size": 169973,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/cyber_server_rack": {
     "stem": "props/cyberpunk_shanghai/cyber_server_rack",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/cyber_server_rack.png",
-    "size": 3032524,
+    "url": "/assets/ai/props/cyberpunk_shanghai/cyber_server_rack.png",
+    "size": 159674,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/hologram_glitch": {
     "stem": "props/cyberpunk_shanghai/hologram_glitch",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/hologram_glitch.png",
-    "size": 3406851,
+    "url": "/assets/ai/props/cyberpunk_shanghai/hologram_glitch.png",
+    "size": 112234,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/cyber_reception_desk": {
     "stem": "props/cyberpunk_shanghai/cyber_reception_desk",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/cyber_reception_desk.png",
-    "size": 3281660,
+    "url": "/assets/ai/props/cyberpunk_shanghai/cyber_reception_desk.png",
+    "size": 185446,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/laundry_line": {
     "stem": "props/cyberpunk_shanghai/laundry_line",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/laundry_line.png",
-    "size": 6360948,
+    "url": "/assets/ai/props/cyberpunk_shanghai/laundry_line.png",
+    "size": 95471,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/drone": {
     "stem": "props/cyberpunk_shanghai/drone",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/drone.png",
-    "size": 2976527,
+    "url": "/assets/ai/props/cyberpunk_shanghai/drone.png",
+    "size": 86312,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/cyber_marketplace_landmark": {
     "stem": "props/cyberpunk_shanghai/cyber_marketplace_landmark",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/cyber_marketplace_landmark.png",
-    "size": 11570836,
+    "url": "/assets/ai/props/cyberpunk_shanghai/cyber_marketplace_landmark.png",
+    "size": 274967,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/cyber_lantern": {
     "stem": "props/cyberpunk_shanghai/cyber_lantern",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/cyber_lantern.png",
-    "size": 5865200,
+    "url": "/assets/ai/props/cyberpunk_shanghai/cyber_lantern.png",
+    "size": 145526,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/neon_market_stall": {
     "stem": "props/cyberpunk_shanghai/neon_market_stall",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/neon_market_stall.png",
-    "size": 3666326,
+    "url": "/assets/ai/props/cyberpunk_shanghai/neon_market_stall.png",
+    "size": 280562,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/trash_bin": {
     "stem": "props/cyberpunk_shanghai/trash_bin",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/trash_bin.png",
-    "size": 5836858,
+    "url": "/assets/ai/props/cyberpunk_shanghai/trash_bin.png",
+    "size": 162332,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/protocol_gateway_landmark": {
     "stem": "props/cyberpunk_shanghai/protocol_gateway_landmark",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/protocol_gateway_landmark.png",
-    "size": 3828416,
+    "url": "/assets/ai/props/cyberpunk_shanghai/protocol_gateway_landmark.png",
+    "size": 119610,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/synth_vendor_cart": {
     "stem": "props/cyberpunk_shanghai/synth_vendor_cart",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/synth_vendor_cart.png",
-    "size": 5281072,
+    "url": "/assets/ai/props/cyberpunk_shanghai/synth_vendor_cart.png",
+    "size": 296814,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/steam_vent": {
     "stem": "props/cyberpunk_shanghai/steam_vent",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/steam_vent.png",
-    "size": 3974979,
+    "url": "/assets/ai/props/cyberpunk_shanghai/steam_vent.png",
+    "size": 107835,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/neon_sign_vertical": {
     "stem": "props/cyberpunk_shanghai/neon_sign_vertical",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/neon_sign_vertical.png",
-    "size": 8757874,
+    "url": "/assets/ai/props/cyberpunk_shanghai/neon_sign_vertical.png",
+    "size": 121133,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/refrigerator": {
     "stem": "props/cyberpunk_shanghai/refrigerator",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/refrigerator.png",
-    "size": 7373474,
+    "url": "/assets/ai/props/cyberpunk_shanghai/refrigerator.png",
+    "size": 157118,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/vendor_cart_alt": {
     "stem": "props/cyberpunk_shanghai/vendor_cart_alt",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/vendor_cart_alt.png",
-    "size": 7091167,
+    "url": "/assets/ai/props/cyberpunk_shanghai/vendor_cart_alt.png",
+    "size": 218396,
     "contentType": "image/png"
   },
   "ui/icons/category_agent": {
     "stem": "ui/icons/category_agent",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/ui/icons/category_agent.png",
-    "size": 3057394,
+    "url": "/assets/ai/ui/icons/category_agent.png",
+    "size": 81336,
     "contentType": "image/png"
   },
   "ui/icons/category_dataset": {
     "stem": "ui/icons/category_dataset",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/ui/icons/category_dataset.png",
-    "size": 4617520,
+    "url": "/assets/ai/ui/icons/category_dataset.png",
+    "size": 136746,
     "contentType": "image/png"
   },
   "ui/icons/category_pipeline": {
     "stem": "ui/icons/category_pipeline",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/ui/icons/category_pipeline.png",
-    "size": 4462507,
+    "url": "/assets/ai/ui/icons/category_pipeline.png",
+    "size": 123045,
     "contentType": "image/png"
   },
   "ui/icons/category_skill": {
     "stem": "ui/icons/category_skill",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/ui/icons/category_skill.png",
-    "size": 5339876,
+    "url": "/assets/ai/ui/icons/category_skill.png",
+    "size": 142892,
     "contentType": "image/png"
   },
   "ui/icons/category_plugin": {
     "stem": "ui/icons/category_plugin",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/ui/icons/category_plugin.png",
-    "size": 5311481,
+    "url": "/assets/ai/ui/icons/category_plugin.png",
+    "size": 144004,
     "contentType": "image/png"
   },
   "ui/icons/category_prompt_template": {
     "stem": "ui/icons/category_prompt_template",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/ui/icons/category_prompt_template.png",
-    "size": 4291835,
+    "url": "/assets/ai/ui/icons/category_prompt_template.png",
+    "size": 147803,
     "contentType": "image/png"
   },
   "props/cyberpunk_shanghai/wet_puddle": {
     "stem": "props/cyberpunk_shanghai/wet_puddle",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/props/cyberpunk_shanghai/wet_puddle.png",
-    "size": 6464120,
+    "url": "/assets/ai/props/cyberpunk_shanghai/wet_puddle.png",
+    "size": 175799,
     "contentType": "image/png"
   },
   "ui/icons/category_tileset": {
     "stem": "ui/icons/category_tileset",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/ui/icons/category_tileset.png",
-    "size": 7371444,
+    "url": "/assets/ai/ui/icons/category_tileset.png",
+    "size": 205672,
     "contentType": "image/png"
   },
   "ui/quest/quest_question": {
     "stem": "ui/quest/quest_question",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/ui/quest/quest_question.png",
-    "size": 1281578,
+    "url": "/assets/ai/ui/quest/quest_question.png",
+    "size": 103385,
     "contentType": "image/png"
   },
   "ui/quest/quest_exclamation": {
     "stem": "ui/quest/quest_exclamation",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/ui/quest/quest_exclamation.png",
-    "size": 1329041,
+    "url": "/assets/ai/ui/quest/quest_exclamation.png",
+    "size": 100832,
     "contentType": "image/png"
   },
   "ui/loading/transition_apollo_to_caravan": {
     "stem": "ui/loading/transition_apollo_to_caravan",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/ui/loading/transition_apollo_to_caravan.jpg",
-    "size": 2267695,
+    "url": "/assets/ai/ui/loading/transition_apollo_to_caravan.jpg",
+    "size": 331314,
     "contentType": "image/jpeg"
   },
   "ui/loading/loading_screen": {
     "stem": "ui/loading/loading_screen",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/ui/loading/loading_screen.jpg",
-    "size": 6140755,
+    "url": "/assets/ai/ui/loading/loading_screen.jpg",
+    "size": 133824,
     "contentType": "image/jpeg"
   },
   "ui/loading/transition_caravan_to_cyber": {
     "stem": "ui/loading/transition_caravan_to_cyber",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/ui/loading/transition_caravan_to_cyber.jpg",
-    "size": 6319175,
+    "url": "/assets/ai/ui/loading/transition_caravan_to_cyber.jpg",
+    "size": 236005,
     "contentType": "image/jpeg"
   },
   "ui/marketplace/marketplace_hero_banner": {
     "stem": "ui/marketplace/marketplace_hero_banner",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/ui/marketplace/marketplace_hero_banner.jpg",
-    "size": 6430702,
+    "url": "/assets/ai/ui/marketplace/marketplace_hero_banner.jpg",
+    "size": 191463,
     "contentType": "image/jpeg"
   },
   "ui/marketplace/marketplace_empty_state": {
     "stem": "ui/marketplace/marketplace_empty_state",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/ui/marketplace/marketplace_empty_state.png",
-    "size": 7426009,
+    "url": "/assets/ai/ui/marketplace/marketplace_empty_state.png",
+    "size": 199503,
     "contentType": "image/png"
   },
   "ui/title/title_screen": {
     "stem": "ui/title/title_screen",
-    "url": "https://kswntqjwnfadqljd.public.blob.vercel-storage.com/ui/title/title_screen.jpg",
-    "size": 7013601,
+    "url": "/assets/ai/ui/title/title_screen.jpg",
+    "size": 385597,
     "contentType": "image/jpeg"
   }
 }
