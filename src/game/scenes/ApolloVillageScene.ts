@@ -105,31 +105,54 @@ const WORLD_W = 1408;
 const WORLD_H = 800;
 const TILE_PX = 32;
 
-// Landmark + NPC scale per placement map. Source PNGs are 600x600 (landmark)
-// or 512x512 (character) at scale 0.18-0.55 -> ~92-330 px display size.
-const NPC_SCALE_NAMED = 0.18;
+// Player + ambient NPC scale: 0.18 against player_spritesheet 512x512 frame
+// renders a ~92x92 character sprite (player-sized).
+//
+// Named NPC (apollo, treasurer, caravan_vendor) scale: source PNGs are
+// 2048x2048, NOT spritesheet-frame-sliced, so their on-screen size at
+// scale 0.18 was 370 px -> 4x larger than player. Nemea-RV-v2 W4 Phase 0
+// scales them to 0.05 (~100 px) for player-visual parity. The original
+// 0.18 was a Helios-v2 S2 oversight (constant intended for spritesheet
+// frame consumers, applied to monolithic PNG NPC sources).
+const NPC_SCALE_NAMED = 0.05;
 const NPC_SCALE_AMBIENT = 0.18;
 const NPC_SCALE_CHILD = 0.13;
 const PLAYER_SCALE = 0.18;
 
-// Landmark PNGs source dimensions vary; scale picked per asset to balance
-// silhouette weight against the bg.
-const SCALE_MARKETPLACE = 0.55;
-const SCALE_BUILDER_WORKSHOP = 0.5;
-const SCALE_REGISTRY_PILLAR = 0.55;
-const SCALE_TRUST_SHRINE = 0.5;
-
-// Ambient prop scales per placement map.
-const SCALE_STONE_WELL = 0.45;
-const SCALE_DATE_PALM = 0.42;
-const SCALE_CYPRESS_LARGE = 0.65;
-const SCALE_CYPRESS_SMALL = 0.55;
-const SCALE_MARKET_STALL = 0.42;
-const SCALE_WOODEN_CART = 0.4;
-const SCALE_HOUSE_FILLER = 0.5;
-const SCALE_STONE_COLUMN = 0.5;
-const SCALE_STONE_SIGNPOST = 0.4;
-const SCALE_HANGING_LANTERN = 0.3;
+// Nemea-RV-v2 W4 Phase 0 visual regression fix.
+//
+// PRIOR PROBLEM (Helios-v2 S2 ship): the AI-generated landmark + ambient
+// prop PNGs were spawned at scales 0.40-0.65 against PNG source dimensions
+// 1024x1024 to 2880x5824, producing display sizes 700-2900 px against an
+// 1408x800 viewport. Combined with the AI-generated apollo_village_bg.jpg
+// painted backdrop ALREADY containing every prop (well, palm, market stall,
+// fruit cart, temple archway, adobe building), the scene duplicated visual
+// content + giant sprites masked the painted scene.
+//
+// PHASE 0 FIX (Nemea-RV-v2 W4):
+//   1. Delete every ambient prop spawn that duplicates a painted backdrop
+//      element (stone_well, date_palm_cluster, cypress_tree, market_stall,
+//      wooden_cart, apollo_house_filler, stone_column, stone_signpost).
+//      The backdrop paints these; spawned sprites are visual noise.
+//   2. Delete hanging_lantern overhead sprites; backdrop has no painted
+//      lanterns at the spawned coords, and Lights2D point lights already
+//      provide warm halos in those positions for atmospheric feedback.
+//   3. Drastically rescale + reposition the 4 NERIUM-pillar landmarks
+//      (marketplace_stall, builder_workshop, registry_pillar, trust_shrine)
+//      so they read as iconic ~150-200 px markers anchored at semantic
+//      backdrop positions (not building-replacement giants).
+//   4. Rescale + reposition temple_arch ambient entry to a small marker
+//      glyph adjacent to the painted temple, not on top of it.
+//
+// The 4 landmark interaction surfaces (E-key proximity + dialogue + sub-area
+// scene transitions) all preserve their original event topics + bindings;
+// only sprite size + position change. Y-sort + drop shadow + glyph + prompt
+// text systems flow unchanged.
+const SCALE_MARKETPLACE = 0.06;
+const SCALE_BUILDER_WORKSHOP = 0.06;
+const SCALE_REGISTRY_PILLAR = 0.05;
+const SCALE_TRUST_SHRINE = 0.06;
+const SCALE_TEMPLE_ARCH_MARKER = 0.05;
 
 // Idle breathing tween standard (per S2 directive item 3).
 const BREATHING_DURATION_MS = 800;
@@ -354,11 +377,17 @@ export class ApolloVillageScene extends Phaser.Scene {
     // shadows). Sorter.tick() runs in update() to recompute setDepth.
     this.sorter = new SceneSorter();
 
-    // Spawn order: landmarks + ambient props first (background props), then
-    // NPCs + player on top so creation order does not shadow y-sort.
+    // Spawn order: landmarks first (interactive markers anchored to painted
+    // backdrop semantic spots), then NPCs + player on top so creation order
+    // does not shadow y-sort.
+    //
+    // Nemea-RV-v2 W4 Phase 0: ambient prop spawns (spawnAmbientProps,
+    // spawnHangingLanterns) deleted because each redundantly duplicates a
+    // backdrop-painted element. The painted apollo_village_bg.jpg already
+    // contains the well, palm, market stall, fruit cart, temple archway,
+    // and adobe building; spawning sprite versions on top produced visual
+    // collision + scale mismatch + Y-sort chaos.
     this.spawnLandmarks();
-    this.spawnAmbientProps();
-    this.spawnHangingLanterns();
     this.spawnPlayer();
     this.spawnApollo();
     this.spawnCaravan();
@@ -677,16 +706,24 @@ export class ApolloVillageScene extends Phaser.Scene {
    * an entry in landmarkBindings for E-key interaction.
    */
   private spawnLandmarks(): void {
-    // Marketplace stall landmark (SE quadrant). Helios-v2 W3 S5 dual-path:
-    // E-key opens choice prompt for UI marketplace listings or sub-area
-    // bazaar scene.
+    // Nemea-RV-v2 W4 Phase 0 anchor positions match backdrop semantic spots.
+    // Each landmark renders as a small iconic marker (scale 0.14-0.18 against
+    // 600-1024 px source PNGs => ~135-200 px display) so it reads as an
+    // interactive "stamp" placed on the painted scene rather than a
+    // building-sized prop competing with the backdrop.
+
+    // Marketplace stall landmark on cobblestone path mid-right, distinct
+    // from the painted striped-awning stall on the left half so the player
+    // visually parses two separate market structures (painted vs interactive).
+    // Helios-v2 W3 S5 dual-path: E-key opens choice prompt for UI marketplace
+    // listings or sub-area bazaar scene.
     this.placeLandmark(
       'marketplace_stall',
       ASSET_KEYS.props.apollo_village.marketplace_stall_landmark,
-      1080,
-      660,
+      1010,
+      600,
       SCALE_MARKETPLACE,
-      { sw: 110, sh: 22, alpha: 0.32 },
+      { sw: 50, sh: 12, alpha: 0.32 },
       {
         sceneKey: 'ApolloMarketplaceBazaar',
         optionUiLabel: 'Browse listings (UI)',
@@ -695,35 +732,42 @@ export class ApolloVillageScene extends Phaser.Scene {
       },
     );
 
-    // Builder workshop landmark (NW quadrant). Single-path UI modal.
+    // Builder workshop landmark in the NW open courtyard. Single-path UI
+    // modal. Position keeps the workshop sprite on bare ground left of the
+    // backdrop's painted striped fruit stall so the workshop reads as a
+    // separate guild structure.
     this.placeLandmark(
       'builder_workshop',
       ASSET_KEYS.props.apollo_village.builder_workshop_landmark,
-      310,
-      480,
+      330,
+      560,
       SCALE_BUILDER_WORKSHOP,
-      { sw: 100, sh: 20, alpha: 0.32 },
+      { sw: 50, sh: 12, alpha: 0.32 },
     );
 
-    // Registry pillar landmark (NE quadrant). Single-path UI modal.
+    // Registry pillar landmark on mid-right open ground, slight horizontal
+    // offset from the painted temple at (950, 280) so the inscribed-monument
+    // silhouette reads as a separate civic record-keeping artefact.
+    // Single-path UI modal.
     this.placeLandmark(
       'registry_pillar',
       ASSET_KEYS.props.apollo_village.registry_pillar_landmark,
-      1040,
-      380,
+      1180,
+      460,
       SCALE_REGISTRY_PILLAR,
-      { sw: 60, sh: 14, alpha: 0.30 },
+      { sw: 32, sh: 10, alpha: 0.30 },
     );
 
-    // Trust shrine landmark (SW quadrant). Helios-v2 W3 S5 dual-path: E-key
-    // opens choice prompt for UI trust audit or sub-area oasis scene.
+    // Trust shrine landmark on the open courtyard center. Helios-v2 W3 S5
+    // dual-path: E-key opens choice prompt for UI trust audit or sub-area
+    // oasis scene.
     this.placeLandmark(
       'trust_shrine',
       ASSET_KEYS.props.apollo_village.trust_shrine_landmark,
-      490,
-      660,
+      640,
+      540,
       SCALE_TRUST_SHRINE,
-      { sw: 130, sh: 22, alpha: 0.32 },
+      { sw: 50, sh: 12, alpha: 0.32 },
       {
         sceneKey: 'ApolloOasis',
         optionUiLabel: 'View trust audit (UI)',
@@ -738,12 +782,18 @@ export class ApolloVillageScene extends Phaser.Scene {
     // emitting landmark.{name}.interact. Lighter glyph weight than the 4
     // pillar landmarks (subtle ambient) per directive 3 hovering glyph
     // styling: alpha pulse only, no y-bob.
+    //
+    // Nemea-RV-v2 W4 Phase 0: rescaled + repositioned. Original placement at
+    // (910, 300) overlapped the painted temple in apollo_village_bg.jpg.
+    // New coord (820, 400) places the marker glyph on open ground south of
+    // the painted temple so the player visually associates the marker with
+    // the temple entrance without a sprite-on-painted-prop collision.
     this.placeAmbientEntryLandmark(
       'temple_arch',
       ASSET_KEYS.props.apollo_village.temple_arch,
-      910,
-      300,
-      0.40,
+      820,
+      400,
+      SCALE_TEMPLE_ARCH_MARKER,
       'ApolloTempleInterior',
       'Press E to enter temple',
     );
@@ -946,153 +996,22 @@ export class ApolloVillageScene extends Phaser.Scene {
     });
   }
 
-  // ---- Ambient props (Layer 3, 9 anchors) ----
-
-  /**
-   * Place 9 ambient prop PNGs across the scene per placement map.
-   * Each registers into the sorter for dynamic y-sort. Drop shadows added
-   * for props that lack built-in PNG ground shadow.
-   */
-  private spawnAmbientProps(): void {
-    // Stone well (mid-left, narrative water source).
-    this.placeAmbientProp(
-      ASSET_KEYS.props.apollo_village.stone_well,
-      260,
-      570,
-      SCALE_STONE_WELL,
-      { sw: 80, sh: 16, alpha: 0.30 },
-    );
-
-    // Date palm cluster (SW foreground oasis). PNG has built-in sandy mound.
-    this.placeAmbientProp(
-      ASSET_KEYS.props.apollo_village.date_palm_cluster,
-      160,
-      660,
-      SCALE_DATE_PALM,
-      null,
-    );
-
-    // Cypress tree (top center vertical accent). PNG has built-in shadow.
-    this.placeAmbientProp(
-      ASSET_KEYS.props.apollo_village.cypress_tree,
-      760,
-      240,
-      SCALE_CYPRESS_LARGE,
-      null,
-    );
-
-    // Cypress tree (SE cluster mate, frames marketplace approach).
-    this.placeAmbientProp(
-      ASSET_KEYS.props.apollo_village.cypress_tree,
-      1290,
-      540,
-      SCALE_CYPRESS_SMALL,
-      null,
-    );
-
-    // Market stall (commerce anchor near marketplace landmark).
-    this.placeAmbientProp(
-      ASSET_KEYS.props.apollo_village.market_stall,
-      910,
-      720,
-      SCALE_MARKET_STALL,
-      { sw: 90, sh: 18, alpha: 0.30 },
-    );
-
-    // Wooden cart (foreground produce, color variety break).
-    this.placeAmbientProp(
-      ASSET_KEYS.props.apollo_village.wooden_cart,
-      760,
-      760,
-      SCALE_WOODEN_CART,
-      { sw: 100, sh: 20, alpha: 0.30 },
-    );
-
-    // Apollo house filler (far-right structural depth anchor).
-    this.placeAmbientProp(
-      ASSET_KEYS.props.apollo_village.apollo_house_filler,
-      1320,
-      320,
-      SCALE_HOUSE_FILLER,
-      { sw: 100, sh: 18, alpha: 0.30 },
-    );
-
-    // Stone column (mid-frame ruin accent, frames Apollo approach).
-    this.placeAmbientProp(
-      ASSET_KEYS.props.apollo_village.stone_column,
-      610,
-      360,
-      SCALE_STONE_COLUMN,
-      null,
-    );
-
-    // Stone signpost (foreground entry marker near player spawn).
-    this.placeAmbientProp(
-      ASSET_KEYS.props.apollo_village.stone_signpost,
-      700,
-      730,
-      SCALE_STONE_SIGNPOST,
-      { sw: 30, sh: 10, alpha: 0.30 },
-    );
-  }
-
-  private placeAmbientProp(
-    textureKey: string,
-    x: number,
-    y: number,
-    scale: number,
-    shadow: { sw: number; sh: number; alpha: number } | null,
-  ): void {
-    const sprite = this.add.image(x, y, textureKey);
-    sprite.setOrigin(0.5, 1);
-    sprite.setScale(scale);
-    this.sorter?.register(sprite);
-
-    if (shadow) {
-      const dropShadow = this.add.ellipse(
-        x,
-        y,
-        shadow.sw,
-        shadow.sh,
-        0x000000,
-        shadow.alpha,
-      );
-      this.dropShadows.push(dropShadow);
-      this.sorter?.register({
-        y: y - 1,
-        setDepth: (v) => dropShadow.setDepth(v),
-      });
-    }
-  }
-
-  // ---- Hanging lanterns (Layer 4 ABOVE_TILES) ----
-
-  /**
-   * Two hanging lantern PNGs mounted at scene overhead. Set above_tiles
-   * depth so the player sprite renders UNDER the hanging position.
-   */
-  private spawnHangingLanterns(): void {
-    const places: Array<[number, number]> = [
-      [480, 440],
-      [980, 460],
-    ];
-    for (const [x, y] of places) {
-      const lantern = this.add.image(x, y, ASSET_KEYS.props.apollo_village.hanging_lantern);
-      lantern.setOrigin(0.5, 0.3);
-      lantern.setScale(SCALE_HANGING_LANTERN);
-      lantern.setDepth(DEPTH.ABOVE_TILES);
-      // Subtle sway tween (rotation +/-3deg cycle 4s slow, asymmetric phase).
-      this.tweens.add({
-        targets: lantern,
-        angle: { from: -2, to: 2 },
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut',
-        duration: 4000,
-        delay: x % 700,
-      });
-    }
-  }
+  // ---- Ambient props + hanging lanterns: REMOVED in Nemea-RV-v2 W4 Phase 0
+  //
+  // Prior Helios-v2 S2 ship spawned 9 ambient prop PNGs (stone_well,
+  // date_palm_cluster, cypress_tree x2, market_stall, wooden_cart,
+  // apollo_house_filler, stone_column, stone_signpost) plus 2 hanging
+  // lantern PNGs across the Apollo scene. Each duplicated visual content
+  // already painted into apollo_village_bg.jpg, producing sprite-on-painted
+  // collision + Y-sort chaos + scale mismatch. The painted backdrop is the
+  // single source of truth for desert village ambience; spawned ambient
+  // prop sprites have been removed entirely.
+  //
+  // The 4 NERIUM-pillar landmarks + temple_arch ambient entry remain because
+  // they are interaction-bearing surfaces (E-key proximity + glyph + prompt
+  // + dialogue + sub-area transition); they have been rescaled + repositioned
+  // to read as small iconic markers anchored at backdrop-distinct spots.
+  // ----
 
   // ---- Player + named NPCs ----
 

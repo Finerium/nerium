@@ -52,6 +52,15 @@ export class TreasurerNPC extends NPC {
       textureKey: options.textureKey,
       frame: options.frame ?? 'agent_active',
       interactRadius: options.interactRadius ?? TREASURER_INTERACT_RADIUS,
+      // Nemea-RV-v2 W4 Phase 0 forwarding fix. Prior implementation dropped
+      // spriteScale + groundAnchor on the floor when calling super(); the
+      // Treasurer rendered at the underlying NPC class default scale 1.0,
+      // producing a 2048x2048 px sprite (the source PNG is 2048x2048) that
+      // covered the entire ApolloVillage viewport. Forwarding both options
+      // restores the Helios-v2 S2 intent of NPC_SCALE_NAMED 0.18 producing
+      // a player-sized sprite.
+      spriteScale: options.spriteScale,
+      groundAnchor: options.groundAnchor,
     });
   }
 }
